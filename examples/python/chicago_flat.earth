@@ -1,0 +1,19 @@
+<map name="Chicago State Plane" type="projected" version="2">
+
+    <options>
+      <profile name="Chicago State Plane (meters)">
+			  <srs>+proj=utm +zone=16 +ellps=GRS80 +datum=NAD83 +units=m +no_defs</srs>	
+            <xmin>420246.23063342576</xmin>
+			<ymin>4607929.595875553</ymin>
+            <xmax>458591.13334636507</xmax>
+            <ymax>4654384.8787039025</ymax>
+        </profile>
+    </options>
+    
+    <!-- This image layer returns global geodetic tiles -->
+    <image name="mapquest_open_aerial" driver="xyz">
+        <url>http://oatile[1234].mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg</url>
+        <profile>spherical-mercator</profile>
+        <nodata_image>http://oatile3.mqcdn.com/tiles/1.0.0/sat/13/636/6210.jpg</nodata_image>
+    </image>
+</map>

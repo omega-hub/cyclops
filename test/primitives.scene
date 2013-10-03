@@ -1,0 +1,20 @@
+<Level>
+    <MapData>
+        <MapContents>
+            <Files>
+            </Files>
+			
+            <StaticObjects>
+           </StaticObjects>
+		   
+            <Entities>
+            </Entities>
+			
+			<Primitives>
+                <Plane StartCorner="-1 0 -1" EndCorner="1 0 1" ID="1" Effect="colored" Name="Plane_1" Rotation="0 0 0" Scale="10 1 10" WorldPos="0 0 0" />
+                <Sphere Radius="0.5" Effect="colored" WorldPos="0 1 -2" />
+                <Sphere Radius="1.0" Effect="colored" WorldPos="0 3 -2.5" />
+            </Primitives>
+		</MapContents>
+    </MapData>
+</Level>
