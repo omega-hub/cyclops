@@ -46,7 +46,7 @@
 
 #define OMEGA_NO_GL_HEADERS
 #include <omega.h>
-#include <omegaOsg.h>
+#include <omegaOsg/omegaOsg.h>
 #include <omegaToolkit.h>
 
 namespace cyclops {
