@@ -1,6 +1,8 @@
 # cyclops depends on OSG
 if(OMEGA_BUILD_OSG_LIB)
 	include_directories(./)
+	message("INCLUDES ${OSG_INCLUDES}")
+	include_directories(${OSG_INCLUDES})
 	
 	add_subdirectory(src)
 	add_subdirectory(examples/cyhello)
