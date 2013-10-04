@@ -1,4 +1,5 @@
 # cyclops depends on OSG
+set(MODULES_omegaOsg true CACHE BOOL " " FORCE)
 if(OMEGA_BUILD_OSG_LIB)
 	add_definitions(-DOSGWORKS_STATIC)
 	include_directories(.)
