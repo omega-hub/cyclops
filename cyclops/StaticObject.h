@@ -27,8 +27,8 @@
 #ifndef __CY_STATIC_OBJECT__
 #define __CY_STATIC_OBJECT__
 
-#include "cyclops/Entity.h"
-#include "cyclops/SceneManager.h"
+#include "Entity.h"
+#include "SceneManager.h"
 
 namespace cyclops {
 	using namespace omega;

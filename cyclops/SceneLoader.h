@@ -37,9 +37,9 @@
 #include <osg/Group>
 
 #include "SceneManager.h"
-#include "cyclops/Shapes.h"
-#include "cyclops/StaticObject.h"
-#include "cyclops/AnimatedObject.h"
+#include "Shapes.h"
+#include "StaticObject.h"
+#include "AnimatedObject.h"
 
 namespace cyclops {
 	using namespace omega;

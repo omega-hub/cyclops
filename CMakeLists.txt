@@ -1,7 +1,7 @@
 # cyclops depends on OSG
 if(OMEGA_BUILD_OSG_LIB)
 	add_definitions(-DOSGWORKS_STATIC)
-	include_directories(./)
+	include_directories(.)
 	include_directories(${OSG_INCLUDES})
 	
 	add_subdirectory(src)

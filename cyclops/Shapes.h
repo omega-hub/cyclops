@@ -27,7 +27,7 @@
 #ifndef __CY_SHAPES__
 #define __CY_SHAPES__
 
-#include "cyclops/Entity.h"
+#include "Entity.h"
 
 namespace cyclops {
 	using namespace omega;

@@ -37,7 +37,7 @@
 #ifndef __CY_LINE_SET__
 #define __CY_LINE_SET__
 
-#include "cyclops/Entity.h"
+#include "Entity.h"
 
 #include<osg/PositionAttitudeTransform>
 #include<osg/Material>
