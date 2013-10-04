@@ -1,4 +1,4 @@
-if(OMEGA_BUILD_OSG_LIB)
+if(MODULES_omegaOsg)
 	add_definitions(-DOSGWORKS_STATIC)
 	include_directories(.)
 	include_directories(${OSG_INCLUDES})
