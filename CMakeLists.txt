@@ -1,17 +1,12 @@
-if(MODULES_omegaOsg)
-	add_definitions(-DOSGWORKS_STATIC)
-	include_directories(.)
-	include_directories(${OSG_INCLUDES})
-	
-	add_subdirectory(src)
-	add_subdirectory(examples/cyhello)
-	add_subdirectory(examples/cyhello2)
-else()
-	# cyclops depends on OSG
-	set(MODULES_omegaOsg true CACHE BOOL " " FORCE)
-	# create this variable to trigger a CMake re-generate step
-	set(INTERNAL_REGENERATE_cyclops true CACHE BOOL "")
-endif()
+request_dependency(omegaOsg)
+
+add_definitions(-DOSGWORKS_STATIC)
+include_directories(.)
+include_directories(${OSG_INCLUDES})
+
+add_subdirectory(src)
+add_subdirectory(examples/cyhello)
+add_subdirectory(examples/cyhello2)
 
 ###############################################################################
 # Install commands
