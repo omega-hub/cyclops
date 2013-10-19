@@ -47,6 +47,9 @@
 #include "cyclops/Shapes.h"
 #include "cyclops/ModelGeometry.h"
 
+// Bullet and osgBullet
+#include <btBulletDynamicsCommon.h>
+
 using namespace cyclops;
 using namespace omegaToolkit;
 using namespace omegaToolkit::ui;
@@ -134,7 +137,8 @@ SceneManager::SceneManager():
 	mySkyBox(NULL),
 	myNumActiveLights(0),
 	myWandTracker(NULL),
-	myWandEntity(NULL)
+	myWandEntity(NULL),
+	myDynamicsWorld(NULL)
 {
 #ifdef OMEGA_USE_PYTHON
 	cyclopsPythonApiInit();
@@ -163,6 +167,12 @@ SceneManager::~SceneManager()
 		myModelLoaderThread->stop();
 		delete myModelLoaderThread;
 		myModelLoaderThread = NULL;
+	}
+
+	if(myDynamicsWorld != NULL)
+	{
+		delete myDynamicsWorld;
+		myDynamicsWorld = NULL;
 	}
 }
 
@@ -245,6 +255,19 @@ void SceneManager::initialize()
 
 	// Set the menu manager
 	myMenuManager = omegaToolkit::ui::MenuManager::instance();
+
+	initDynamicsWorld();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void SceneManager::initDynamicsWorld()
+{
+	btDefaultCollisionConfiguration * collisionConfiguration = new btDefaultCollisionConfiguration();
+	btCollisionDispatcher * dispatcher = new btCollisionDispatcher( collisionConfiguration );
+	btBroadphaseInterface * inter = new btDbvtBroadphase();
+	btConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
+
+	myDynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, inter, solver, collisionConfiguration );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1137,7 +1160,7 @@ void SceneManager::setWandSize(float width, float length)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 bool SceneManager::handleCommand(const String& cmd)
 {
 	Vector<String> args = StringUtils::split(cmd);
@@ -1158,16 +1181,30 @@ bool SceneManager::handleCommand(const String& cmd)
 	return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 omegaToolkit::ui::Menu* SceneManager::createContextMenu(Entity* entity)
 {
 	myEntitiesWithMenu.push_back(entity);
 	return myMenuManager->createMenu(entity->getName());
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void SceneManager::deleteContextMenu(Entity* entity)
 {
 	myEntitiesWithMenu.remove(entity);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void SceneManager::setGravity(const Vector3f& g)
+{
+	oassert(myDynamicsWorld != NULL);
+	myDynamicsWorld->setGravity(btVector3(g[0], g[1], g[2]));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+Vector3f SceneManager::getGravity()
+{
+	oassert(myDynamicsWorld != NULL);
+	const btVector3& bg = myDynamicsWorld->getGravity();
+	return Vector3f(bg[0], bg[1], bg[2]);
+}

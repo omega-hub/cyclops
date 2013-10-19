@@ -121,6 +121,9 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_REF_GETTER(SceneManager, createProgramFromString)
 		PYAPI_REF_GETTER(SceneManager, createTexture)
 		PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
+		// Physics
+		PYAPI_GETTER(SceneManager, getGravity)
+		PYAPI_METHOD(SceneManager, setGravity)
 		;
 
 	// osg Texture2D
@@ -189,6 +192,10 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(Material, setAlpha)
 		PYAPI_METHOD(Material, getAlpha);
 
+	// RigidBody
+	PYAPI_REF_BASE_CLASS(RigidBody)
+		;
+
 	// Entity
 	PYAPI_REF_CLASS(Entity, SceneNode)
 		PYAPI_METHOD(Entity, castShadow)
@@ -207,6 +214,7 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_REF_GETTER(Entity, getPiece)
 		PYAPI_METHOD(Entity, setCullingActive)
 		PYAPI_METHOD(Entity, isCullingActive)
+		PYAPI_REF_GETTER(Entity, getRigidBody)
 		;
 
 	// SphereShape

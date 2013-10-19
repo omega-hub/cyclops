@@ -39,6 +39,7 @@
 #include "cyclopsConfig.h"
 #include "EffectNode.h"
 #include "Uniforms.h"
+#include "RigidBody.h"
 
 #include <osg/Group>
 
@@ -98,6 +99,10 @@ namespace cyclops {
 		SceneNode* getPiece(const String& path);
 		//@}
 
+		//! Returns the rigid body object describing the physical properties
+		// of this entity.
+		RigidBody* getRigidBody();
+
 	protected:
 		void initialize(osg::Node* node);
 		//! Used by the piece functions to find a named group inside the object.
@@ -116,7 +121,13 @@ namespace cyclops {
 
 		bool myCastShadow;
 		bool myCullingActive;
+
+		Ref<RigidBody> myRigidBody;
 	};
+
+	///////////////////////////////////////////////////////////////////////////
+	inline RigidBody* Entity::getRigidBody()
+	{ return myRigidBody; }
 };
 
 #endif

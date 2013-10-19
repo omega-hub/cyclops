@@ -97,6 +97,8 @@ void Entity::initialize(osg::Node* node)
 	// Now add this drawable object to the scene.
 	addListener(mySceneManager);
 	getEngine()->getScene()->addChild(this);
+
+	myRigidBody = new RigidBody();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

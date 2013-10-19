@@ -9,6 +9,7 @@ set(SRCS
 		MaterialParser.cpp
 		ModelLoader.cpp
 		ModelGeometry.cpp
+		RigidBody.cpp
 		Shapes.cpp
 		Skybox.cpp
 		SceneLoader.cpp
@@ -19,6 +20,7 @@ set(SRCS
 		cyclopsPythonApi.cpp)
     
 set(HEADERS 
+		../cyclops/cyclopsConfig.h
 		../cyclops/Entity.h
 		../cyclops/EffectNode.h
 		../cyclops/AnimatedObject.h
@@ -28,7 +30,7 @@ set(HEADERS
 		../cyclops/MaterialParser.h
 		../cyclops/ModelLoader.h
 		../cyclops/ModelGeometry.h
-		../cyclops/cyclopsConfig.h
+		../cyclops/RigidBody.h
 		../cyclops/Shapes.h
 		../cyclops/Text3D.h
 		../cyclops/Skybox.h
@@ -45,4 +47,5 @@ source_group(osg REGULAR_EXPRESSION osg/)
 target_link_libraries(cyclops
 	omega 
 	omegaToolkit
-    omegaOsg)
+    omegaOsg
+	${OSGBULLET_LIBS})

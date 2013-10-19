@@ -28,30 +28,21 @@
  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *-----------------------------------------------------------------------------
+ * What's in this file:
+ * The interface between entities and the Bullet Physics engine.
  ******************************************************************************/
-#ifndef __CY_CONFIG_H__
-#define __CY_CONFIG_H__
+#include "cyclops/SceneManager.h"
+#include "cyclops/RigidBody.h"
 
-#include "omega/osystem.h"
-#include "omega/Application.h"
+using namespace cyclops;
 
-#ifdef WIN32
-	#ifndef CY_STATIC
-		#ifdef CY_EXPORTING
-		   #define CY_API    __declspec(dllexport)
-		#else
-		   #define CY_API    __declspec(dllimport)
-		#endif
-	#else
-		#define CY_API
-	#endif
-#else
-	#define CY_API
-#endif
-
-namespace cyclops
+///////////////////////////////////////////////////////////////////////////////
+RigidBody::RigidBody()
 {
-	using namespace omega;
-};
+}
 
-#endif
+///////////////////////////////////////////////////////////////////////////////
+RigidBody::~RigidBody()
+{
+}

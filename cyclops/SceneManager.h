@@ -56,7 +56,10 @@
 #include <omegaOsg/omegaOsg.h>
 #include <omegaToolkit.h>
 
+// Forward declarations
 class ModelLoaderThread;
+class btDynamicsWorld;
+
 namespace cyclops {
 	using namespace omega;
 	using namespace omegaOsg;
@@ -208,6 +211,12 @@ namespace cyclops {
 		void recompileShaders(ProgramAsset* program, const String& variationName = "");
 		//@}
 
+		//! Physics support
+		//@{
+		void setGravity(const Vector3f& g);
+		Vector3f getGravity();
+		//@}
+
 		//! SceneNodeListener overrides
 		virtual void onAttachedToScene(SceneNode* source);
 		virtual void onDetachedFromScene(SceneNode* source);
@@ -218,6 +227,8 @@ namespace cyclops {
 	private:
 		SceneManager();
 		virtual ~SceneManager();
+
+		void initDynamicsWorld();
 
 		void addLight(Light* l);
 		void removeLight(Light* l);
@@ -276,6 +287,9 @@ namespace cyclops {
 		Dictionary< String, Ref<ModelLoader> > myLoaderDictionary;
 		// The default loader. Used when all the other loaders fail.
 		ModelLoader* myDefaultLoader;
+
+		// Physics stuff
+		btDynamicsWorld* myDynamicsWorld;
 	};
 
 	///////////////////////////////////////////////////////////////////////////
