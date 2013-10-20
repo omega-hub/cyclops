@@ -77,6 +77,9 @@ namespace cyclops {
 		void setNormalTexture(const String& name);
 		const String& getDiffuseTexture() { return myDiffuseTexture; }
 		const String& getNormalTexture() { return myNormalTexture; }
+		//! Attaches a texture to a custom texture stae, and sets a shader uniform
+		//! to point to it.
+		void setTexture(const String& name, int stage, const String& uniformName);
 		//@}
 
 		//! Creates a material from a string definition (uses the effect syntax)

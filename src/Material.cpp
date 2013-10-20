@@ -146,6 +146,24 @@ void Material::setNormalTexture(const String& name)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void Material::setTexture(const String& name, int stage, const String& uniformName)
+{
+	osg::Texture2D* tex = mySceneManager->getTexture(name);
+	if(tex != NULL)
+	{
+		tex->setResizeNonPowerOfTwoHint(false);
+		myStateSet->setTextureAttribute(stage, tex);
+	}
+
+	Uniform* u = getUniform(uniformName);
+	if(!u)
+	{
+		u = addUniform(uniformName, Uniform::Int);
+	}
+	u->setInt(stage);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Material::setTransparent(bool value)
 {
 	myTransparent = value;
