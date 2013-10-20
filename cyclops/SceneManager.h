@@ -215,6 +215,9 @@ namespace cyclops {
 		//@{
 		void setGravity(const Vector3f& g);
 		Vector3f getGravity();
+		btDynamicsWorld* getDynamicsWorld() { return myDynamicsWorld; }
+		void setPhysicsEnabled(bool value) { myPhysicsEnabled = value; }
+		bool isPhysicsEnabled() { return myPhysicsEnabled; }
 		//@}
 
 		//! SceneNodeListener overrides
@@ -289,6 +292,7 @@ namespace cyclops {
 		ModelLoader* myDefaultLoader;
 
 		// Physics stuff
+		bool myPhysicsEnabled;
 		btDynamicsWorld* myDynamicsWorld;
 	};
 

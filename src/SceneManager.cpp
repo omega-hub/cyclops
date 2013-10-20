@@ -138,7 +138,8 @@ SceneManager::SceneManager():
 	myNumActiveLights(0),
 	myWandTracker(NULL),
 	myWandEntity(NULL),
-	myDynamicsWorld(NULL)
+	myDynamicsWorld(NULL),
+	myPhysicsEnabled(false)
 {
 #ifdef OMEGA_USE_PYTHON
 	cyclopsPythonApiInit();
@@ -323,6 +324,12 @@ void SceneManager::update(const UpdateContext& context)
 
 			item.second->setDirty(false);
 		}
+	}
+
+	// Update physics simulation
+	if(myPhysicsEnabled)
+	{
+		myDynamicsWorld->stepSimulation( context.dt, 4, context.dt/2. );
 	}
 }
 

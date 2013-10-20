@@ -1,4 +1,10 @@
 add_definitions( -D_CRT_SECURE_NO_WARNINGS -DCY_EXPORTING)
+if(WIN32)
+	# Add the DOSGBULLET_STATIC to following projects, so we tell the header files 
+	# we are not importing dll symbols.
+	add_definitions(-DOSGBULLET_STATIC)
+endif()
+
 set(SRCS 
 		Entity.cpp
 		EffectNode.cpp

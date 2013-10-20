@@ -35,14 +35,120 @@
 #include "cyclops/SceneManager.h"
 #include "cyclops/RigidBody.h"
 
+#include "osgbCollision/CollisionShapes.h"
+#include "osgbCollision/Utils.h"
+#include "btBulletDynamicsCommon.h"
+
 using namespace cyclops;
+using namespace osgbCollision;
 
 ///////////////////////////////////////////////////////////////////////////////
-RigidBody::RigidBody()
+RigidBody::RigidBody(Entity* e):
+	myEntity(e),
+	myBoxShape(NULL),
+	myBody(NULL),
+	myEnabled(false),
+	myUserControlled(false)
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 RigidBody::~RigidBody()
 {
+	myEntity = NULL;
+	if(myBoxShape)
+	{
+		delete myBoxShape;
+		myBoxShape = NULL;
+	}
+	if(myBody)
+	{
+		delete myBody;
+		myBody = NULL;
+	}
 }
+
+///////////////////////////////////////////////////////////////////////////////
+void RigidBody::initialize(BodyType type, float mass)
+{
+	myMass = mass;
+	btVector3 inertia(0,0,0);
+	if(type == Box)
+	{
+		myBoxShape = btBoxCollisionShapeFromOSG(myEntity->getOsgNode());
+		//Vector3f he = myEntity->getBoundMaximum() - myEntity->getBoundMinimum();
+		//myBoxShape = new btBoxShape(btVector3(btVector3(he.x() / 2, he.y() / 2, he.z() / 2)));
+		if(mass != 0)
+		{
+			myBoxShape->calculateLocalInertia(myMass, inertia);
+		}
+		myMotionState = new btDefaultMotionState();
+		//myMotionState->setWorldTransform(groundTransform);
+		//myMotionState->setTransform(myGround);
+		btRigidBody::btRigidBodyConstructionInfo rb( mass, myMotionState, myBoxShape, inertia );
+		myBody = new btRigidBody( rb );
+		myBody->setActivationState(DISABLE_DEACTIVATION);
+	}
+	else
+	{
+		ofwarn("RigidBody::initialize: unsupported body shape %1% for entity %2%", 
+			%type %myEntity->getName());
+		return;
+	}
+
+	// By default enabled newly-created rigid bodies.
+	setEnabled(true);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void RigidBody::setEnabled(bool value)
+{
+	myEnabled = value;
+	if(myBody != NULL)
+	{
+		SceneManager* sm = myEntity->getSceneManager();
+		if(myEnabled)
+		{
+			sm->getDynamicsWorld()->addRigidBody(myBody);
+		}
+		else
+		{
+			sm->getDynamicsWorld()->removeRigidBody(myBody);
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void RigidBody::updateEntity()
+{
+	if(myEnabled && myMotionState != NULL && !myUserControlled)
+	{
+		//btVector3 pos = myMotionState->m_graphicsWorldTrans.getOrigin();
+		//ofmsg("%1% %2% %3%", %pos.x() %pos.y() %pos.z());
+		btVector3 pos = myBody->getCenterOfMassPosition();
+		btQuaternion ort = myBody->getCenterOfMassTransform().getRotation();
+		myEntity->setPosition(pos.x(), pos.y(), pos.z());
+		myEntity->setOrientation(ort.w(), ort.x(), ort.y(), ort.z());
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void RigidBody::sync()
+{
+	if(myEnabled && myMotionState != NULL)
+	{
+		btTransform xform;
+		const Vector3f& o = myEntity->getPosition();
+		const Quaternion& r = myEntity->getOrientation();
+		//xform.setOrigin(btVector3(o.x(), o.y(), o.z()));
+		//xform.setRotation(btQuaternion(r.w(), r.x(), r.y(), r.z()));
+		//myMotionState->setWorldTransform(xform);
+
+		btTransform transform = myBody->getCenterOfMassTransform();
+		transform.setOrigin(btVector3(o.x(), o.y(), o.z()));
+		transform.setRotation(btQuaternion(r.x(), r.y(), r.z(), r.w()));
+		myBody->setCenterOfMassTransform(transform);
+	}
+}
+
+

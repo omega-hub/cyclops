@@ -124,6 +124,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		// Physics
 		PYAPI_GETTER(SceneManager, getGravity)
 		PYAPI_METHOD(SceneManager, setGravity)
+		PYAPI_METHOD(SceneManager, setPhysicsEnabled)
+		PYAPI_METHOD(SceneManager, isPhysicsEnabled)
 		;
 
 	// osg Texture2D
@@ -193,8 +195,19 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(Material, setAlpha)
 		PYAPI_METHOD(Material, getAlpha);
 
+	// RigidBodyType
+	PYAPI_ENUM(RigidBody::BodyType, RigidBodyType)
+		PYAPI_ENUM_VALUE(RigidBody, Box)
+		;
+
 	// RigidBody
 	PYAPI_REF_BASE_CLASS(RigidBody)
+		PYAPI_METHOD(RigidBody, isEnabled)
+		PYAPI_METHOD(RigidBody, setEnabled)
+		PYAPI_METHOD(RigidBody, initialize)
+		PYAPI_METHOD(RigidBody, sync)
+		PYAPI_METHOD(RigidBody, isUserControlled)
+		PYAPI_METHOD(RigidBody, setUserControlled)
 		;
 
 	// Entity

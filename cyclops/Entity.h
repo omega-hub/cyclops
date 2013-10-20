@@ -64,6 +64,8 @@ namespace cyclops {
 		Entity(SceneManager* scene);
 		virtual ~Entity();
 
+		SceneManager* getSceneManager() { return mySceneManager; }
+
 		osg::Node* getOsgNode() { return myEffect; }
 		//SceneNode* getSceneNode() { return mySceneNode; }
 
@@ -102,6 +104,8 @@ namespace cyclops {
 		//! Returns the rigid body object describing the physical properties
 		// of this entity.
 		RigidBody* getRigidBody();
+
+		virtual void updateTraversal(const UpdateContext& context);
 
 	protected:
 		void initialize(osg::Node* node);

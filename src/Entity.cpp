@@ -69,6 +69,18 @@ Entity::Entity(SceneManager* scene):
 Entity::~Entity()
 {
 	removeListener(mySceneManager);
+	// Make sure rigid body is unregistered.
+	myRigidBody->setEnabled(false);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Entity::updateTraversal(const UpdateContext& context)
+{
+	if(myRigidBody)
+	{
+		myRigidBody->updateEntity();
+	}
+	SceneNode::updateTraversal(context);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,7 +110,7 @@ void Entity::initialize(osg::Node* node)
 	addListener(mySceneManager);
 	getEngine()->getScene()->addChild(this);
 
-	myRigidBody = new RigidBody();
+	myRigidBody = new RigidBody(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

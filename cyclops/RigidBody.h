@@ -37,24 +37,74 @@
 
 #include "cyclopsConfig.h"
 
+// forward declarations
+class btRigidBody;
+class btBoxShape;
+struct btDefaultMotionState;
+
 namespace cyclops {
 	using namespace omega;
 	using namespace omegaOsg;
 
 	class SceneManager;
+	class Entity;
 
 	///////////////////////////////////////////////////////////////////////////
 	class CY_API RigidBody: public ReferenceType
 	{
 	public:
-		enum BodyType { Box, Sphere, Cylinder, ConvexTriShape };
+		enum BodyType { Box };
 
 	public:
-		RigidBody();
+		RigidBody(Entity* e);
 		virtual ~RigidBody();
 
+		void initialize(BodyType type, float mass);
+		
+		//! updates the attached entity transform with the transform coming
+		//! from the physics simlation. Called by Entity::updateTraversal
+		void updateEntity();
+
+		//! updates the rigid body transform from the entity
+		void sync();
+
+		bool isEnabled();
+		void setEnabled(bool value);
+
+		void setUserControlled(bool value);
+		bool isUserControlled();
+
 	private:
+		Entity* myEntity;
+
+		bool myEnabled;
+		bool myUserControlled;
+		BodyType myType;
+		float myMass;
+
+		// List of possible rigid body shapes (not sure this is the best
+		// implementation).
+		btBoxShape* myBoxShape;
+
+		btRigidBody* myBody;
+		btDefaultMotionState* myMotionState;
 	};
+
+	///////////////////////////////////////////////////////////////////////////
+	inline bool RigidBody::isEnabled()
+	{ return myEnabled; }
+
+	///////////////////////////////////////////////////////////////////////////
+	inline void RigidBody::setUserControlled(bool value)
+	{ 
+		myUserControlled = value;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	inline bool RigidBody::isUserControlled()
+	{
+		return myUserControlled;
+	}
 };
 
 #endif
