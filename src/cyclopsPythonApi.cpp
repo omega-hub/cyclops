@@ -39,6 +39,7 @@
 #include "cyclops/LineSet.h"
 #include "cyclops/Text3D.h"
 #include "cyclops/ModelGeometry.h"
+#include "cyclops/SceneLayer.h"
 
 #ifdef OMEGA_USE_PYTHON
 
@@ -358,6 +359,12 @@ BOOST_PYTHON_MODULE(cyclops)
 	PYAPI_REF_BASE_CLASS_WITH_CTOR(Skybox)
 		PYAPI_METHOD(Skybox, loadCubeMap)
 		;
+
+	// PlaneShape
+	PYAPI_REF_BASE_CLASS(SceneLayer)
+		PYAPI_METHOD(SceneLayer, addEntity)
+		PYAPI_METHOD(SceneLayer, removeEntity)
+        ;
 
 	// Free Functions
 	def("getSceneManager", getSceneManager, PYAPI_RETURN_REF);

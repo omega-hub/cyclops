@@ -8,6 +8,7 @@
 #include <cyclops/cyclops/SceneManager.h>
 #include <cyclops/cyclops/SceneLoader.h>
 #include <cyclops/cyclops/AnimatedObject.h>
+#include <cyclops/cyclops/SceneLayer.h>
 #include <cyclops/cyclops/Shapes.h>
 #include <cyclops/cyclops/Skybox.h>
 

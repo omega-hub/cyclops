@@ -16,6 +16,7 @@ set(SRCS
 		ModelLoader.cpp
 		ModelGeometry.cpp
 		RigidBody.cpp
+		SceneLayer.cpp
 		Shapes.cpp
 		Skybox.cpp
 		SceneLoader.cpp
@@ -37,6 +38,7 @@ set(HEADERS
 		../cyclops/ModelLoader.h
 		../cyclops/ModelGeometry.h
 		../cyclops/RigidBody.h
+		../cyclops/SceneLayer.h
 		../cyclops/Shapes.h
 		../cyclops/Text3D.h
 		../cyclops/Skybox.h

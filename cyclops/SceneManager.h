@@ -121,7 +121,7 @@ namespace cyclops {
 	///////////////////////////////////////////////////////////////////////////
 	//! The scene manager contains all the main features used to handle a 
 	//! cyclops scene and its assets.
-	class CY_API SceneManager: public EngineModule, SceneNodeListener
+	class CY_API SceneManager: public EngineModule, public SceneNodeListener
 	{
 	friend class Entity;
 	friend class Light;
@@ -142,7 +142,7 @@ namespace cyclops {
 		//! If called multiple times, subsequent calls will do nothing.
 		static SceneManager* createAndInitialize();
 		//! Returns an instance of the SceneManager singleton instance If no
-		// Scene manager exists before this call, createAndInitialize will be called internally.
+		//! Scene manager exists before this call, createAndInitialize will be called internally.
 		static SceneManager* instance();
 
 		virtual void initialize();
