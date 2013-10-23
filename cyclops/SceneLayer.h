@@ -38,7 +38,7 @@
 #ifndef __CY_SCENE_LAYER__
 #define __CY_SCENE_LAYER__
 
-#include "cyclops/SceneManager.h"
+#include "SceneManager.h"
 
 namespace cyclops {
 	using namespace omega;
