@@ -57,3 +57,5 @@ target_link_libraries(cyclops
 	omegaToolkit
     omegaOsg
 	${OSGBULLET_LIBS})
+
+add_dependencies(cyclops bullet osgBullet)
