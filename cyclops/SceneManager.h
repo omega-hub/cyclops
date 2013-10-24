@@ -40,8 +40,8 @@
 #include "Skybox.h"
 #include "Shapes.h"
 #include "Uniforms.h"
-#include "Light.h"
 #include "ModelLoader.h"
+#include "ShaderManager.h"
 
 #include <osg/Texture2D>
 #include <osg/Light>
@@ -68,54 +68,13 @@ namespace cyclops {
 	class SceneManager;
 	class AnimatedObject;
 	class ModelGeometry;
+	class LightingLayer;
 
 	///////////////////////////////////////////////////////////////////////////
 	struct ShadowSettings
 	{
 		bool shadowsEnabled;
 		float shadowResolutionRatio;
-	};
-
-	///////////////////////////////////////////////////////////////////////////
-	class ProgramAsset: public ReferenceType
-	{
-	public:
-		enum PrimitiveType
-		{
-			Points = GL_POINTS,
-			Triangles = GL_TRIANGLES,
-			TriangleStrip = GL_TRIANGLE_STRIP
-		};
-
-	public:
-		ProgramAsset():
-			program(NULL), 
-			vertexShaderBinary(NULL), 
-			fragmentShaderBinary(NULL),
-			geometryShaderBinary(NULL), 
-			geometryOutVertices(0), 
-			embedded(false)
-		{}
-	
-		String name;
-		String vertexShaderName;
-		String fragmentShaderName;
-		String geometryShaderName;
-
-		bool embedded;
-		String vertexShaderSource;
-		String fragmentShaderSource;
-		String geometryShaderSource;
-
-		Ref<osg::Program> program;
-		Ref<osg::Shader> vertexShaderBinary;
-		Ref<osg::Shader> fragmentShaderBinary;
-		Ref<osg::Shader> geometryShaderBinary;
-
-		// Geometry shader parameters
-		int geometryOutVertices;
-		PrimitiveType geometryInput;
-		PrimitiveType geometryOutput;
 	};
 
 	///////////////////////////////////////////////////////////////////////////
@@ -144,6 +103,8 @@ namespace cyclops {
 		//! Returns an instance of the SceneManager singleton instance If no
 		//! Scene manager exists before this call, createAndInitialize will be called internally.
 		static SceneManager* instance();
+
+		SceneLayer* getRootLayer();
 
 		virtual void initialize();
 		virtual void dispose();
@@ -256,6 +217,8 @@ namespace cyclops {
 		List< Ref<ModelAsset> > myModelList;
 		ModelLoaderThread* myModelLoaderThread;
 
+		LightingLayer* myRootLayer;
+
 		Dictionary<String, Ref<osg::Texture2D> > myTextures;
 		Dictionary<String, Ref<PixelData> > myTexturePixels;
 		Dictionary<String, Ref<ProgramAsset> > myPrograms;
@@ -279,7 +242,6 @@ namespace cyclops {
 
 		// Wand
 		Ref<omega::TrackedObject> myWandTracker;
-
 		Ref<CylinderShape> myWandEntity;
 
 		// Context menu stuff.

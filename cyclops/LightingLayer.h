@@ -30,58 +30,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
- *	A scene layer is an abstract class that groups entities together for a
- *  variety of purposes: lighting, clipping, LOD and so on. SceneLayers can form
- *	a hyerarchy similar to the scene node tree, but the scene layer tree is used
- *	to represent properties of the scene different than spatial transformations.
  ******************************************************************************/
-#ifndef __CY_SCENE_LAYER__
-#define __CY_SCENE_LAYER__
+#ifndef __CY_LIGHTING_LAYER__
+#define __CY_LIGHTING_LAYER__
 
-#include "cyclops/SceneManager.h"
+#include "cyclops/SceneLayer.h"
+#include "cyclops/ShaderManager.h"
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
-
-	//!	A scene layer is an abstract class that groups entities together for a
-	//! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
-	//!	can form a hyerarchy similar to the scene node tree, but the scene 
-	//!	layer tree is used to represent properties of the scene different than 
-	//! spatial transformations.
-	class CY_API SceneLayer: public ReferenceType, public SceneNodeListener
+	class CY_API LightingLayer: public SceneLayer
 	{
-	friend class Entity;
 	public:
-		SceneLayer(SceneManager* scene);
-		~SceneLayer();
+		typedef Dictionary<Light*, LightInstance* > LightInstanceMap;
 
-		//! Add a sub-layer 
-		virtual void addLayer(SceneLayer* layer);
-		//! remove a sub-layer
-		virtual void removeLayer(SceneLayer* layer);
+	public:
+		LightingLayer(SceneManager* scene);
+		~LightingLayer();
 
-		//! @internal SceneNodeListener overrides
-		//! These methods are needed to handle entities when they get attached
-		//! or detached from the scene
-		virtual void onAttachedToScene(SceneNode* source);
-		virtual void onDetachedFromScene(SceneNode* source);
-
-		virtual osg::Group* getRoot() { return myRoot; }
-
-		//! Invokes the updateLayer function on this layer and all sub-layers
-		void update();
+		void addLight(Light* l);
+		void removeLight(Light* l);
 
 	protected:
-		virtual void updateLayer() {}
-		virtual void addEntity(Entity* e);
-		virtual void removeEntity(Entity* e);
+		virtual void updateLayer();
 
-	protected:
-		Ref<SceneManager> mySceneManager;
-		Ref<osg::Group> myRoot;
-
-		List< Ref<SceneLayer> > myLayers;
+	private:
+		LightInstanceMap myLights;
+		Ref<ShaderManager> myShaderManager;
 	};
 };
 

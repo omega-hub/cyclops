@@ -1,43 +1,51 @@
-/**************************************************************************************************
+/******************************************************************************
  * THE OMEGA LIB PROJECT
- *-------------------------------------------------------------------------------------------------
- * Copyright 2010-2013		Electronic Visualization Laboratory, University of Illinois at Chicago
+ *-----------------------------------------------------------------------------
+ * Copyright 2010-2013		Electronic Visualization Laboratory, 
+ *							University of Illinois at Chicago
  * Authors:										
  *  Alessandro Febretti		febret@gmail.com
- *-------------------------------------------------------------------------------------------------
- * Copyright (c) 2010-2013, Electronic Visualization Laboratory, University of Illinois at Chicago
+ *-----------------------------------------------------------------------------
+ * Copyright (c) 2010-2013, Electronic Visualization Laboratory,  
+ * University of Illinois at Chicago
  * All rights reserved.
- * Redistribution and use in source and binary forms, with or without modification, are permitted 
- * provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
  * 
- * Redistributions of source code must retain the above copyright notice, this list of conditions 
- * and the following disclaimer. Redistributions in binary form must reproduce the above copyright 
- * notice, this list of conditions and the following disclaimer in the documentation and/or other 
- * materials provided with the distribution. 
+ * Redistributions of source code must retain the above copyright notice, this 
+ * list of conditions and the following disclaimer. Redistributions in binary 
+ * form must reproduce the above copyright notice, this list of conditions and 
+ * the following disclaimer in the documentation and/or other materials provided 
+ * with the distribution. 
  * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE  GOODS OR SERVICES; LOSS OF 
- * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *************************************************************************************************/
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE  GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *-----------------------------------------------------------------------------
+ * What's in this file
+ *	A light that can be added to a cyclops scene.
+ ******************************************************************************/
 #include "cyclops/Light.h"
 #include "cyclops/SceneManager.h"
 
 using namespace cyclops;
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 Light* Light::create()
 {
 	return new Light(SceneManager::instance());
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 Light::Light(SceneManager* scene):
 	SceneNode(scene->getEngine()),
 	mySceneManager(scene),
@@ -48,7 +56,6 @@ Light::Light(SceneManager* scene):
 	mySoftShadowWidth(0.005f),
 	mySoftShadowJitter(32),
 	myOsgLight(NULL), myOsgLightSource(NULL),
-	myDirty(false),
 	mySpotCutoff(0),
 	mySpotExponent(1)
 {
@@ -56,11 +63,11 @@ Light::Light(SceneManager* scene):
 	setLightType(Point);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 Light::~Light()
 {}
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void Light::setLightType(LightType type)
 {
 	myType = type;
@@ -70,10 +77,10 @@ void Light::setLightType(LightType type)
 	case Directional: myLightFunction = "directionalLightFunction"; break;
 	case Spot: myLightFunction = "spotLightFunction"; break;
 	}
-	myDirty = true;
+	requestShaderUpdate();
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 bool Light::updateOsgLight(int lightId, osg::Group* rootNode)
 {
 	if(myEnabled)
@@ -123,8 +130,95 @@ bool Light::updateOsgLight(int lightId, osg::Group* rootNode)
 		}
 	}
 
-	bool dirty = myDirty;
-	myDirty = false;
-	return dirty;
+	//bool dirty = myDirty;
+	//myDirty = false;
+	//return dirty;
+	return false;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+LightInstance* Light::createInstance(osg::Group* rootNode)
+{
+	LightInstance* li = new LightInstance(this, rootNode);
+	myInstances.push_back(li);
+	return li;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Light::destroyInstance(LightInstance* i)
+{
+	if(i != NULL)
+	{
+		myInstances.remove(i);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Light::requestShaderUpdate()
+{
+	foreach(LightInstance* li, myInstances)
+	{
+		li->requestShaderUpdate();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+LightInstance::LightInstance(Light* l, osg::Group* root):
+	myLight(l),
+	myGroup(root),
+	myShaderUpdateNeeded(true)
+{
+	myOsgLight = new osg::Light();
+	myOsgLightSource = new osg::LightSource();
+	myGroup->addChild(myOsgLightSource);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+LightInstance::~LightInstance()
+{
+	myGroup->removeChild(myOsgLightSource);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightInstance::setLightIndex(int index)
+{
+	myIndex = index;
+	myOsgLight->setLightNum(myIndex);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool LightInstance::update()
+{
+	if(myLight->myEnabled)
+	{
+		osg::Light* ol = myOsgLight;
+		osg::LightSource* ols = myOsgLightSource;
+		const Vector3f pos = myLight->getDerivedPosition();
+
+		ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 1.0));
+		ol->setAmbient(COLOR_TO_OSG(myLight->myAmbient));
+		ol->setDiffuse(COLOR_TO_OSG(myLight->myColor));
+		ol->setSpecular(COLOR_TO_OSG(myLight->myColor));
+		ol->setConstantAttenuation(myLight->myAttenuation[0]);
+		ol->setLinearAttenuation(myLight->myAttenuation[1]);
+		ol->setQuadraticAttenuation(myLight->myAttenuation[2]);
+		ol->setDirection(osg::Vec3(myLight->myLightDirection[0], myLight->myLightDirection[1], myLight->myLightDirection[2]));
+		ol->setSpotCutoff(myLight->mySpotCutoff);
+		ol->setSpotExponent(myLight->mySpotExponent);
+
+		ols->setLight(ol);
+
+		osg::StateSet* sState = myGroup->getOrCreateStateSet();
+		ols->setStateSetModes(*sState,osg::StateAttribute::ON);
+	}
+	else
+	{
+		osg::StateSet* sState = myGroup->getOrCreateStateSet();
+		myOsgLightSource->setStateSetModes(*sState,osg::StateAttribute::OFF); 
+		myOsgLightSource->setLight(NULL);
+	}
+
+	bool update = myShaderUpdateNeeded;
+	myShaderUpdateNeeded = false;
+	return update;
+}

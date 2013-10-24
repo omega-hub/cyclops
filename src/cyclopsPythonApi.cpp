@@ -213,6 +213,7 @@ BOOST_PYTHON_MODULE(cyclops)
 
 	// Entity
 	PYAPI_REF_CLASS(Entity, SceneNode)
+		PYAPI_METHOD(Entity, setLayer)
 		PYAPI_METHOD(Entity, castShadow)
 		PYAPI_METHOD(Entity, doesCastShadow)
 		PYAPI_METHOD(Entity, hasEffect)
@@ -362,8 +363,6 @@ BOOST_PYTHON_MODULE(cyclops)
 
 	// PlaneShape
 	PYAPI_REF_BASE_CLASS(SceneLayer)
-		PYAPI_METHOD(SceneLayer, addEntity)
-		PYAPI_METHOD(SceneLayer, removeEntity)
         ;
 
 	// Free Functions

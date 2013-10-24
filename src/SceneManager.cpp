@@ -46,6 +46,7 @@
 #include "cyclops/SceneLoader.h"
 #include "cyclops/Shapes.h"
 #include "cyclops/ModelGeometry.h"
+#include "cyclops/LightingLayer.h"
 
 // Bullet and osgBullet
 #include <btBulletDynamicsCommon.h>
@@ -139,7 +140,8 @@ SceneManager::SceneManager():
 	myWandTracker(NULL),
 	myWandEntity(NULL),
 	myDynamicsWorld(NULL),
-	myPhysicsEnabled(false)
+	myPhysicsEnabled(false),
+	myRootLayer(NULL)
 {
 #ifdef OMEGA_USE_PYTHON
 	cyclopsPythonApiInit();
@@ -175,6 +177,18 @@ SceneManager::~SceneManager()
 		delete myDynamicsWorld;
 		myDynamicsWorld = NULL;
 	}
+
+	if(myRootLayer != NULL)
+	{
+		delete myRootLayer;
+		myRootLayer = NULL;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+SceneLayer* SceneManager::getRootLayer() 
+{ 
+	return myRootLayer; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -194,8 +208,6 @@ void SceneManager::loadConfiguration()
 	ofmsg("::    Shadows enabled: %1%", %myShadowSettings.shadowsEnabled);
 	ofmsg(":: Shadow resolution ratio: %1%", %myShadowSettings.shadowResolutionRatio);
 
-	myScene = new osg::Group();
-
 	// Set the default texture and attach it to the scene root.
 	String defaultTextureName = "cyclops/common/defaultTexture.png";
 	osg::Texture2D* defaultTexture = getTexture(defaultTextureName);
@@ -212,8 +224,12 @@ void SceneManager::loadConfiguration()
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::initialize()
 {
+	myScene = new osg::Group();
+
 	myMainLight = NULL;
 	//myEngine = getEngine();
+
+	myRootLayer = new LightingLayer(this);
 
 	// Make sure the osg module is initialized.
 	if(!myOsg->isInitialized()) myOsg->initialize();

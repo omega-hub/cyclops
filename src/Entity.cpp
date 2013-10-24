@@ -42,6 +42,7 @@
 
 #include "cyclops/SceneManager.h"
 #include "cyclops/Entity.h"
+#include "cyclops/SceneLayer.h"
 
 using namespace cyclops;
 
@@ -53,7 +54,8 @@ Entity::Entity(SceneManager* scene):
 		myEffect(NULL),
 		myOsgSceneObject(NULL),
 		myCastShadow(true),
-		myCullingActive(true)
+		myCullingActive(true),
+		myLayer(NULL)
 {
 	// By default attach new entities to the root node of the scene.
 	myEffect = new EffectNode(scene);
@@ -71,6 +73,14 @@ Entity::~Entity()
 	removeListener(mySceneManager);
 	// Make sure rigid body is unregistered.
 	myRigidBody->setEnabled(false);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Entity::setLayer(SceneLayer* layer)
+{
+	if(myLayer != NULL) myLayer->removeEntity(this);
+	if(layer != NULL) layer->addEntity(this);
+	myLayer = layer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,7 +117,9 @@ void Entity::initialize(osg::Node* node)
 	addComponent(myOsgSceneObject);
 
 	// Now add this drawable object to the scene.
-	addListener(mySceneManager);
+	//addListener(mySceneManager);
+	setLayer(mySceneManager->getRootLayer());
+
 	getEngine()->getScene()->addChild(this);
 
 	myRigidBody = new RigidBody(this);

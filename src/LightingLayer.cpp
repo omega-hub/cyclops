@@ -30,89 +30,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
- *	A scene layer is an abstract class that groups entities together for a
- *  variety of purposes: lighting, clipping, LOD and so on. SceneLayers can form
- *	a hyerarchy similar to the scene node tree, but the scene layer tree is used
- *	to represent properties of the scene different than spatial transformations.
  ******************************************************************************/
-#include "cyclops/SceneLayer.h"
+#include "cyclops/LightingLayer.h"
 
 using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer::SceneLayer(SceneManager* scene):
-	mySceneManager(scene)
+LightingLayer::LightingLayer(SceneManager* scene):
+	SceneLayer(scene)
 {
-	myRoot = new osg::Group();
-	mySceneManager->getOsgRoot()->addChild(myRoot);
+	myShaderManager = new ShaderManager();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer::~SceneLayer()
+LightingLayer::~LightingLayer()
 {
-	mySceneManager->getOsgRoot()->removeChild(myRoot);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::addEntity(Entity* e)
+void LightingLayer::addLight(Light* l)
 {
-	// Add an entity to the clip plane: we are now in charge of the entity
-	// scene change events, so we set ourselves as the entity listeners
-	oassert(e != NULL);
-	e->addListener(this);
-	myRoot->addChild(e->getOsgNode());
+	LightInstance* li = l->createInstance(myRoot);
+	myLights[l] = li;
+	myShaderManager->addLightInstance(li);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::removeEntity(Entity* e)
+void LightingLayer::removeLight(Light* l)
 {
-	// Entity removed from the clip plane: reset the scene manager as the entity
-	// listener for scene change events.
-	oassert(e != NULL);
-	e->removeListener(this);
-	myRoot->removeChild(e->getOsgNode());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::onAttachedToScene(SceneNode* source)
-{
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
+	if(myLights.find(l) != myLights.end())
 	{
-		myRoot->addChild(e->getOsgNode());
+		LightInstance* li = myLights[l];
+		myLights.erase(l);
+		l->destroyInstance(li);
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::onDetachedFromScene(SceneNode* source)
+void LightingLayer::updateLayer()
 {
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
-	{
-		myRoot->addChild(e->getOsgNode());
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::addLayer(SceneLayer* layer)
-{
-	myLayers.push_back(layer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::removeLayer(SceneLayer* layer)
-{
-	myLayers.remove(layer);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::update()
-{
-	updateLayer();
-	foreach(SceneLayer* l, myLayers) l->update();
+	myShaderManager->update();
 }
