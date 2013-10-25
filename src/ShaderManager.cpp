@@ -68,6 +68,9 @@ ShaderManager::ShaderManager()
 	setShaderMacroToString("customFragmentDefs", "");
 	setShaderMacroToFile("postLightingSection", "cyclops/common/postLighting/default.frag");
 
+	setShaderMacroToFile("vsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.vert");
+	setShaderMacroToFile("fsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.frag");
+
 	setShaderMacroToString("unlit", 
 		"$@fragmentLightSection\n"
 		"{\n" 
@@ -135,12 +138,12 @@ void ShaderManager::update()
 	}
 
 	// If the number of lights changed, reset the shaders
-	if(myActiveLights.size() != myNumActiveLights || needShaderUpdate)
+	if(i != myNumActiveLights || needShaderUpdate)
 	{
 		ofmsg("Lights changed (active lights: %1%)", %i);
 
 		// Set the number of lights shader macro parameter.
-		myNumActiveLights = myActiveLights.size();
+		myNumActiveLights = i;
 
 		String numLightsString = ostr("%1%", %myNumActiveLights);
 		setShaderMacroToString("numLights", numLightsString);
@@ -227,18 +230,20 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 	foreach(LightInstance* li, myActiveLights)
 	{
 		Light* light = li->getLight();
+		if(light->isEnabled())
+		{
+			// Add the light index to the section
+			String fragmentShaderLightCodeIndexed = StringUtils::replaceAll(
+				fragmentShaderLightCode, 
+				"@lightIndex", 
+				boost::lexical_cast<String>(li->getLightIndex()));
 
-		// Add the light index to the section
-		String fragmentShaderLightCodeIndexed = StringUtils::replaceAll(
-			fragmentShaderLightCode, 
-			"@lightIndex", 
-			boost::lexical_cast<String>(li->getLightIndex()));
+			// Replace light function call with light function name specified for light.
+			fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
+				"@lightFunction", light->getLightFunction());
 
-		// Replace light function call with light function name specified for light.
-		fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
-			"@lightFunction", light->getLightFunction());
-
-		fragmentShaderLightSection += fragmentShaderLightCodeIndexed;
+			fragmentShaderLightSection += fragmentShaderLightCodeIndexed;
+		}
 	}
 	shaderSrc = StringUtils::replaceAll(shaderSrc, 
 		"@" + lightSectionMacroName, 

@@ -36,22 +36,20 @@
  *	to represent properties of the scene different than spatial transformations.
  ******************************************************************************/
 #include "cyclops/SceneLayer.h"
+#include "cyclops/Entity.h"
 
 using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer::SceneLayer(SceneManager* scene):
-	mySceneManager(scene)
+SceneLayer::SceneLayer()
 {
 	myRoot = new osg::Group();
-	mySceneManager->getOsgRoot()->addChild(myRoot);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 SceneLayer::~SceneLayer()
 {
-	mySceneManager->getOsgRoot()->removeChild(myRoot);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

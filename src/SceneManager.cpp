@@ -59,11 +59,6 @@ void cyclopsPythonApiInit();
 
 SceneManager* SceneManager::mysInstance = NULL;
 
-#ifdef OMEGA_OS_LINUX
-	// On linux we need to define all static variables, even if they have been assigned in the header file.
-	const int SceneManager::MaxLights;
-#endif
-
 Lock sModelQueueLock;
 Queue< Ref<SceneManager::LoadModelAsyncTask> > sModelQueue;
 bool sShutdownLoaderThread = false;
@@ -108,6 +103,37 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// SceneManagerWrapper is needed to SceneManager does not derive from 
+// EngineModule and ShaderManager both. This class simply forwards engine module 
+// methods to SceneManager
+class SceneManagerWrapper: public EngineModule
+{
+public:
+	SceneManagerWrapper(SceneManager* sm):
+		EngineModule("SceneManager"),
+		mySceneManager(sm)
+	{}
+
+	virtual void initialize() 
+	{ mySceneManager->initialize(); }
+
+	virtual void dispose() 
+	{ mySceneManager->dispose(); }
+
+	virtual void update(const UpdateContext& context)
+	{ mySceneManager->update(context); }
+
+	virtual void handleEvent(const Event& evt)
+	{ mySceneManager->handleEvent(evt); }
+
+	virtual bool handleCommand(const String& cmd)
+	{ return mySceneManager->handleCommand(cmd); }
+
+private:
+	Ref<SceneManager> mySceneManager;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 SceneManager* SceneManager::instance() 
 { 
 	if(mysInstance == NULL)
@@ -123,25 +149,23 @@ SceneManager* SceneManager::createAndInitialize()
 	if(mysInstance == NULL)
 	{
 		mysInstance = new SceneManager();
-		ModuleServices::addModule(mysInstance);
-		mysInstance->doInitialize(Engine::instance());
+		SceneManagerWrapper* smw = new SceneManagerWrapper(mysInstance);
+		ModuleServices::addModule(smw);
+		smw->doInitialize(Engine::instance());
 	}
 	return mysInstance;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 SceneManager::SceneManager():
-	EngineModule("SceneManager"),
 	myOsg(NULL),
-	myShadowedScene(NULL),
-	mySoftShadowMap(NULL),
 	mySkyBox(NULL),
-	myNumActiveLights(0),
 	myWandTracker(NULL),
 	myWandEntity(NULL),
 	myDynamicsWorld(NULL),
 	myPhysicsEnabled(false),
-	myRootLayer(NULL)
+	myRootLayer(NULL),
+	myEngine(Engine::instance())
 {
 #ifdef OMEGA_USE_PYTHON
 	cyclopsPythonApiInit();
@@ -186,7 +210,7 @@ SceneManager::~SceneManager()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer* SceneManager::getRootLayer() 
+LightingLayer* SceneManager::getRootLayer() 
 { 
 	return myRootLayer; 
 }
@@ -197,23 +221,13 @@ void SceneManager::loadConfiguration()
 	Config* cfg = SystemManager::instance()->getAppConfig();
 	Setting& s = cfg->lookup("config");
 
-	String shadowMode = Config::getStringValue("shadowMode", s, "noshadows");
-	StringUtils::toLowerCase(shadowMode);
-	if(shadowMode == "noshadows") myShadowSettings.shadowsEnabled = false;
-	else if(shadowMode == "softshadows") myShadowSettings.shadowsEnabled = true;
-
-	myShadowSettings.shadowResolutionRatio = Config::getFloatValue("shadowResolutionRatio", s, 1.0f);
-
-	omsg("SceneManager configuration loaded");
-	ofmsg("::    Shadows enabled: %1%", %myShadowSettings.shadowsEnabled);
-	ofmsg(":: Shadow resolution ratio: %1%", %myShadowSettings.shadowResolutionRatio);
-
 	// Set the default texture and attach it to the scene root.
 	String defaultTextureName = "cyclops/common/defaultTexture.png";
 	osg::Texture2D* defaultTexture = getTexture(defaultTextureName);
 	if(defaultTexture != NULL)
 	{
-		myScene->getOrCreateStateSet()->setTextureAttribute(0, defaultTexture);
+		osg::StateSet* ss = myRootLayer->getOsgNode()->getOrCreateStateSet();
+		ss->setTextureAttribute(0, defaultTexture);
 	}
 	else
 	{
@@ -224,48 +238,14 @@ void SceneManager::loadConfiguration()
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::initialize()
 {
-	myScene = new osg::Group();
-
-	myMainLight = NULL;
-	//myEngine = getEngine();
-
-	myRootLayer = new LightingLayer(this);
-
 	// Make sure the osg module is initialized.
 	if(!myOsg->isInitialized()) myOsg->initialize();
 
+	// Pass myself to the lighting layer, so it will use me as the shader manager.
+	myRootLayer = new LightingLayer(this);
+	myOsg->setRootNode(myRootLayer->getOsgNode());
+
 	loadConfiguration();
-
-
-	// Standard shaders
-#ifdef APPLE
-	setShaderMacroToFile("surfaceShader", "cyclops/common/forward/default_osx.frag");
-#else 
-	setShaderMacroToFile("surfaceShader", "cyclops/common/forward/default.frag");
-#endif
-	setShaderMacroToFile("vertexShader", "cyclops/common/forward/default.vert");
-
-	// Standard shaders
-	setShaderMacroToFile("tangentSpaceSurfaceShader", "cyclops/common/forward/tangentSpace.frag");
-	setShaderMacroToFile("tangentSpaceVertexShader", "cyclops/common/forward/tangentSpace.vert");
-	//setShaderMacroToFile("tangentSpaceFragmentLightSection", "cyclops/common/forward/tangentSpaceLight.frag");
-
-	setShaderMacroToFile("vsinclude envMap", "cyclops/common/envMap/noEnvMap.vert");
-	setShaderMacroToFile("fsinclude envMap", "cyclops/common/envMap/noEnvMap.frag");
-
-	setShaderMacroToFile("fsinclude lightFunctions", "cyclops/common/forward/lightFunctions.frag");
-
-	setShaderMacroToString("customFragmentDefs", "");
-	setShaderMacroToFile("postLightingSection", "cyclops/common/postLighting/default.frag");
-
-	setShaderMacroToString("unlit", 
-		"$@fragmentLightSection\n"
-		"{\n" 
-		"litSurfData.luminance = surf.albedo;\n"
-		"}\n" 	
-		"$\n");
-
-	resetShadowSettings(myShadowSettings);
 
 	myModelLoaderThread = new ModelLoaderThread(this);
 	myModelLoaderThread->start();
@@ -310,11 +290,6 @@ void SceneManager::unload()
 	myModelList.clear();
 	myModelDictionary.clear();
 
-	ofmsg("SceneManager::unload: releasing %1% lights", %myLights.size());
-	myLights.clear();
-	myMainLight = NULL;
-	myNumActiveLights = 0;
-
 	ofmsg("SceneManager::unload: releasing %1% programs", %myPrograms.size());
 	myPrograms.clear();
 
@@ -325,7 +300,8 @@ void SceneManager::unload()
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::update(const UpdateContext& context) 
 {
-	updateLights();
+	// Update the scene layers.
+	myRootLayer->update();
 
 	// Loop through pixel buffers associated to textures. If a texture pixel buffer is dirty, 
 	// update the relative texture.
@@ -350,101 +326,20 @@ void SceneManager::update(const UpdateContext& context)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneManager::onAttachedToScene(SceneNode* source)
-{
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
-	{
-		myScene->addChild(e->getOsgNode());
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::onDetachedFromScene(SceneNode* source)
-{
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
-	{
-		myScene->removeChild(e->getOsgNode());
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
 Uniforms* SceneManager::getGlobalUniforms() 
 { 
 	if(myGlobalUniforms == NULL)
 	{
-		myGlobalUniforms = new Uniforms(myScene->getOrCreateStateSet());
+		osg::StateSet* ss = myRootLayer->getOsgNode()->getOrCreateStateSet();
+		myGlobalUniforms = new Uniforms(ss);
 	}
 	return myGlobalUniforms; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneManager::addLight(Light* l)
-{
-	myLights.push_back(l);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::removeLight(Light* l)
-{
-	myLights.remove(l);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::updateLights()
-{
-	int i = 0;
-	bool needShaderUpdate = false;
-	foreach(Light* l, myLights)
-	{
-		if(l->isEnabled())
-		{
-			needShaderUpdate |= l->updateOsgLight(i++, myScene);
-		}
-	}
-
-	// Setup shadow parameters for main light.
-	if(myMainLight != NULL)
-	{
-		if(mySoftShadowMap != NULL)
-		{
-			mySoftShadowMap->setLight(myMainLight->myOsgLight);
-			mySoftShadowMap->setSoftnessWidth(myMainLight->getSoftShadowWidth());
-			mySoftShadowMap->setJitteringScale(myMainLight->getSoftShadowJitter());
-		}
-	}
-
-	// If the number of lights changed, reset the shaders
-	if(i != myNumActiveLights || needShaderUpdate)
-	{
-		ofmsg("Lights changed (active lights: %1%)", %i);
-
-		// Set the number of lights shader macro parameter.
-		myNumActiveLights = i;
-
-		// Update active lights vector.
-		myActiveLights.clear();
-		foreach(Light* l, myLights)
-		{
-			if(l->isEnabled()) myActiveLights.push_back(l);
-		}
-
-
-		String numLightsString = ostr("%1%", %myNumActiveLights);
-		setShaderMacroToString("numLights", numLightsString);
-		recompileShaders();
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
 void SceneManager::handleEvent(const Event& evt) 
 {
-	if(evt.isButtonDown(getEngine()->getPrimaryButton()))
+	if(evt.isButtonDown(myEngine->getPrimaryButton()))
 	{
 		DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
 		Ray r;
@@ -491,15 +386,6 @@ void SceneManager::load(SceneLoader* loader)
 {
 	loader->startLoading(this);
 	while(!loader->isLoadingComplete()) loader->loadStep();
-	if (myScene != NULL) 
-	{
-		osg::setNotifyLevel(osg::INFO);
-		omsg("Optimizing scene graph...");
-		// Optimize scenegraph
-		osgUtil::Optimizer optOSGFile;
-		//optOSGFile.optimize(node, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
-		osg::setNotifyLevel(osg::WARN);
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -599,302 +485,11 @@ osg::Texture2D* SceneManager::createTexture(const String& name, PixelData* pixel
 	return texture;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::setShaderMacroToString(const String& macroName, const String& macroString)
-{
-	myShaderMacros[macroName] = macroString;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::setShaderMacroToFile(const String& macroName, const String& name)
-{
-	String path;
-	if(DataManager::findFile(name, path))
-	{
-		std::ifstream t(path.c_str());
-		std::stringstream buffer;
-		buffer << t.rdbuf();
-		setShaderMacroToString(macroName, buffer.str());
-	}
-	else
-	{
-		ofwarn("SceneManager::setShaderMacroToFile: could not find file %1%", %name);
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::loadShader(osg::Shader* shader, const String& name)
-{
-	// If shader source is not in the cache, load it now.
-	if(myShaderCache.find(name) == myShaderCache.end())
-	{
-		String path;
-		if(DataManager::findFile(name, path))
-		{
-			ofmsg("Loading shader: %1%", %name);
-
-			std::ifstream t(path.c_str());
-			std::stringstream buffer;
-			buffer << t.rdbuf();
-			String shaderSrc = buffer.str();
-
-			myShaderCache[name] = shaderSrc;
-		}
-		else
-		{
-			ofwarn("Could not find shader file %1%", %name);
-		}
-	}
-
-	if(myShaderCache.find(name) != myShaderCache.end())
-	{
-		compileShader(shader, myShaderCache[name]);
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::compileShader(osg::Shader* shader, const String& source)
-{
-	String shaderPreSrc = source;
-	String lightSectionMacroName = "fragmentLightSection";
-
-	// Replace shader macros.
-	// Do a multiple replacement passes to process macros-within macros.
-	int replacementPasses = 3;
-	for(int i = 0; i < replacementPasses; i++)
-	{
-		foreach(ShaderMacroDictionary::Item macro, myShaderMacros)
-		{
-			if(macro.getKey() != lightSectionMacroName)
-			{
-				String macroName = ostr("@%1%", %macro.getKey());
-				shaderPreSrc = StringUtils::replaceAll(shaderPreSrc, macroName, macro.getValue());
-			}
-		}
-	}
-
-	// Read local macro definitions (only supported one now is fragmentLightSection)
-	String shaderSrc = "";
-	Vector<String> segments = StringUtils::split(shaderPreSrc, "$");
-	//ofmsg("segments %1%", %segments.size());
-	foreach(String segment, segments)
-	{
-		if(StringUtils::startsWith(segment, "@"))
-		{
-			Vector<String> macroNames = StringUtils::split(segment, "\r\n\t ", 1);
-				
-			String macroContent = StringUtils::replaceAll(segment, macroNames[0], "");
-				
-			String macroName = macroNames[0].substr(1);
-			//ofmsg("SEGMENT IDENTIFIED: %1%", %macroName);
-			myShaderMacros[macroName] = macroContent;
-		}
-		else
-		{
-			shaderSrc.append(segment);
-		}
-	}
-
-	// Special section: replicate lighting code as many times as the active lights
-	String fragmentShaderLightCode = myShaderMacros[lightSectionMacroName];
-	String fragmentShaderLightSection = "";
-	for(int i = 0; i < myNumActiveLights; i++)
-	{
-		Light* light = myActiveLights[i];
-
-		// Add the light index to the section
-		String fragmentShaderLightCodeIndexed = StringUtils::replaceAll(
-			fragmentShaderLightCode, 
-			"@lightIndex", 
-			boost::lexical_cast<String>(i));
-
-		// Replace light function call with light function name specified for light.
-		fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
-			"@lightFunction", light->getLightFunction());
-
-		fragmentShaderLightSection += fragmentShaderLightCodeIndexed;
-	}
-	shaderSrc = StringUtils::replaceAll(shaderSrc, 
-		"@" + lightSectionMacroName, 
-		fragmentShaderLightSection);
-
-	//ofmsg("Loading shader file %1%", %name);
-	// omsg("#############################################################");
-	// omsg(shaderSrc);
-	// omsg("#############################################################");
-	shader->setShaderSource(shaderSrc);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-ProgramAsset* SceneManager::getOrCreateProgram(const String& name, const String& vertexShaderName, const String& fragmentShaderName)
-{
-	// If program has been loaded already return it.
-	if(myPrograms.find(name) != myPrograms.end())
-	{
-		return myPrograms[name];
-	}
-
-	ProgramAsset* asset = new ProgramAsset();
-	asset->program = new osg::Program();
-	asset->name = name;
-	asset->program->setName(name);
-	asset->fragmentShaderName = fragmentShaderName;
-	asset->vertexShaderName = vertexShaderName;
-
-	myPrograms[name] = asset;
-
-	recompileShaders(asset, myShaderVariationName);
-
-	return asset;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-ProgramAsset* SceneManager::createProgramFromString(const String& name, const String& vertexShaderCode, const String& fragmentShaderCode)
-{
-	ProgramAsset* asset = new ProgramAsset();
-	asset->program = new osg::Program();
-	asset->name = name;
-	asset->program->setName(name);
-	asset->fragmentShaderSource = fragmentShaderCode;
-	asset->fragmentShaderName = name + "Fragment";
-	asset->vertexShaderSource = vertexShaderCode;
-	asset->vertexShaderName = name + "Vertex";
-	asset->embedded = true;
-
-	myPrograms[name] = asset;
-
-	recompileShaders(asset, myShaderVariationName);
-
-	return asset;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::addProgram(ProgramAsset* program)
-{
-	myPrograms[program->name] = program;
-	program->program = new osg::Program();
-	program->program->setName(program->name);
-	recompileShaders(program, myShaderVariationName);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::updateProgram(ProgramAsset* program)
-{
-	// Delete current shaders to force reload.
-	String fullVertexShaderName = program->vertexShaderName + myShaderVariationName;
-	String fullFragmentShaderName = program->fragmentShaderName + myShaderVariationName;
-
-	// Delete binaries...
-	myShaders[fullVertexShaderName] = NULL;
-	myShaders[fullFragmentShaderName] = NULL;
-
-	// Delete source cache...
-	myShaderCache.erase(program->vertexShaderName);
-	myShaderCache.erase(program->fragmentShaderName);
-
-	recompileShaders(program, myShaderVariationName);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::recompileShaders(ProgramAsset* program, const String& svariationName)
-{
-	String var = myShaderVariationName;
-	if(svariationName != "") var = svariationName;
-
-	osg::Program* osgProg = program->program;
-
-	// Remove current shaders from program
-	osgProg->removeShader(program->vertexShaderBinary);
-	osgProg->removeShader(program->fragmentShaderBinary);
-	osgProg->removeShader(program->geometryShaderBinary);
-	//osgProg->releaseGLObjects();
-
-	String fullVertexShaderName = program->vertexShaderName + var;
-	osg::Shader* vertexShader = myShaders[fullVertexShaderName];
-	// If the shader does not exist in the shader registry, we need to create it now.
-	if(vertexShader == NULL)
-	{
-		ofmsg("Creating vertex shader %1%", %fullVertexShaderName);
-
-		vertexShader = new osg::Shader( osg::Shader::VERTEX );
-		// increase reference count to avoid being deallocated by osg program when deattached.
-		vertexShader->ref();
-		
-		// If the program asset has embedded code, use the code from the asset instead of looking up a file.
-		if(program->embedded)
-		{
-			compileShader(vertexShader, program->vertexShaderSource);
-		}
-		else
-		{
-			loadShader(vertexShader, program->vertexShaderName);
-		}
-		myShaders[fullVertexShaderName] = vertexShader;
-	}
-	program->vertexShaderBinary = vertexShader;
-	osgProg->addShader(vertexShader);
-
-	String fullFragmentShaderName = program->fragmentShaderName + var;
-	osg::Shader* fragmentShader = myShaders[fullFragmentShaderName];
-	// If the shader does not exist in the shader registry, we need to create it now.
-	if(fragmentShader == NULL)
-	{
-		ofmsg("Creating fragment shader %1%", %fullFragmentShaderName);
-
-		fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
-		// increase reference count to avoid being deallocated by osg program when deattached.
-		fragmentShader->ref();
-		// If the program asset has embedded code, use the code from the asset instead of looking up a file.
-		if(program->embedded)
-		{
-			compileShader(fragmentShader, program->fragmentShaderSource);
-		}
-		else
-		{
-			loadShader(fragmentShader, program->fragmentShaderName);
-		}
-		myShaders[fullFragmentShaderName] = fragmentShader;
-	}
-	program->fragmentShaderBinary = fragmentShader;
-	osgProg->addShader(fragmentShader);
-
-	// OPTIONAL geometry shader
-	if(program->geometryShaderName != "")
-	{
-		String fullGeometryShaderName = program->geometryShaderName + var;
-		osg::Shader* geometryShader = myShaders[fullGeometryShaderName];
-		// If the shader does not exist in the shader registry, we need to create it now.
-		if(geometryShader == NULL)
-		{
-			ofmsg("Creating geometry shader %1%", %fullGeometryShaderName);
-
-			geometryShader = new osg::Shader( osg::Shader::GEOMETRY );
-			// increase reference count to avoid being deallocated by osg program when deattached.
-			geometryShader->ref();
-			// If the program asset has embedded code, use the code from the asset instead of looking up a file.
-			if(program->embedded)
-			{
-				compileShader(geometryShader, program->geometryShaderSource);
-			}
-			else
-			{
-				loadShader(geometryShader, program->geometryShaderName);
-			}
-			myShaders[fullGeometryShaderName] = geometryShader;
-		}
-		program->geometryShaderBinary = geometryShader;
-		osgProg->addShader(geometryShader);
-		// Set geometry shader parameters.
-		osgProg->setParameter( GL_GEOMETRY_VERTICES_OUT_EXT, program->geometryOutVertices );
-		osgProg->setParameter( GL_GEOMETRY_INPUT_TYPE_EXT, program->geometryInput );
-		osgProg->setParameter( GL_GEOMETRY_OUTPUT_TYPE_EXT, program->geometryOutput );
-	}
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::setBackgroundColor(const Color& color)
 {
-	getEngine()->getDisplaySystem()->setBackgroundColor(color);
+	myEngine->getDisplaySystem()->setBackgroundColor(color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1026,7 +621,7 @@ void SceneManager::setSkyBox(Skybox* skyBox)
 	// If a skybox is currently active, remove it.
 	if(mySkyBox != NULL)
 	{
-		myScene->removeChild(mySkyBox->getNode());
+		myRootLayer->getOsgNode()->removeChild(mySkyBox->getNode());
 	}
 
 	mySkyBox = skyBox;
@@ -1035,8 +630,8 @@ void SceneManager::setSkyBox(Skybox* skyBox)
 		setShaderMacroToFile("vsinclude envMap", "cyclops/common/envMap/cubeEnvMap.vert");
 		setShaderMacroToFile("fsinclude envMap", "cyclops/common/envMap/cubeEnvMap.frag");
 		omsg("Environment cube map shaders enabled");
-		mySkyBox->initialize(myScene->getOrCreateStateSet());
-		myScene->addChild(mySkyBox->getNode());
+		mySkyBox->initialize(myRootLayer->getOsgNode()->getOrCreateStateSet());
+		myRootLayer->getOsgNode()->addChild(mySkyBox->getNode());
 	}
 	else
 	{
@@ -1045,95 +640,6 @@ void SceneManager::setSkyBox(Skybox* skyBox)
 		omsg("Environment cube map shaders disabled");
 	}
 
-	recompileShaders();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-const ShadowSettings& SceneManager::getCurrentShadowSettings()
-{
-	return myShadowSettings;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::resetShadowSettings(const ShadowSettings& settings)
-{
-	myShadowSettings = settings;
-	if(myShadowedScene == NULL)
-	{
-		myShadowedScene = new osgShadow::ShadowedScene();
-		myShadowedScene->setReceivesShadowTraversalMask(SceneManager::ReceivesShadowTraversalMask);
-		myShadowedScene->setCastsShadowTraversalMask(SceneManager::CastsShadowTraversalMask);
-		myShadowedScene->addChild(myScene);
-	}
-	if(myShadowSettings.shadowsEnabled)
-	{
-		// compute the shadow map resolution. 
-		int smHeight = 512;
-		int smWidth = 512;
-
-		ofmsg("SceneManager::resetShadowSettings: Shadow map size = (%1%x%2%)", %smWidth %smHeight);
-
-		if(mySoftShadowMap == NULL)
-		{
-			mySoftShadowMap = new osgShadow::SoftShadowMap;
-			// Hardcoded ambient bias for shadow map. Shadowed areas receive zero light. 
-			// Unshadowed areas receive full light.
-			mySoftShadowMap->setAmbientBias(osg::Vec2(0.0f, 1.0f));
-			// Hardcoded texture unit arguments for shadow map.
-			mySoftShadowMap->setTextureUnit(4);
-			mySoftShadowMap->setJitterTextureUnit(5);
-			myShadowedScene->setShadowTechnique(mySoftShadowMap);
-		}
-		mySoftShadowMap->setTextureSize(osg::Vec2s(smWidth, smHeight));
-
-		setShaderMacroToFile("vsinclude shadowMap", "cyclops/common/shadowMap/softShadowMap.vert");
-		setShaderMacroToFile("fsinclude shadowMap", "cyclops/common/shadowMap/softShadowMap.frag");
-
-		myOsg->setRootNode(myShadowedScene);
-	}
-	else
-	{
-		myOsg->setRootNode(myScene);
-		setShaderMacroToFile("vsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.vert");
-		setShaderMacroToFile("fsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.frag");
-	}
-
-	recompileShaders();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::recompileShaders()
-{
-	// Add light functions to shader variation name
-	String lightFunc = "";
-	foreach(Light* l, myActiveLights)
-	{
-		lightFunc.append(l->getLightFunction());
-	}
-#ifdef OMEGA_OS_WIN
-	std::hash<String> hashFx;
-#else
-	std::tr1::hash<String> hashFx;
-#endif
-	size_t lightFuncHash = hashFx(lightFunc);
-
-	// Update the shader variation name
-	myShaderVariationName = ostr(myShadowSettings.shadowsEnabled ? ".sm%1%-%2$x" : ".%1%-%2$x", %myNumActiveLights %lightFuncHash);
-
-	ofmsg("Recompiling shaders (variation: %1%)", %myShaderVariationName);
-
-	typedef Dictionary<String, Ref<ProgramAsset> >::Item ProgramAssetItem;
-	foreach(ProgramAssetItem item, myPrograms)
-	{
-		recompileShaders(item.getValue(), myShaderVariationName);
-	}
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneManager::reloadAndRecompileShaders()
-{
-	myShaderCache.clear();
-	myShaders.clear();
 	recompileShaders();
 }
 
@@ -1151,7 +657,7 @@ void SceneManager::displayWand(uint wandId, uint trackableId)
 	myWandEntity->setVisible(true);
 	myWandEntity->followTrackable(trackableId);
 	myWandEntity->setFollowOffset(Vector3f(0, 0, 0), Quaternion(AngleAxis(Math::Pi, Vector3f::UnitY())));
-	getEngine()->getDefaultCamera()->addChild(myWandEntity);
+	myEngine->getDefaultCamera()->addChild(myWandEntity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

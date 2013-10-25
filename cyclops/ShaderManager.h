@@ -131,7 +131,7 @@ namespace cyclops {
 		void loadShader(osg::Shader* shader, const String& name);
 		void compileShader(osg::Shader* shader, const String& source);
 
-	private:
+	protected:
 		Dictionary<String, Ref<ProgramAsset> > myPrograms;
 		Dictionary<String, Ref<osg::Shader> > myShaders;
 

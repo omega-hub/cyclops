@@ -42,7 +42,7 @@
 
 #include "cyclops/SceneManager.h"
 #include "cyclops/Entity.h"
-#include "cyclops/SceneLayer.h"
+#include "cyclops/LightingLayer.h"
 
 using namespace cyclops;
 
@@ -70,7 +70,7 @@ Entity::Entity(SceneManager* scene):
 ///////////////////////////////////////////////////////////////////////////////
 Entity::~Entity()
 {
-	removeListener(mySceneManager);
+	setLayer(NULL);
 	// Make sure rigid body is unregistered.
 	myRigidBody->setEnabled(false);
 }

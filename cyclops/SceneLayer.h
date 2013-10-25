@@ -38,12 +38,13 @@
 #ifndef __CY_SCENE_LAYER__
 #define __CY_SCENE_LAYER__
 
-#include "cyclops/SceneManager.h"
+#include "cyclopsConfig.h"
+#include <omega.h>
+#include <osg/Group>
 
 namespace cyclops {
 	using namespace omega;
-	using namespace omegaOsg;
-
+	
 	//!	A scene layer is an abstract class that groups entities together for a
 	//! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
 	//!	can form a hyerarchy similar to the scene node tree, but the scene 
@@ -53,7 +54,7 @@ namespace cyclops {
 	{
 	friend class Entity;
 	public:
-		SceneLayer(SceneManager* scene);
+		SceneLayer();
 		~SceneLayer();
 
 		//! Add a sub-layer 
@@ -67,7 +68,7 @@ namespace cyclops {
 		virtual void onAttachedToScene(SceneNode* source);
 		virtual void onDetachedFromScene(SceneNode* source);
 
-		virtual osg::Group* getRoot() { return myRoot; }
+		virtual osg::Group* getOsgNode() { return myRoot; }
 
 		//! Invokes the updateLayer function on this layer and all sub-layers
 		void update();
@@ -78,7 +79,6 @@ namespace cyclops {
 		virtual void removeEntity(Entity* e);
 
 	protected:
-		Ref<SceneManager> mySceneManager;
 		Ref<osg::Group> myRoot;
 
 		List< Ref<SceneLayer> > myLayers;

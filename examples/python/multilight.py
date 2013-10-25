@@ -107,9 +107,6 @@ lightmnu.addButton("Toggle red light", "toggleLight1()")
 lightmnu.addButton("Toggle green light", "toggleLight2()")
 lightmnu.addButton("Toggle blue light", "toggleLight3()")
 
-# Set shadow caster light
-scene.setMainLight(light2)
-
 #------------------------------------------------------------------------------
 # Functions to toggle lights
 # we define one function for each light, each one switched the light state 

@@ -34,6 +34,7 @@
  ******************************************************************************/
 #include "cyclops/Light.h"
 #include "cyclops/SceneManager.h"
+#include "cyclops/LightingLayer.h"
 
 using namespace cyclops;
 
@@ -59,7 +60,7 @@ Light::Light(SceneManager* scene):
 	mySpotCutoff(0),
 	mySpotExponent(1)
 {
-	mySceneManager->addLight(this);
+	mySceneManager->getRootLayer()->addLight(this);
 	setLightType(Point);
 }
 
@@ -166,7 +167,8 @@ void Light::requestShaderUpdate()
 LightInstance::LightInstance(Light* l, osg::Group* root):
 	myLight(l),
 	myGroup(root),
-	myShaderUpdateNeeded(true)
+	myShaderUpdateNeeded(true),
+	myIndex(0)
 {
 	myOsgLight = new osg::Light();
 	myOsgLightSource = new osg::LightSource();

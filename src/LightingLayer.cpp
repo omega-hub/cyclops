@@ -37,10 +37,15 @@ using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-LightingLayer::LightingLayer(SceneManager* scene):
-	SceneLayer(scene)
+LightingLayer::LightingLayer():
+	myShaderManager(new ShaderManager())
 {
-	myShaderManager = new ShaderManager();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+LightingLayer::LightingLayer(ShaderManager* sm):
+	myShaderManager(sm)
+{
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@
 #include "cyclops/Text3D.h"
 #include "cyclops/ModelGeometry.h"
 #include "cyclops/SceneLayer.h"
+#include "cyclops/LightingLayer.h"
 
 #ifdef OMEGA_USE_PYTHON
 
@@ -95,11 +96,24 @@ BOOST_PYTHON_MODULE(cyclops)
 
 	PYAPI_REF_BASE_CLASS(ModelLoader);
 
+	PYAPI_REF_BASE_CLASS(ShaderManager)
+		PYAPI_METHOD(SceneManager, setShaderMacroToFile)
+		PYAPI_METHOD(SceneManager, setShaderMacroToString)
+		PYAPI_METHOD(SceneManager, addProgram)
+		PYAPI_METHOD(SceneManager, updateProgram)
+		PYAPI_REF_GETTER(SceneManager, createProgramFromString)
+		PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
+		;
+
+	PYAPI_REF_BASE_CLASS(SceneLayer)
+		;
+
+	PYAPI_REF_CLASS(LightingLayer, SceneLayer)
+		;
+
 	// SceneManager
 	void (SceneManager::*loadModelAsync1)(ModelInfo*, const String&) = &SceneManager::loadModelAsync;
-	PYAPI_REF_BASE_CLASS(SceneManager)
-		PYAPI_METHOD(SceneManager, setMainLight)
-		PYAPI_REF_GETTER(SceneManager, getMainLight)
+	PYAPI_REF_CLASS(SceneManager, ShaderManager)
 		PYAPI_METHOD(SceneManager, addModel)
 		PYAPI_METHOD(SceneManager, loadModel)
 		.def("loadModelAsync", loadModelAsync1)
@@ -112,16 +126,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(SceneManager, hideWand)
 		PYAPI_METHOD(SceneManager, setWandEffect)
 		PYAPI_METHOD(SceneManager, setWandSize)
-		PYAPI_GETTER(SceneManager, getCurrentShadowSettings)
-		PYAPI_METHOD(SceneManager, resetShadowSettings)
-		PYAPI_METHOD(SceneManager, setShaderMacroToFile)
-		PYAPI_METHOD(SceneManager, setShaderMacroToString)
 		PYAPI_REF_GETTER(SceneManager, getGlobalUniforms)
-		PYAPI_METHOD(SceneManager, addProgram)
-		PYAPI_METHOD(SceneManager, updateProgram)
-		PYAPI_REF_GETTER(SceneManager, createProgramFromString)
 		PYAPI_REF_GETTER(SceneManager, createTexture)
-		PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
 		// Physics
 		PYAPI_GETTER(SceneManager, getGravity)
 		PYAPI_METHOD(SceneManager, setGravity)
@@ -350,20 +356,10 @@ BOOST_PYTHON_MODULE(cyclops)
 		.def_readwrite("loaderOutput", &ModelInfo::loaderOutput)
 		;
 
-	// ShadowSetings
-	class_<ShadowSettings>("ShadowSettings")
-		.def_readwrite("shadowsEnabled", &ShadowSettings::shadowsEnabled)
-		.def_readwrite("shadowResolutionRatio", &ShadowSettings::shadowResolutionRatio)
-		;
-
 	// SkyBox
 	PYAPI_REF_BASE_CLASS_WITH_CTOR(Skybox)
 		PYAPI_METHOD(Skybox, loadCubeMap)
 		;
-
-	// PlaneShape
-	PYAPI_REF_BASE_CLASS(SceneLayer)
-        ;
 
 	// Free Functions
 	def("getSceneManager", getSceneManager, PYAPI_RETURN_REF);

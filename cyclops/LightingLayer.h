@@ -44,7 +44,10 @@ namespace cyclops {
 		typedef Dictionary<Light*, LightInstance* > LightInstanceMap;
 
 	public:
-		LightingLayer(SceneManager* scene);
+		//! Constructs a new Lighting layer, using the passed shader manager
+		LightingLayer(ShaderManager* sm);
+		//! Constructs a new Lighting layer, creating a shader manager internally.
+		LightingLayer();
 		~LightingLayer();
 
 		void addLight(Light* l);

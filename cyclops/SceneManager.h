@@ -42,6 +42,7 @@
 #include "Uniforms.h"
 #include "ModelLoader.h"
 #include "ShaderManager.h"
+#include "LightingLayer.h"
 
 #include <osg/Texture2D>
 #include <osg/Light>
@@ -68,29 +69,20 @@ namespace cyclops {
 	class SceneManager;
 	class AnimatedObject;
 	class ModelGeometry;
-	class LightingLayer;
-
-	///////////////////////////////////////////////////////////////////////////
-	struct ShadowSettings
-	{
-		bool shadowsEnabled;
-		float shadowResolutionRatio;
-	};
 
 	///////////////////////////////////////////////////////////////////////////
 	//! The scene manager contains all the main features used to handle a 
 	//! cyclops scene and its assets.
-	class CY_API SceneManager: public EngineModule, public SceneNodeListener
+	//! @remarks SceneManager derives from ShaderManager to keep API 
+	//! compatibility with omegalib 4.x (shader management methods appeared in 
+	//! SceneManager)
+	class CY_API SceneManager: public ShaderManager
 	{
 	friend class Entity;
 	friend class Light;
 	public:
 		typedef AsyncTask< std::pair< Ref<ModelInfo>, bool > > LoadModelAsyncTask;
-		typedef Dictionary<String, String> ShaderMacroDictionary;
-		typedef Dictionary<String, String> ShaderCache;
 		enum AssetType { ModelAssetType };
-
-		static const int MaxLights = 16;
 
 	public:
 		static const int ReceivesShadowTraversalMask = 0x1;
@@ -104,13 +96,14 @@ namespace cyclops {
 		//! Scene manager exists before this call, createAndInitialize will be called internally.
 		static SceneManager* instance();
 
-		SceneLayer* getRootLayer();
+		LightingLayer* getRootLayer();
 
-		virtual void initialize();
-		virtual void dispose();
-		virtual void update(const UpdateContext& context);
-		virtual void handleEvent(const Event& evt);
-		virtual bool handleCommand(const String& cmd);
+		void initialize();
+		void dispose();
+		void update(const UpdateContext& context);
+		void handleEvent(const Event& evt);
+		bool handleCommand(const String& cmd);
+		Engine* getEngine() { return myEngine; }
 
 		//! Sets the background color
 		void setBackgroundColor(const Color& color);
@@ -140,37 +133,14 @@ namespace cyclops {
 		//! Scene creation methods
 		//@{
 		void load(SceneLoader* loader);
-		//! #PYAPI Utility method: loads a scene file using the standard cyclops scene loader.
+		//! Utility method: loads a scene file using the standard cyclops scene loader.
 		void loadScene(const String& file);
 		void setSkyBox(Skybox* skyBox);
 		void unload();
 		//@}
 
-		//! Light management methods
-		//@{
-		Light* getMainLight() { return myMainLight; }
-		void setMainLight(Light* light) { myMainLight = light; }
-		const ShadowSettings& getCurrentShadowSettings();
-		void resetShadowSettings(const ShadowSettings& settings);
-		int getNumActiveLights();
-		//@}
-
-		osg::Group* getOsgRoot() { return myScene; }
 		osg::Texture2D* getTexture(const String& name);
 		osg::Texture2D* createTexture(const String& name, PixelData* pixels);
-
-		//! Shader management
-		//@{
-		ProgramAsset* getOrCreateProgram(const String& name, const String& vertexShaderName, const String& fragmentShaderName);
-		void addProgram(ProgramAsset* program);
-		void updateProgram(ProgramAsset* program);
-		ProgramAsset* createProgramFromString(const String& name, const String& vertexShaderCode, const String& fragmentShaderCode);
-		void initShading();
-		void setShaderMacroToString(const String& macroName, const String& macroString);
-		void setShaderMacroToFile(const String& macroName, const String& path);
-		void reloadAndRecompileShaders();
-		void recompileShaders(ProgramAsset* program, const String& variationName = "");
-		//@}
 
 		//! Physics support
 		//@{
@@ -181,10 +151,6 @@ namespace cyclops {
 		bool isPhysicsEnabled() { return myPhysicsEnabled; }
 		//@}
 
-		//! SceneNodeListener overrides
-		virtual void onAttachedToScene(SceneNode* source);
-		virtual void onDetachedFromScene(SceneNode* source);
-		
 		omegaToolkit::ui::Menu* createContextMenu(Entity* entity);
 		void deleteContextMenu(Entity* entity);
 
@@ -193,22 +159,13 @@ namespace cyclops {
 		virtual ~SceneManager();
 
 		void initDynamicsWorld();
-
-		void addLight(Light* l);
-		void removeLight(Light* l);
-		void updateLights();
 		void loadConfiguration();
-		void loadShader(osg::Shader* shader, const String& name);
-		void compileShader(osg::Shader* shader, const String& source);
-		void recompileShaders();
 
 	private:
 		static SceneManager* mysInstance;
+		Ref<Engine> myEngine;
 		Ref<OsgModule> myOsg;
 
-		// The scene root. This may be linked directly to myRoot or have some intermediate nodes inbetween
-		// (i.e. for shadow map management)
-		Ref<osg::Group> myScene;
 		// The scene global uniforms.
 		Ref<Uniforms> myGlobalUniforms;
 
@@ -216,29 +173,17 @@ namespace cyclops {
 		Dictionary<String, Ref<ModelAsset> > myModelDictionary;
 		List< Ref<ModelAsset> > myModelList;
 		ModelLoaderThread* myModelLoaderThread;
+		// Model loaders
+		Dictionary< String, Ref<ModelLoader> > myLoaderDictionary;
+		// The default loader. Used when all the other loaders fail.
+		ModelLoader* myDefaultLoader;
 
 		LightingLayer* myRootLayer;
 
 		Dictionary<String, Ref<osg::Texture2D> > myTextures;
 		Dictionary<String, Ref<PixelData> > myTexturePixels;
-		Dictionary<String, Ref<ProgramAsset> > myPrograms;
-		Dictionary<String, Ref<osg::Shader> > myShaders;
-
-		ShaderMacroDictionary myShaderMacros;
-		ShaderCache myShaderCache;
 
 		Ref<Skybox> mySkyBox;
-
-		// Lights and shadows
-		List< Ref<Light> > myLights;
-		Vector<Light*> myActiveLights;
-		Ref<Light> myMainLight;
-		
-		Ref<osgShadow::ShadowedScene> myShadowedScene;
-		Ref<osgShadow::SoftShadowMap> mySoftShadowMap;
-		ShadowSettings myShadowSettings;
-		int myNumActiveLights;
-		String myShaderVariationName;
 
 		// Wand
 		Ref<omega::TrackedObject> myWandTracker;
@@ -248,19 +193,10 @@ namespace cyclops {
 		List< Entity* > myEntitiesWithMenu;
 		Ref<omegaToolkit::ui::MenuManager> myMenuManager;
 
-		// Model loaders
-		Dictionary< String, Ref<ModelLoader> > myLoaderDictionary;
-		// The default loader. Used when all the other loaders fail.
-		ModelLoader* myDefaultLoader;
-
 		// Physics stuff
 		bool myPhysicsEnabled;
 		btDynamicsWorld* myDynamicsWorld;
 	};
-
-	///////////////////////////////////////////////////////////////////////////
-	inline int SceneManager::getNumActiveLights()
-	{ return myNumActiveLights; }
 };
 
 #endif
