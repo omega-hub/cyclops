@@ -295,6 +295,9 @@ void SceneManager::unload()
 
 	ofmsg("SceneManager::unload: releasing %1% programs", %myTextures.size());
 	myTextures.clear();
+
+	// Delete the root layer
+	myRootLayer = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

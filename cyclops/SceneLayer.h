@@ -55,7 +55,7 @@ namespace cyclops {
 	friend class Entity;
 	public:
 		SceneLayer();
-		~SceneLayer();
+		virtual ~SceneLayer();
 
 		//! Add a sub-layer 
 		virtual void addLayer(SceneLayer* layer);
@@ -81,6 +81,7 @@ namespace cyclops {
 	protected:
 		Ref<osg::Group> myRoot;
 
+		List< Ref<Entity> > myEntities;
 		List< Ref<SceneLayer> > myLayers;
 	};
 };

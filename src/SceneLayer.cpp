@@ -50,6 +50,13 @@ SceneLayer::SceneLayer()
 ///////////////////////////////////////////////////////////////////////////////
 SceneLayer::~SceneLayer()
 {
+	List< Ref<Entity> > tmpList = myEntities;
+	// Detach all the attached entities.
+	foreach(Entity* e, tmpList)
+	{
+		e->setLayer(NULL);
+	}
+	myEntities.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,6 +67,7 @@ void SceneLayer::addEntity(Entity* e)
 	oassert(e != NULL);
 	e->addListener(this);
 	myRoot->addChild(e->getOsgNode());
+	myEntities.push_back(e);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,6 +78,7 @@ void SceneLayer::removeEntity(Entity* e)
 	oassert(e != NULL);
 	e->removeListener(this);
 	myRoot->removeChild(e->getOsgNode());
+	myEntities.remove(e);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

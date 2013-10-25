@@ -178,7 +178,7 @@ namespace cyclops {
 		// The default loader. Used when all the other loaders fail.
 		ModelLoader* myDefaultLoader;
 
-		LightingLayer* myRootLayer;
+		Ref<LightingLayer> myRootLayer;
 
 		Dictionary<String, Ref<osg::Texture2D> > myTextures;
 		Dictionary<String, Ref<PixelData> > myTexturePixels;
