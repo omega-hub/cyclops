@@ -438,6 +438,9 @@ const String& ShaderManager::getActiveCacheId()
 ///////////////////////////////////////////////////////////////////////////////
 void ShaderManager::recompileShaders()
 {
+	//static Stat* time = SystemManager::instance()->getStatsManager()->createStat("recompileShaders", Stat::Time);
+	//time->startTiming();
+
 	// Add light functions to shader variation name
 	String lightFunc = "";
 	foreach(LightInstance* li, myActiveLights)
@@ -461,6 +464,8 @@ void ShaderManager::recompileShaders()
 	{
 		recompileShaders(item.getValue(), myShaderVariationName);
 	}
+
+	//time->stopTiming();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

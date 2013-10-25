@@ -6,7 +6,6 @@ include_directories(${OSG_INCLUDES})
 include_directories(${OSGBULLET_INCLUDES})
 
 add_subdirectory(src)
-add_subdirectory(examples/cyhello)
 add_subdirectory(examples/cyhello2)
 
 ###############################################################################

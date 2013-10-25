@@ -108,13 +108,23 @@ void SceneLayer::onDetachedFromScene(SceneNode* source)
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::addLayer(SceneLayer* layer)
 {
-	myLayers.push_back(layer);
+	if(layer != NULL)
+	{
+		myLayers.push_back(layer);
+		// Attach the layer osg node to this layer osg node
+		myRoot->addChild(layer->getOsgNode());
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::removeLayer(SceneLayer* layer)
 {
-	myLayers.remove(layer);
+	if(layer != NULL)
+	{
+		myLayers.remove(layer);
+		// Detach the layer osg node to this layer osg node
+		myRoot->removeChild(layer->getOsgNode());
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
