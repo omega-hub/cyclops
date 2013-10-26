@@ -55,7 +55,7 @@ namespace cyclops {
 	class SceneManager;
 	class AnimatedObject;
 	class LightingLayer;
-	class Light;
+	class LightInstance;
 
 	///////////////////////////////////////////////////////////////////////////
 	class CY_API Light: public SceneNode
