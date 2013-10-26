@@ -118,7 +118,7 @@ void Entity::initialize(osg::Node* node)
 
 	// Now add this drawable object to the scene.
 	//addListener(mySceneManager);
-	setLayer(mySceneManager->getRootLayer());
+	setLayer(mySceneManager->getLightingLayer());
 
 	getEngine()->getScene()->addChild(this);
 
@@ -195,6 +195,13 @@ void Entity::clearMaterials()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void Entity::setShaderManager(ShaderManager* sm)
+{
+	oassert(sm != NULL);
+	myEffect->setShaderManager(sm);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Entity::castShadow(bool value)
 {
 	myCastShadow = value;
@@ -202,7 +209,7 @@ void Entity::castShadow(bool value)
 	{
 		if(!myCastShadow)
 		{
-			myOsgNode->setNodeMask(0xffffffff & ~SceneManager::CastsShadowTraversalMask);
+			myOsgNode->setNodeMask(0xffffffff & ~ShadowMap::CastsShadowTraversalMask);
 		}
 		else
 		{

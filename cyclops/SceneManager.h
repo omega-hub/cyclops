@@ -48,8 +48,6 @@
 #include <osg/Light>
 #include <osg/Group>
 #include <osg/Switch>
-#include <osgShadow/ShadowedScene>
-#include <osgShadow/SoftShadowMap>
 #include <osgAnimation/BasicAnimationManager>
 
 #define OMEGA_NO_GL_HEADERS
@@ -85,10 +83,6 @@ namespace cyclops {
 		enum AssetType { ModelAssetType };
 
 	public:
-		static const int ReceivesShadowTraversalMask = 0x1;
-		static const int CastsShadowTraversalMask = 0x2;
-
-	public:
 		//! Creates and initializes the scene manager singleton.
 		//! If called multiple times, subsequent calls will do nothing.
 		static SceneManager* createAndInitialize();
@@ -96,7 +90,7 @@ namespace cyclops {
 		//! Scene manager exists before this call, createAndInitialize will be called internally.
 		static SceneManager* instance();
 
-		LightingLayer* getRootLayer();
+		LightingLayer* getLightingLayer();
 
 		void initialize();
 		void dispose();

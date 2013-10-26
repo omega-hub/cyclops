@@ -45,7 +45,8 @@ using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-ShaderManager::ShaderManager()
+ShaderManager::ShaderManager():
+	myNumActiveLights(0)
 {
 	// Standard shaders
 #ifdef APPLE
@@ -90,14 +91,16 @@ void ShaderManager::addLightInstance(LightInstance* li)
 {
 	oassert(li);
 	myActiveLights.push_back(li);
-	recompileShaders();
+	myNumActiveLights = -1;
+	//recompileShaders();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void ShaderManager::removeLightInstance(LightInstance* li)
 {
 	myActiveLights.remove(li);
-	recompileShaders();
+	myNumActiveLights = -1;
+	//recompileShaders();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -30,69 +30,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
+ *	A light that can be added to a cyclops scene.
  ******************************************************************************/
-#ifndef __CY_LIGHTING_LAYER__
-#define __CY_LIGHTING_LAYER__
+#ifndef __CY_SHADOW_MAP__
+#define __CY_SHADOW_MAP__
 
-#include "cyclops/SceneLayer.h"
-#include "cyclops/ShaderManager.h"
-#include "cyclops/Light.h"
+#include "cyclopsConfig.h"
+
+#include <osg/Group>
+#include <osgShadow/ShadowedScene>
+#include <osgShadow/SoftShadowMap>
+
+#define OMEGA_NO_GL_HEADERS
+#include <omega.h>
+#include <omegaOsg/omegaOsg.h>
 
 namespace cyclops {
+	using namespace omega;
+	using namespace omegaOsg;
+
+	class LightingLayer;
+	class Light;
+
 	///////////////////////////////////////////////////////////////////////////
-	class CY_API LightingLayer: public SceneLayer
+	class ShadowMap: public ReferenceType
 	{
-	friend class Light;
 	public:
-		typedef Dictionary<Light*, LightInstance* > LightInstanceMap;
+		static const int ReceivesShadowTraversalMask = 0x1;
+		static const int CastsShadowTraversalMask = 0x2;
 
 	public:
-		//! Constructs a new Lighting layer, using the passed shader manager
-		LightingLayer(ShaderManager* sm);
-		//! Constructs a new Lighting layer, creating a shader manager internally.
-		LightingLayer();
-		~LightingLayer();
+		ShadowMap(Light* owner);
+		osgShadow::ShadowedScene* getOsgNode()
+		{ return myShadowedScene; }
 
-		//! Add a sub-layer. Lights applied to this layer will be also
-		//! be applied to all lighting sub-layers. 
-		virtual void addLayer(SceneLayer* layer);
-		virtual void removeLayer(SceneLayer* layer);
-
-		virtual osg::Group* getOsgNode() { return myPreShadowNode; }
-
-		//! Given a light, find a corresponding light instance attached to this
-		//! layer. Returns NULL if no instance is found.
-		LightInstance* findLightInstance(Light* l);
-
-		ShaderManager* getShaderManager() { return myShaderManager; }
-
-	protected:
-		//! This methods are never used directly but are called by Light::setLayer
-		virtual void addLight(Light* l);
-		virtual void removeLight(Light* l);
-
-		virtual void updateLayer();
-		// Reimplemented, so we can tell Entities to use the layer shader manager
-		virtual void addEntity(Entity* e);
-
-		void addLightToSubLayers(SceneLayer* layer, Light* l);
-		void removeLightFromSubLayers(SceneLayer* layer, Light* l);
+		void setLayer(LightingLayer* layer);
 
 	private:
-		LightInstanceMap myLights;
-		Ref<ShaderManager> myShaderManager;
-		
-		// This is the node over which shadowed scenes are applied.
-		Ref<osg::Group> myPreShadowNode;
+		// Attaches this shadow map to the specified layer
+		void addToLayer(LightingLayer* layer);
+		void removeFromLayer(LightingLayer* layer);
+
+	private:
+		Light* myLight;
+		LightingLayer* myLayer;
+		Ref<osgShadow::ShadowedScene> myShadowedScene;
+        Ref<osgShadow::SoftShadowMap> mySoftShadowMap;
 	};
-
-	///////////////////////////////////////////////////////////////////////////
-	inline LightInstance* LightingLayer::findLightInstance(Light* l)
-	{
-		if(myLights.find(l) != myLights.end()) return myLights[l];
-		return NULL;
-	}
 };
-
 
 #endif

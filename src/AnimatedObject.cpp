@@ -258,6 +258,7 @@ float AnimatedObject::getAnimationStart(int id)
 		osgAnimation::Animation* anim = myAnimations->at(id);
 		return anim->getDuration();
 	}
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

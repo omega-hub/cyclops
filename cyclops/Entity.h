@@ -54,6 +54,7 @@ namespace cyclops {
 
 	class SceneManager;
 	class SceneLayer;
+	class ShaderManager;
 
 	///////////////////////////////////////////////////////////////////////////
 	//! Encapsulates an osg node (or nodes) and offers a few additional 
@@ -82,6 +83,9 @@ namespace cyclops {
 		int getMaterialCount();
 		void addMaterial(Material* mat);
 		void clearMaterials();
+		//! Sets the shader manager used by this entity to find shaders used
+		//! my the entity materials. Default shader manager is the scene manager
+		void setShaderManager(ShaderManager* sm);
 		//@}
 
 		void castShadow(bool value);

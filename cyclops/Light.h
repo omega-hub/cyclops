@@ -36,6 +36,7 @@
 #define __CY_LIGHT__
 
 #include "cyclopsConfig.h"
+#include "ShadowMap.h"
 
 #include <osg/Group>
 #include <osg/Light>
@@ -53,6 +54,8 @@ namespace cyclops {
 	class SceneLoader;
 	class SceneManager;
 	class AnimatedObject;
+	class LightingLayer;
+	class Light;
 
 	///////////////////////////////////////////////////////////////////////////
 	class CY_API Light: public SceneNode
@@ -68,6 +71,12 @@ namespace cyclops {
 	public:
 		Light(SceneManager* scene);
 		virtual ~Light();
+
+		ShadowMap* getShadow() { return myShadow; }
+
+		//! Sets or gets the layer this light is applied to
+		virtual void setLayer(LightingLayer* layer);
+		virtual LightingLayer* getLayer();
 
 		//! Create a new instance of this light and attach it to the specified
 		//! node.
@@ -91,6 +100,9 @@ namespace cyclops {
 		}
 		const Vector3f& getAttenuation() { return myAttenuation; }
 
+		void setShadowEnabled(bool value);
+		bool isShadowEnabled() { return myShadowEnabled; }
+
 		void setSoftShadowWidth(float value) { mySoftShadowWidth = value; }
 		float getSoftShadowWidth() { return mySoftShadowWidth; }
 
@@ -111,39 +123,41 @@ namespace cyclops {
 		void setLightFunction(const String& function) { myLightFunction = function; }
 		String getLightFunction() { return myLightFunction; }
 
-		//! @internal update the osg light parameters.
-		bool updateOsgLight(int lightId, osg::Group* rootNode);
-
 	private:
 		void requestShaderUpdate();
 
 	private:
 		SceneManager* mySceneManager;
+		LightingLayer* myLayer;
 
 		Color myColor;
 		Color myAmbient;
 		bool myEnabled;
 		Vector3f myAttenuation;
-		float mySoftShadowWidth;
-		int mySoftShadowJitter;
 
 		float mySpotExponent;
 		float mySpotCutoff;
 
 		Vector3f myLightDirection;
 
-		// osg light stuff.
-		Ref<osg::Light> myOsgLight;
-		Ref<osg::LightSource> myOsgLightSource;
 		// Light instances 
 		// (will replace osg light stuff)
 		List< Ref<LightInstance> > myInstances;
 
 		LightType myType;
 		String myLightFunction;
+
+		// EXPERIMENTAL shadow stuff
+		Ref<ShadowMap> myShadow;
+		bool myShadowEnabled;
+		float mySoftShadowWidth;
+		int mySoftShadowJitter;
 	};
 
 	///////////////////////////////////////////////////////////////////////////
+	//! Represents an instance of a light in the scene. A single light may have
+	//! Multiple instances, each one being represented by a different 
+	//! OpenGL light.
 	class CY_API LightInstance: public ReferenceType
 	{
 	friend class Light;
@@ -157,6 +171,8 @@ namespace cyclops {
 		Light* getLight() { return myLight; }
 		int getLightIndex() { return myIndex; }
 		void setLightIndex(int index);
+
+		osg::Light* getOsgLight() { return myOsgLight; }
 
 	private:
 		//! Create a new light instance and attach it to the specified

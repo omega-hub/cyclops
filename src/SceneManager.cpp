@@ -210,7 +210,7 @@ SceneManager::~SceneManager()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-LightingLayer* SceneManager::getRootLayer() 
+LightingLayer* SceneManager::getLightingLayer() 
 { 
 	return myRootLayer; 
 }

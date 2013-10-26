@@ -32,6 +32,7 @@
  * What's in this file
  ******************************************************************************/
 #include "cyclops/LightingLayer.h"
+#include "cyclops/Entity.h"
 
 using namespace omega;
 using namespace cyclops;
@@ -40,12 +41,16 @@ using namespace cyclops;
 LightingLayer::LightingLayer():
 	myShaderManager(new ShaderManager())
 {
+	myPreShadowNode = new osg::Group();
+	myPreShadowNode->addChild(myRoot);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 LightingLayer::LightingLayer(ShaderManager* sm):
 	myShaderManager(sm)
 {
+	myPreShadowNode = new osg::Group();
+	myPreShadowNode->addChild(myRoot);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,11 +59,20 @@ LightingLayer::~LightingLayer()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::addEntity(Entity* e)
+{
+	SceneLayer::addEntity(e);
+	e->setShaderManager(myShaderManager);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void LightingLayer::addLight(Light* l)
 {
+	oassert(l != NULL);
 	LightInstance* li = l->createInstance(myRoot);
 	myLights[l] = li;
 	myShaderManager->addLightInstance(li);
+	addLightToSubLayers(this, l);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +82,59 @@ void LightingLayer::removeLight(Light* l)
 	{
 		LightInstance* li = myLights[l];
 		myLights.erase(l);
+		myShaderManager->removeLightInstance(li);
 		l->destroyInstance(li);
+		removeLightFromSubLayers(this, l);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::addLayer(SceneLayer* layer)
+{
+	SceneLayer::addLayer(layer);
+	// Add all of the lights of this layer to all lighting sublayers.
+	LightingLayer* ll = dynamic_cast<LightingLayer*>(layer);
+	typedef KeyValue<Light*, LightInstance*> LightInstanceMapItem;
+	foreach(LightInstanceMapItem i, myLights)
+	{
+		if(ll != NULL) ll->addLight(i.getKey());
+		else addLightToSubLayers(layer, i.getKey());
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::removeLayer(SceneLayer* layer)
+{
+	SceneLayer::removeLayer(layer);
+	// Add all of the lights of this layer to all lighting sublayers.
+	LightingLayer* ll = dynamic_cast<LightingLayer*>(layer);
+	typedef KeyValue<Light*, LightInstance*> LightInstanceMapItem;
+	foreach(LightInstanceMapItem i, myLights)
+	{
+		if(ll != NULL) ll->addLight(i.getKey());
+		else removeLightFromSubLayers(layer, i.getKey());
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::addLightToSubLayers(SceneLayer* layer, Light* l)
+{
+	foreach(SceneLayer* sl, layer->getLayers())
+	{
+		LightingLayer* ll = dynamic_cast<LightingLayer*>(sl);
+		if(ll != NULL) ll->addLight(l);
+		else addLightToSubLayers(sl, l);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::removeLightFromSubLayers(SceneLayer* layer, Light* l)
+{
+	foreach(SceneLayer* sl, layer->getLayers())
+	{
+		LightingLayer* ll = dynamic_cast<LightingLayer*>(sl);
+		if(ll != NULL) ll->removeLight(l);
+		else removeLightFromSubLayers(sl, l);
 	}
 }
 

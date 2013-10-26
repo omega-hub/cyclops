@@ -50,6 +50,7 @@ namespace cyclops {
 	using namespace omega;
 	using namespace omegaOsg;
 	class SceneManager;
+	class ShaderManager;
 	class ProgramAsset;
 
 	///////////////////////////////////////////////////////////////////////////
@@ -130,6 +131,10 @@ namespace cyclops {
 		//! program has been set correctly.
 		bool setProgram(const String& name);
 
+		//! @internal sets the shader manager used by this material to find
+		//! shaders
+		void setShaderManager(ShaderManager* sm);
+
 	private:
 		ProgramAsset* getOrCreateProgram(const String& name, const String& variant = "");
 
@@ -155,7 +160,8 @@ namespace cyclops {
 		String myDiffuseTexture;
 		String myNormalTexture;
 
-		//String myProgramName;
+		String myProgramName;
+		ShaderManager* myShaderManager;
 		//Ref<ProgramAsset> myProgram;
 	};
 };

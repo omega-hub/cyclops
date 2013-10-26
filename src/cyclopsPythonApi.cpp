@@ -105,15 +105,18 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
 		;
 
-	PYAPI_REF_BASE_CLASS(SceneLayer)
+	PYAPI_REF_BASE_CLASS_WITH_CTOR(SceneLayer)
+		PYAPI_METHOD(SceneLayer, addLayer)
+		PYAPI_METHOD(SceneLayer, removeLayer)
 		;
 
-	PYAPI_REF_CLASS(LightingLayer, SceneLayer)
+	PYAPI_REF_CLASS_WITH_CTOR(LightingLayer, SceneLayer)
 		;
 
 	// SceneManager
 	void (SceneManager::*loadModelAsync1)(ModelInfo*, const String&) = &SceneManager::loadModelAsync;
 	PYAPI_REF_CLASS(SceneManager, ShaderManager)
+		PYAPI_REF_GETTER(SceneManager, getLightingLayer)
 		PYAPI_METHOD(SceneManager, addModel)
 		PYAPI_METHOD(SceneManager, loadModel)
 		.def("loadModelAsync", loadModelAsync1)
@@ -220,6 +223,7 @@ BOOST_PYTHON_MODULE(cyclops)
 	// Entity
 	PYAPI_REF_CLASS(Entity, SceneNode)
 		PYAPI_METHOD(Entity, setLayer)
+		PYAPI_REF_GETTER(Entity, getLayer)
 		PYAPI_METHOD(Entity, castShadow)
 		PYAPI_METHOD(Entity, doesCastShadow)
 		PYAPI_METHOD(Entity, hasEffect)
@@ -328,6 +332,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		.def("getSoftShadowJitter", &Light::getSoftShadowJitter)
 		.def("setSoftShadowWidth", &Light::setSoftShadowWidth)
 		.def("getSoftShadowWidth", &Light::getSoftShadowWidth)
+		PYAPI_METHOD(Light, setLayer)
+		PYAPI_REF_GETTER(Light, getLayer)
 		PYAPI_METHOD(Light, setAttenuation)
 		PYAPI_GETTER(Light, getAttenuation)
 		PYAPI_METHOD(Light, getLightType)
@@ -340,6 +346,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(Light, setSpotCutoff)
 		PYAPI_METHOD(Light, getSpotExponent)
 		PYAPI_METHOD(Light, setSpotExponent)
+		PYAPI_METHOD(Light, setShadowEnabled)
+		PYAPI_METHOD(Light, isShadowEnabled)
 		;
 
 	// ModelInfo

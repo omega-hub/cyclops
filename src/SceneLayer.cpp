@@ -42,7 +42,8 @@ using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer::SceneLayer()
+SceneLayer::SceneLayer():
+	myParent(NULL)
 {
 	myRoot = new osg::Group();
 }
@@ -110,6 +111,10 @@ void SceneLayer::addLayer(SceneLayer* layer)
 {
 	if(layer != NULL)
 	{
+		if(layer->getParentLayer() != NULL)
+		{
+			layer->getParentLayer()->removeLayer(layer);
+		}
 		myLayers.push_back(layer);
 		// Attach the layer osg node to this layer osg node
 		myRoot->addChild(layer->getOsgNode());
@@ -121,6 +126,7 @@ void SceneLayer::removeLayer(SceneLayer* layer)
 {
 	if(layer != NULL)
 	{
+		layer->myParent = NULL;
 		myLayers.remove(layer);
 		// Detach the layer osg node to this layer osg node
 		myRoot->removeChild(layer->getOsgNode());

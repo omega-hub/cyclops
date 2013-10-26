@@ -61,6 +61,8 @@ namespace cyclops {
 		virtual void addLayer(SceneLayer* layer);
 		//! remove a sub-layer
 		virtual void removeLayer(SceneLayer* layer);
+		List< Ref<SceneLayer> >& getLayers();
+		SceneLayer* getParentLayer() { return myParent; }
 
 		//! @internal SceneNodeListener overrides
 		//! These methods are needed to handle entities when they get attached
@@ -79,12 +81,16 @@ namespace cyclops {
 		virtual void removeEntity(Entity* e);
 
 	protected:
+		SceneLayer* myParent;
 		Ref<osg::Group> myRoot;
 
 		List< Ref<Entity> > myEntities;
 		List< Ref<SceneLayer> > myLayers;
-	};
+	};	
+	
+	///////////////////////////////////////////////////////////////////////////
+	inline List< Ref<SceneLayer> >& SceneLayer::getLayers()
+	{ return myLayers; }
 };
-
 
 #endif

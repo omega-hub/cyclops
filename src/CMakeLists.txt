@@ -29,6 +29,7 @@ set(SRCS
 		ShaderManager.cpp
 		SceneLoader.cpp
 		SceneManager.cpp
+		ShadowMap.cpp
 		StaticObject.cpp
 		Text3D.cpp
 		Uniforms.cpp
@@ -55,6 +56,7 @@ set(HEADERS
 		../cyclops/StaticObject.h
 		../cyclops/SceneLoader.h
 		../cyclops/SceneManager.h
+		../cyclops/ShadowMap.h
 		../cyclops/Uniforms.h)
 		
 ###############################################################################

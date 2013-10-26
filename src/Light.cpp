@@ -38,13 +38,11 @@
 
 using namespace cyclops;
 
-
 ///////////////////////////////////////////////////////////////////////////////
 Light* Light::create()
 {
 	return new Light(SceneManager::instance());
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 Light::Light(SceneManager* scene):
@@ -56,17 +54,53 @@ Light::Light(SceneManager* scene):
 	myEnabled(false),
 	mySoftShadowWidth(0.005f),
 	mySoftShadowJitter(32),
-	myOsgLight(NULL), myOsgLightSource(NULL),
-	mySpotCutoff(0),
-	mySpotExponent(1)
+	// NOTE: for non-spot lights FOV needs to be > of 180 otherwise shadow maps
+	// will try to use a non-existent light direction vector so setup a shadow
+	// map, causing errors.
+	mySpotCutoff(180),
+	mySpotExponent(1),
+	myLayer(NULL),
+	myShadowEnabled(false)
 {
-	mySceneManager->getRootLayer()->addLight(this);
+	myShadow = new ShadowMap(this);
+
+	setLayer(mySceneManager->getLightingLayer());
 	setLightType(Point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Light::~Light()
 {}
+
+///////////////////////////////////////////////////////////////////////////////
+void Light::setShadowEnabled(bool value)
+{
+	if(myShadowEnabled != value)
+	{
+		myShadowEnabled = value;
+		requestShaderUpdate();
+
+		// If shadows are enabled, attach the shadowed scene to this light
+		// lighting layer.
+		if(myShadowEnabled) myShadow->setLayer(myLayer);
+		else myShadow->setLayer(NULL);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Light::setLayer(LightingLayer* layer)
+{
+	if(myLayer != NULL) myLayer->removeLight(this);
+	if(layer != NULL) layer->addLight(this);
+	myLayer = layer;
+	if(myShadowEnabled) myShadow->setLayer(myLayer);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+LightingLayer* Light::getLayer()
+{
+	return myLayer;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 void Light::setLightType(LightType type)
@@ -79,62 +113,6 @@ void Light::setLightType(LightType type)
 	case Spot: myLightFunction = "spotLightFunction"; break;
 	}
 	requestShaderUpdate();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-bool Light::updateOsgLight(int lightId, osg::Group* rootNode)
-{
-	if(myEnabled)
-	{
-		if(myOsgLight == NULL)
-		{
-			myOsgLight = new osg::Light();
-			myOsgLightSource = new osg::LightSource();
-			rootNode->addChild(myOsgLightSource);
-		}
-
-		// If the attachment node is different than the one the lightsource is attached to, change it.
-		if(rootNode != myOsgLightSource->getParent(0))
-		{
-			myOsgLightSource->getParent(0)->removeChild(myOsgLightSource);
-			rootNode->addChild(rootNode);
-		}
-
-		osg::Light* ol = myOsgLight;
-		osg::LightSource* ols = myOsgLightSource;
-		const Vector3f pos = getDerivedPosition();
-
-		ol->setLightNum(lightId);
-		ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 1.0));
-		ol->setAmbient(COLOR_TO_OSG(myAmbient));
-		ol->setDiffuse(COLOR_TO_OSG(myColor));
-		ol->setSpecular(COLOR_TO_OSG(myColor));
-		ol->setConstantAttenuation(myAttenuation[0]);
-		ol->setLinearAttenuation(myAttenuation[1]);
-		ol->setQuadraticAttenuation(myAttenuation[2]);
-		ol->setDirection(osg::Vec3(myLightDirection[0], myLightDirection[1], myLightDirection[2]));
-		ol->setSpotCutoff(mySpotCutoff);
-		ol->setSpotExponent(mySpotExponent);
-
-		ols->setLight(ol);
-
-		osg::StateSet* sState = rootNode->getOrCreateStateSet();
-		ols->setStateSetModes(*sState,osg::StateAttribute::ON);
-	}
-	else
-	{
-		if(myOsgLightSource != NULL)
-		{
-			osg::StateSet* sState = rootNode->getOrCreateStateSet();
-			myOsgLightSource->setStateSetModes(*sState,osg::StateAttribute::OFF); 
-			myOsgLightSource->setLight(NULL);
-		}
-	}
-
-	//bool dirty = myDirty;
-	//myDirty = false;
-	//return dirty;
-	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
