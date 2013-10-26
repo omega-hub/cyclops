@@ -45,6 +45,8 @@
 namespace cyclops {
 	using namespace omega;
 	
+	class Entity;
+	
 	//!	A scene layer is an abstract class that groups entities together for a
 	//! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
 	//!	can form a hyerarchy similar to the scene node tree, but the scene 
