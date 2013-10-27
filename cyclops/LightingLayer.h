@@ -34,9 +34,9 @@
 #ifndef __CY_LIGHTING_LAYER__
 #define __CY_LIGHTING_LAYER__
 
-#include "cyclops/SceneLayer.h"
-#include "cyclops/ShaderManager.h"
-#include "cyclops/Light.h"
+#include "SceneLayer.h"
+#include "ShaderManager.h"
+#include "Light.h"
 
 namespace cyclops {
 	///////////////////////////////////////////////////////////////////////////
