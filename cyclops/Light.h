@@ -101,12 +101,6 @@ namespace cyclops {
 		}
 		const Vector3f& getAttenuation() { return myAttenuation; }
 
-		void setSoftShadowWidth(float value) { mySoftShadowWidth = value; }
-		float getSoftShadowWidth() { return mySoftShadowWidth; }
-
-		void setSoftShadowJitter(int value) { mySoftShadowJitter = value; }
-		float getSoftShadowJitter() { return mySoftShadowJitter; }
-
 		void setLightType(LightType type);
 		LightType getLightType() { return myType; }
 
@@ -145,10 +139,8 @@ namespace cyclops {
 		LightType myType;
 		String myLightFunction;
 
-		// EXPERIMENTAL shadow stuff
+		// Shadow stuff
 		Ref<ShadowMap> myShadow;
-		float mySoftShadowWidth;
-		int mySoftShadowJitter;
 	};
 
 	///////////////////////////////////////////////////////////////////////////

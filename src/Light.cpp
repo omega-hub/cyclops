@@ -52,8 +52,6 @@ Light::Light(SceneManager* scene):
 	myAmbient(Color::Black),
 	myAttenuation(Vector3f(1.0, 0.0, 0.0)),
 	myEnabled(false),
-	mySoftShadowWidth(0.005f),
-	mySoftShadowJitter(32),
 	// NOTE: for non-spot lights FOV needs to be > of 180 otherwise shadow maps
 	// will try to use a non-existent light direction vector so setup a shadow
 	// map, causing errors.
@@ -169,7 +167,14 @@ bool LightInstance::update()
 		osg::LightSource* ols = myOsgLightSource;
 		const Vector3f pos = myLight->getDerivedPosition();
 
-		ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 1.0));
+		if(myLight->myType != Light::Point)
+		{
+			ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 0.0));
+		}
+		else
+		{
+			ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 1.0));
+		}
 		ol->setAmbient(COLOR_TO_OSG(myLight->myAmbient));
 		ol->setDiffuse(COLOR_TO_OSG(myLight->myColor));
 		ol->setSpecular(COLOR_TO_OSG(myLight->myColor));
