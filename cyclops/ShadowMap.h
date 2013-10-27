@@ -55,26 +55,46 @@ namespace cyclops {
 	///////////////////////////////////////////////////////////////////////////
 	class ShadowMap: public ReferenceType
 	{
+	friend class Light;
 	public:
 		static const int ReceivesShadowTraversalMask = 0x1;
 		static const int CastsShadowTraversalMask = 0x2;
 
 	public:
-		ShadowMap(Light* owner);
+		ShadowMap();
 		osgShadow::ShadowedScene* getOsgNode()
 		{ return myShadowedScene; }
 
-		void setLayer(LightingLayer* layer);
+		void setTextureSize(int width, int height);
 
 	private:
+		//! used by Light to notify tell this shadow map who is its owner.
+		void setLight(Light* l); 
+
 		// Attaches this shadow map to the specified layer
+		void setLayer(LightingLayer* layer);
 		void addToLayer(LightingLayer* layer);
 		void removeFromLayer(LightingLayer* layer);
 
-	private:
+	protected:
+		virtual void initialize();
+		void checkInitialized();
+
+	protected:
+		bool myInitialized;
 		Light* myLight;
 		LightingLayer* myLayer;
 		Ref<osgShadow::ShadowedScene> myShadowedScene;
+        Ref<osgShadow::ShadowMap> myShadowMap;
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+	class SoftShadowMap: public ShadowMap
+	{
+	protected:
+		virtual void initialize();
+
+	private:
         Ref<osgShadow::SoftShadowMap> mySoftShadowMap;
 	};
 };

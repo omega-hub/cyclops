@@ -73,6 +73,7 @@ namespace cyclops {
 		virtual ~Light();
 
 		ShadowMap* getShadow() { return myShadow; }
+		void setShadow(ShadowMap* s);
 
 		//! Sets or gets the layer this light is applied to
 		virtual void setLayer(LightingLayer* layer);
@@ -99,9 +100,6 @@ namespace cyclops {
 			myAttenuation[2] = quadratic; 
 		}
 		const Vector3f& getAttenuation() { return myAttenuation; }
-
-		void setShadowEnabled(bool value);
-		bool isShadowEnabled() { return myShadowEnabled; }
 
 		void setSoftShadowWidth(float value) { mySoftShadowWidth = value; }
 		float getSoftShadowWidth() { return mySoftShadowWidth; }
@@ -149,7 +147,6 @@ namespace cyclops {
 
 		// EXPERIMENTAL shadow stuff
 		Ref<ShadowMap> myShadow;
-		bool myShadowEnabled;
 		float mySoftShadowWidth;
 		int mySoftShadowJitter;
 	};

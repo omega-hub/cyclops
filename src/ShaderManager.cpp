@@ -143,7 +143,7 @@ void ShaderManager::update()
 	// If the number of lights changed, reset the shaders
 	if(i != myNumActiveLights || needShaderUpdate)
 	{
-		ofmsg("Lights changed (active lights: %1%)", %i);
+		//ofmsg("Lights changed (active lights: %1%)", %i);
 
 		// Set the number of lights shader macro parameter.
 		myNumActiveLights = i;
@@ -460,7 +460,7 @@ void ShaderManager::recompileShaders()
 	// Update the shader variation name
 	myShaderVariationName = ostr(".%1%%2%-%3$x", %myActiveCacheId %myNumActiveLights %lightFuncHash);
 
-	ofmsg("Recompiling shaders (variation: %1%)", %myShaderVariationName);
+	//ofmsg("Recompiling shaders (variation: %1%)", %myShaderVariationName);
 
 	typedef Dictionary<String, Ref<ProgramAsset> >::Item ProgramAssetItem;
 	foreach(ProgramAssetItem item, myPrograms)

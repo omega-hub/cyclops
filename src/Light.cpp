@@ -59,11 +59,8 @@ Light::Light(SceneManager* scene):
 	// map, causing errors.
 	mySpotCutoff(180),
 	mySpotExponent(1),
-	myLayer(NULL),
-	myShadowEnabled(false)
+	myLayer(NULL)
 {
-	myShadow = new ShadowMap(this);
-
 	setLayer(mySceneManager->getLightingLayer());
 	setLightType(Point);
 }
@@ -73,17 +70,14 @@ Light::~Light()
 {}
 
 ///////////////////////////////////////////////////////////////////////////////
-void Light::setShadowEnabled(bool value)
+void Light::setShadow(ShadowMap* s)
 {
-	if(myShadowEnabled != value)
+	if(myShadow != NULL) myShadow->setLayer(NULL);
+	myShadow = s;
+	if(myShadow != NULL)
 	{
-		myShadowEnabled = value;
-		requestShaderUpdate();
-
-		// If shadows are enabled, attach the shadowed scene to this light
-		// lighting layer.
-		if(myShadowEnabled) myShadow->setLayer(myLayer);
-		else myShadow->setLayer(NULL);
+		s->setLight(this);
+		s->setLayer(myLayer);
 	}
 }
 
@@ -93,7 +87,7 @@ void Light::setLayer(LightingLayer* layer)
 	if(myLayer != NULL) myLayer->removeLight(this);
 	if(layer != NULL) layer->addLight(this);
 	myLayer = layer;
-	if(myShadowEnabled) myShadow->setLayer(myLayer);
+	if(myShadow != NULL) myShadow->setLayer(myLayer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
