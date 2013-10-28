@@ -51,7 +51,7 @@ Light::Light(SceneManager* scene):
 	myColor(Color::White),
 	myAmbient(Color::Black),
 	myAttenuation(Vector3f(1.0, 0.0, 0.0)),
-	myEnabled(false),
+	myEnabled(true),
 	// NOTE: for non-spot lights FOV needs to be > of 180 otherwise shadow maps
 	// will try to use a non-existent light direction vector so setup a shadow
 	// map, causing errors.
