@@ -167,13 +167,13 @@ bool LightInstance::update()
 		osg::LightSource* ols = myOsgLightSource;
 		const Vector3f pos = myLight->getDerivedPosition();
 
-		if(myLight->myType != Light::Point)
+		if(myLight->myType != Light::Directional)
 		{
-			ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 0.0));
+			ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 1.0));
 		}
 		else
 		{
-			ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 1.0));
+			ol->setPosition(osg::Vec4(pos[0], pos[1], pos[2], 0.0));
 		}
 		ol->setAmbient(COLOR_TO_OSG(myLight->myAmbient));
 		ol->setDiffuse(COLOR_TO_OSG(myLight->myColor));
