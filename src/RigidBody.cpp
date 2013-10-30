@@ -55,6 +55,7 @@ RigidBody::RigidBody(Entity* e):
 ///////////////////////////////////////////////////////////////////////////////
 RigidBody::~RigidBody()
 {
+	setEnabled(false);
 	myEntity = NULL;
 	if(myBoxShape)
 	{
