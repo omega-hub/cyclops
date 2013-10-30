@@ -86,7 +86,9 @@ namespace cyclops {
 		SceneLayer* myParent;
 		Ref<osg::Group> myRoot;
 
-		List< Ref<Entity> > myEntities;
+		// We keep weak entity pointers around, so entities with no references
+		// can be deleted.
+		List< Entity* > myEntities;
 		List< Ref<SceneLayer> > myLayers;
 	};	
 	
