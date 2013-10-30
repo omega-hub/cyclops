@@ -151,4 +151,23 @@ void RigidBody::sync()
 	}
 }
 
+void RigidBody::applyForce(const Vector3f& force, const Vector3f& relPos)
+{
+  myBody->applyForce(btVector3(force.x(), force.y(), force.z()), btVector3(relPos.x(), relPos.y(), relPos.z()));
+}
+
+void RigidBody::applyCentralImpulse(const Vector3f& impulse)
+{
+  myBody->applyCentralImpulse(btVector3(impulse.x(), impulse.y(), impulse.z()));
+}
+
+void RigidBody::applyImpulse(const Vector3f& impulse, const Vector3f& relPos)
+{
+  myBody->applyImpulse(btVector3(impulse.x(), impulse.y(), impulse.z()), btVector3(relPos.x(), relPos.y(), relPos.z()));
+}
+
+void RigidBody::setAngularVelocity(const Vector3f& angularVelocity)
+{
+  myBody->setAngularVelocity(btVector3(angularVelocity.x(), angularVelocity.y(), angularVelocity.z()));
+}
 
