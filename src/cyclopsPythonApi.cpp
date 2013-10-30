@@ -40,6 +40,7 @@
 #include "cyclops/Text3D.h"
 #include "cyclops/ModelGeometry.h"
 #include "cyclops/SceneLayer.h"
+#include "cyclops/LightingLayer.h"
 
 #ifdef OMEGA_USE_PYTHON
 
@@ -95,11 +96,27 @@ BOOST_PYTHON_MODULE(cyclops)
 
 	PYAPI_REF_BASE_CLASS(ModelLoader);
 
+	PYAPI_REF_BASE_CLASS(ShaderManager)
+		PYAPI_METHOD(SceneManager, setShaderMacroToFile)
+		PYAPI_METHOD(SceneManager, setShaderMacroToString)
+		PYAPI_METHOD(SceneManager, addProgram)
+		PYAPI_METHOD(SceneManager, updateProgram)
+		PYAPI_REF_GETTER(SceneManager, createProgramFromString)
+		PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
+		;
+
+	PYAPI_REF_BASE_CLASS_WITH_CTOR(SceneLayer)
+		PYAPI_METHOD(SceneLayer, addLayer)
+		PYAPI_METHOD(SceneLayer, removeLayer)
+		;
+
+	PYAPI_REF_CLASS_WITH_CTOR(LightingLayer, SceneLayer)
+		;
+
 	// SceneManager
 	void (SceneManager::*loadModelAsync1)(ModelInfo*, const String&) = &SceneManager::loadModelAsync;
-	PYAPI_REF_BASE_CLASS(SceneManager)
-		PYAPI_METHOD(SceneManager, setMainLight)
-		PYAPI_REF_GETTER(SceneManager, getMainLight)
+	PYAPI_REF_CLASS(SceneManager, ShaderManager)
+		PYAPI_REF_GETTER(SceneManager, getLightingLayer)
 		PYAPI_METHOD(SceneManager, addModel)
 		PYAPI_METHOD(SceneManager, loadModel)
 		.def("loadModelAsync", loadModelAsync1)
@@ -112,16 +129,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(SceneManager, hideWand)
 		PYAPI_METHOD(SceneManager, setWandEffect)
 		PYAPI_METHOD(SceneManager, setWandSize)
-		PYAPI_GETTER(SceneManager, getCurrentShadowSettings)
-		PYAPI_METHOD(SceneManager, resetShadowSettings)
-		PYAPI_METHOD(SceneManager, setShaderMacroToFile)
-		PYAPI_METHOD(SceneManager, setShaderMacroToString)
 		PYAPI_REF_GETTER(SceneManager, getGlobalUniforms)
-		PYAPI_METHOD(SceneManager, addProgram)
-		PYAPI_METHOD(SceneManager, updateProgram)
-		PYAPI_REF_GETTER(SceneManager, createProgramFromString)
 		PYAPI_REF_GETTER(SceneManager, createTexture)
-		PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
 		// Physics
 		PYAPI_GETTER(SceneManager, getGravity)
 		PYAPI_METHOD(SceneManager, setGravity)
@@ -217,6 +226,8 @@ BOOST_PYTHON_MODULE(cyclops)
 
 	// Entity
 	PYAPI_REF_CLASS(Entity, SceneNode)
+		PYAPI_METHOD(Entity, setLayer)
+		PYAPI_REF_GETTER(Entity, getLayer)
 		PYAPI_METHOD(Entity, castShadow)
 		PYAPI_METHOD(Entity, doesCastShadow)
 		PYAPI_METHOD(Entity, hasEffect)
@@ -314,6 +325,15 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_ENUM_VALUE(Light, Spot)
 		PYAPI_ENUM_VALUE(Light, Custom);
 
+	// ShadowMap
+	PYAPI_REF_BASE_CLASS_WITH_CTOR(ShadowMap)
+		PYAPI_METHOD(ShadowMap, setTextureSize)
+		;
+
+	// ShadowMap
+	PYAPI_REF_CLASS_WITH_CTOR(SoftShadowMap, ShadowMap)
+		;
+
 	// Light
 	PYAPI_REF_CLASS(Light, SceneNode)
 		.def("create", &Light::create, PYAPI_RETURN_REF).staticmethod("create")
@@ -321,10 +341,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		.def("setAmbient", &Light::setAmbient)
 		.def("setEnabled", &Light::setEnabled)
 		.def("isEnabled", &Light::isEnabled)
-		.def("setSoftShadowJitter", &Light::setSoftShadowJitter)
-		.def("getSoftShadowJitter", &Light::getSoftShadowJitter)
-		.def("setSoftShadowWidth", &Light::setSoftShadowWidth)
-		.def("getSoftShadowWidth", &Light::getSoftShadowWidth)
+		PYAPI_METHOD(Light, setLayer)
+		PYAPI_REF_GETTER(Light, getLayer)
 		PYAPI_METHOD(Light, setAttenuation)
 		PYAPI_GETTER(Light, getAttenuation)
 		PYAPI_METHOD(Light, getLightType)
@@ -337,6 +355,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(Light, setSpotCutoff)
 		PYAPI_METHOD(Light, getSpotExponent)
 		PYAPI_METHOD(Light, setSpotExponent)
+		PYAPI_METHOD(Light, setShadow)
+		PYAPI_REF_GETTER(Light, getShadow)
 		;
 
 	// ModelInfo
@@ -353,22 +373,10 @@ BOOST_PYTHON_MODULE(cyclops)
 		.def_readwrite("loaderOutput", &ModelInfo::loaderOutput)
 		;
 
-	// ShadowSetings
-	class_<ShadowSettings>("ShadowSettings")
-		.def_readwrite("shadowsEnabled", &ShadowSettings::shadowsEnabled)
-		.def_readwrite("shadowResolutionRatio", &ShadowSettings::shadowResolutionRatio)
-		;
-
 	// SkyBox
 	PYAPI_REF_BASE_CLASS_WITH_CTOR(Skybox)
 		PYAPI_METHOD(Skybox, loadCubeMap)
 		;
-
-	// PlaneShape
-	PYAPI_REF_BASE_CLASS(SceneLayer)
-		PYAPI_METHOD(SceneLayer, addEntity)
-		PYAPI_METHOD(SceneLayer, removeEntity)
-        ;
 
 	// Free Functions
 	def("getSceneManager", getSceneManager, PYAPI_RETURN_REF);

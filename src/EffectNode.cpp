@@ -139,3 +139,13 @@ bool EffectNode::define_techniques()
 	return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void EffectNode::setShaderManager(ShaderManager* sm)
+{
+	myShaderManager = sm;
+	foreach(Material* m, myMaterials)
+	{
+		m->setShaderManager(sm);
+	}
+}
+

@@ -53,6 +53,8 @@ namespace cyclops {
 	using namespace omegaOsg;
 
 	class SceneManager;
+	class SceneLayer;
+	class ShaderManager;
 
 	///////////////////////////////////////////////////////////////////////////
 	//! Encapsulates an osg node (or nodes) and offers a few additional 
@@ -69,6 +71,9 @@ namespace cyclops {
 		osg::Node* getOsgNode() { return myEffect; }
 		//SceneNode* getSceneNode() { return mySceneNode; }
 
+		SceneLayer* getLayer();
+		void setLayer(SceneLayer* layer);
+
 		//! Visuals
 		//@{
 		bool hasEffect();
@@ -78,6 +83,9 @@ namespace cyclops {
 		int getMaterialCount();
 		void addMaterial(Material* mat);
 		void clearMaterials();
+		//! Sets the shader manager used by this entity to find shaders used
+		//! my the entity materials. Default shader manager is the scene manager
+		void setShaderManager(ShaderManager* sm);
 		//@}
 
 		void castShadow(bool value);
@@ -115,6 +123,9 @@ namespace cyclops {
 	private:
 		Ref<SceneManager> mySceneManager;
 
+		// Normal pointer to avoid circular refs.
+		SceneLayer*	myLayer;
+
 		Ref<osg::Node> myOsgNode;
 		//SceneNode* mySceneNode;
 		Ref<OsgSceneObject> myOsgSceneObject;
@@ -132,6 +143,10 @@ namespace cyclops {
 	///////////////////////////////////////////////////////////////////////////
 	inline RigidBody* Entity::getRigidBody()
 	{ return myRigidBody; }
+
+	///////////////////////////////////////////////////////////////////////////
+	inline SceneLayer* Entity::getLayer()
+	{ return myLayer; }
 };
 
 #endif

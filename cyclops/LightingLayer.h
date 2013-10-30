@@ -30,69 +30,69 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
- *	A scene layer is an abstract class that groups entities together for a
- *  variety of purposes: lighting, clipping, LOD and so on. SceneLayers can form
- *	a hyerarchy similar to the scene node tree, but the scene layer tree is used
- *	to represent properties of the scene different than spatial transformations.
  ******************************************************************************/
-#ifndef __CY_SCENE_LAYER__
-#define __CY_SCENE_LAYER__
+#ifndef __CY_LIGHTING_LAYER__
+#define __CY_LIGHTING_LAYER__
 
-#include "cyclopsConfig.h"
-#include <omega.h>
-#include <osg/Group>
+#include "SceneLayer.h"
+#include "ShaderManager.h"
+#include "Light.h"
 
 namespace cyclops {
-	using namespace omega;
-	
-	class Entity;
-	
-	//!	A scene layer is an abstract class that groups entities together for a
-	//! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
-	//!	can form a hyerarchy similar to the scene node tree, but the scene 
-	//!	layer tree is used to represent properties of the scene different than 
-	//! spatial transformations.
-	class CY_API SceneLayer: public ReferenceType, public SceneNodeListener
-	{
-	friend class Entity;
-	public:
-		SceneLayer();
-		virtual ~SceneLayer();
-
-		//! Add a sub-layer 
-		virtual void addLayer(SceneLayer* layer);
-		//! remove a sub-layer
-		virtual void removeLayer(SceneLayer* layer);
-		List< Ref<SceneLayer> >& getLayers();
-		SceneLayer* getParentLayer() { return myParent; }
-
-		//! @internal SceneNodeListener overrides
-		//! These methods are needed to handle entities when they get attached
-		//! or detached from the scene
-		virtual void onAttachedToScene(SceneNode* source);
-		virtual void onDetachedFromScene(SceneNode* source);
-
-		virtual osg::Group* getOsgNode() { return myRoot; }
-
-		//! Invokes the updateLayer function on this layer and all sub-layers
-		void update();
-
-	protected:
-		virtual void updateLayer() {}
-		virtual void addEntity(Entity* e);
-		virtual void removeEntity(Entity* e);
-
-	protected:
-		SceneLayer* myParent;
-		Ref<osg::Group> myRoot;
-
-		List< Ref<Entity> > myEntities;
-		List< Ref<SceneLayer> > myLayers;
-	};	
-	
 	///////////////////////////////////////////////////////////////////////////
-	inline List< Ref<SceneLayer> >& SceneLayer::getLayers()
-	{ return myLayers; }
+	class CY_API LightingLayer: public SceneLayer
+	{
+	friend class Light;
+	public:
+		typedef Dictionary<Light*, LightInstance* > LightInstanceMap;
+
+	public:
+		//! Constructs a new Lighting layer, using the passed shader manager
+		LightingLayer(ShaderManager* sm);
+		//! Constructs a new Lighting layer, creating a shader manager internally.
+		LightingLayer();
+		~LightingLayer();
+
+		//! Add a sub-layer. Lights applied to this layer will be also
+		//! be applied to all lighting sub-layers. 
+		virtual void addLayer(SceneLayer* layer);
+		virtual void removeLayer(SceneLayer* layer);
+
+		virtual osg::Group* getOsgNode() { return myPreShadowNode; }
+
+		//! Given a light, find a corresponding light instance attached to this
+		//! layer. Returns NULL if no instance is found.
+		LightInstance* findLightInstance(Light* l);
+
+		ShaderManager* getShaderManager() { return myShaderManager; }
+
+	protected:
+		//! This methods are never used directly but are called by Light::setLayer
+		virtual void addLight(Light* l);
+		virtual void removeLight(Light* l);
+
+		virtual void updateLayer();
+		// Reimplemented, so we can tell Entities to use the layer shader manager
+		virtual void addEntity(Entity* e);
+
+		void addLightToSubLayers(SceneLayer* layer, Light* l);
+		void removeLightFromSubLayers(SceneLayer* layer, Light* l);
+
+	private:
+		LightInstanceMap myLights;
+		Ref<ShaderManager> myShaderManager;
+		
+		// This is the node over which shadowed scenes are applied.
+		Ref<osg::Group> myPreShadowNode;
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+	inline LightInstance* LightingLayer::findLightInstance(Light* l)
+	{
+		if(myLights.find(l) != myLights.end()) return myLights[l];
+		return NULL;
+	}
 };
+
 
 #endif

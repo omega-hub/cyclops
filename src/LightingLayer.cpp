@@ -30,112 +30,116 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
- *	A scene layer is an abstract class that groups entities together for a
- *  variety of purposes: lighting, clipping, LOD and so on. SceneLayers can form
- *	a hyerarchy similar to the scene node tree, but the scene layer tree is used
- *	to represent properties of the scene different than spatial transformations.
  ******************************************************************************/
-#include "cyclops/SceneLayer.h"
+#include "cyclops/LightingLayer.h"
 #include "cyclops/Entity.h"
 
 using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer::SceneLayer():
-	myParent(NULL)
+LightingLayer::LightingLayer():
+	myShaderManager(new ShaderManager())
 {
-	myRoot = new osg::Group();
+	myPreShadowNode = new osg::Group();
+	myPreShadowNode->addChild(myRoot);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneLayer::~SceneLayer()
+LightingLayer::LightingLayer(ShaderManager* sm):
+	myShaderManager(sm)
 {
-	List< Ref<Entity> > tmpList = myEntities;
-	// Detach all the attached entities.
-	foreach(Entity* e, tmpList)
+	myPreShadowNode = new osg::Group();
+	myPreShadowNode->addChild(myRoot);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+LightingLayer::~LightingLayer()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::addEntity(Entity* e)
+{
+	SceneLayer::addEntity(e);
+	e->setShaderManager(myShaderManager);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::addLight(Light* l)
+{
+	oassert(l != NULL);
+	LightInstance* li = l->createInstance(myRoot);
+	myLights[l] = li;
+	myShaderManager->addLightInstance(li);
+	addLightToSubLayers(this, l);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::removeLight(Light* l)
+{
+	if(myLights.find(l) != myLights.end())
 	{
-		e->setLayer(NULL);
-	}
-	myEntities.clear();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::addEntity(Entity* e)
-{
-	// Add an entity to the clip plane: we are now in charge of the entity
-	// scene change events, so we set ourselves as the entity listeners
-	oassert(e != NULL);
-	e->addListener(this);
-	myRoot->addChild(e->getOsgNode());
-	myEntities.push_back(e);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::removeEntity(Entity* e)
-{
-	// Entity removed from the clip plane: reset the scene manager as the entity
-	// listener for scene change events.
-	oassert(e != NULL);
-	e->removeListener(this);
-	myRoot->removeChild(e->getOsgNode());
-	myEntities.remove(e);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::onAttachedToScene(SceneNode* source)
-{
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
-	{
-		myRoot->addChild(e->getOsgNode());
+		LightInstance* li = myLights[l];
+		myLights.erase(l);
+		myShaderManager->removeLightInstance(li);
+		l->destroyInstance(li);
+		removeLightFromSubLayers(this, l);
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::onDetachedFromScene(SceneNode* source)
+void LightingLayer::addLayer(SceneLayer* layer)
 {
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
+	SceneLayer::addLayer(layer);
+	// Add all of the lights of this layer to all lighting sublayers.
+	LightingLayer* ll = dynamic_cast<LightingLayer*>(layer);
+	typedef KeyValue<Light*, LightInstance*> LightInstanceMapItem;
+	foreach(LightInstanceMapItem i, myLights)
 	{
-		myRoot->addChild(e->getOsgNode());
+		if(ll != NULL) ll->addLight(i.getKey());
+		else addLightToSubLayers(layer, i.getKey());
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::addLayer(SceneLayer* layer)
+void LightingLayer::removeLayer(SceneLayer* layer)
 {
-	if(layer != NULL)
+	SceneLayer::removeLayer(layer);
+	// Add all of the lights of this layer to all lighting sublayers.
+	LightingLayer* ll = dynamic_cast<LightingLayer*>(layer);
+	typedef KeyValue<Light*, LightInstance*> LightInstanceMapItem;
+	foreach(LightInstanceMapItem i, myLights)
 	{
-		if(layer->getParentLayer() != NULL)
-		{
-			layer->getParentLayer()->removeLayer(layer);
-		}
-		myLayers.push_back(layer);
-		// Attach the layer osg node to this layer osg node
-		myRoot->addChild(layer->getOsgNode());
+		if(ll != NULL) ll->addLight(i.getKey());
+		else removeLightFromSubLayers(layer, i.getKey());
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::removeLayer(SceneLayer* layer)
+void LightingLayer::addLightToSubLayers(SceneLayer* layer, Light* l)
 {
-	if(layer != NULL)
+	foreach(SceneLayer* sl, layer->getLayers())
 	{
-		layer->myParent = NULL;
-		myLayers.remove(layer);
-		// Detach the layer osg node to this layer osg node
-		myRoot->removeChild(layer->getOsgNode());
+		LightingLayer* ll = dynamic_cast<LightingLayer*>(sl);
+		if(ll != NULL) ll->addLight(l);
+		else addLightToSubLayers(sl, l);
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SceneLayer::update()
+void LightingLayer::removeLightFromSubLayers(SceneLayer* layer, Light* l)
 {
-	updateLayer();
-	foreach(SceneLayer* l, myLayers) l->update();
+	foreach(SceneLayer* sl, layer->getLayers())
+	{
+		LightingLayer* ll = dynamic_cast<LightingLayer*>(sl);
+		if(ll != NULL) ll->removeLight(l);
+		else removeLightFromSubLayers(sl, l);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LightingLayer::updateLayer()
+{
+	myShaderManager->update();
 }

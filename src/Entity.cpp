@@ -42,6 +42,7 @@
 
 #include "cyclops/SceneManager.h"
 #include "cyclops/Entity.h"
+#include "cyclops/LightingLayer.h"
 
 using namespace cyclops;
 
@@ -53,7 +54,8 @@ Entity::Entity(SceneManager* scene):
 		myEffect(NULL),
 		myOsgSceneObject(NULL),
 		myCastShadow(true),
-		myCullingActive(true)
+		myCullingActive(true),
+		myLayer(NULL)
 {
 	// By default attach new entities to the root node of the scene.
 	myEffect = new EffectNode(scene);
@@ -68,9 +70,17 @@ Entity::Entity(SceneManager* scene):
 ///////////////////////////////////////////////////////////////////////////////
 Entity::~Entity()
 {
-	removeListener(mySceneManager);
+	setLayer(NULL);
 	// Make sure rigid body is unregistered.
 	myRigidBody->setEnabled(false);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Entity::setLayer(SceneLayer* layer)
+{
+	if(myLayer != NULL) myLayer->removeEntity(this);
+	if(layer != NULL) layer->addEntity(this);
+	myLayer = layer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,7 +117,9 @@ void Entity::initialize(osg::Node* node)
 	addComponent(myOsgSceneObject);
 
 	// Now add this drawable object to the scene.
-	addListener(mySceneManager);
+	//addListener(mySceneManager);
+	setLayer(mySceneManager->getLightingLayer());
+
 	getEngine()->getScene()->addChild(this);
 
 	myRigidBody = new RigidBody(this);
@@ -183,6 +195,13 @@ void Entity::clearMaterials()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void Entity::setShaderManager(ShaderManager* sm)
+{
+	oassert(sm != NULL);
+	myEffect->setShaderManager(sm);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Entity::castShadow(bool value)
 {
 	myCastShadow = value;
@@ -190,7 +209,7 @@ void Entity::castShadow(bool value)
 	{
 		if(!myCastShadow)
 		{
-			myOsgNode->setNodeMask(0xffffffff & ~SceneManager::CastsShadowTraversalMask);
+			myOsgNode->setNodeMask(0xffffffff & ~ShadowMap::CastsShadowTraversalMask);
 		}
 		else
 		{

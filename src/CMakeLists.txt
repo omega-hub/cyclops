@@ -3,6 +3,12 @@ if(WIN32)
 	# Add the DOSGBULLET_STATIC to following projects, so we tell the header files 
 	# we are not importing dll symbols.
 	add_definitions(-DOSGBULLET_STATIC)
+	if(MSVC)
+		# Exclude libcmt when linking in visual studio
+		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib")
+		set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} /NODEFAULTLIB:libcmt.lib")
+		add_definitions(-D_CRT_SECURE_NO_WARNINGS /wd4244 /wd4018)
+	endif(MSVC)
 endif()
 
 set(SRCS 
@@ -11,6 +17,7 @@ set(SRCS
 		AnimatedObject.cpp
 		LineSet.cpp
 		Light.cpp
+		LightingLayer.cpp
 		Material.cpp
 		MaterialParser.cpp
 		ModelLoader.cpp
@@ -19,8 +26,10 @@ set(SRCS
 		SceneLayer.cpp
 		Shapes.cpp
 		Skybox.cpp
+		ShaderManager.cpp
 		SceneLoader.cpp
 		SceneManager.cpp
+		ShadowMap.cpp
 		StaticObject.cpp
 		Text3D.cpp
 		Uniforms.cpp
@@ -33,6 +42,7 @@ set(HEADERS
 		../cyclops/AnimatedObject.h
 		../cyclops/LineSet.h
 		../cyclops/Light.h
+		../cyclops/LightingLayer.h
 		../cyclops/Material.h
 		../cyclops/MaterialParser.h
 		../cyclops/ModelLoader.h
@@ -42,9 +52,11 @@ set(HEADERS
 		../cyclops/Shapes.h
 		../cyclops/Text3D.h
 		../cyclops/Skybox.h
+		../cyclops/ShaderManager.h
 		../cyclops/StaticObject.h
 		../cyclops/SceneLoader.h
 		../cyclops/SceneManager.h
+		../cyclops/ShadowMap.h
 		../cyclops/Uniforms.h)
 		
 ###############################################################################

@@ -50,7 +50,12 @@ Material* Material::create()
 
 ///////////////////////////////////////////////////////////////////////////////
 Material::Material(osg::StateSet* ss, SceneManager* sm): Uniforms(ss), 
-	myStateSet(ss), myTransparent(false), mySceneManager(sm)
+	myStateSet(ss), myTransparent(false), 
+	// Note: by default we use the scene manager as the shader manager for the
+	// meterial. If the material owner entity gets attached to a different
+	// scene layer providing its own shader manager, this will be substituted
+	// through the setShaderManager method.
+	mySceneManager(sm), myShaderManager(sm)
 {
 	reset();
 	myAlpha = addUniform("unif_Alpha", Uniform::Float);
@@ -289,6 +294,8 @@ void Material::reset()
 ///////////////////////////////////////////////////////////////////////////////
 bool Material::setProgram(const String& name)
 {
+	myProgramName = name;
+
 	// Shortcut: if program name is null, disable shader programs for this 
 	// material.
 	if(name == "")
@@ -369,5 +376,13 @@ ProgramAsset* Material::getOrCreateProgram(const String& name, const String& var
 		}
 	}
 
-	return mySceneManager->getOrCreateProgram(progName, vertName, fragName);
+	return myShaderManager->getOrCreateProgram(progName, vertName, fragName);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Material::setShaderManager(ShaderManager* sm)
+{
+	myShaderManager = sm;
+	// Force a shading program reload.
+	setProgram(myProgramName);
 }

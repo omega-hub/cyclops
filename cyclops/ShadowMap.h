@@ -30,69 +30,73 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
- *	A scene layer is an abstract class that groups entities together for a
- *  variety of purposes: lighting, clipping, LOD and so on. SceneLayers can form
- *	a hyerarchy similar to the scene node tree, but the scene layer tree is used
- *	to represent properties of the scene different than spatial transformations.
+ *	A light that can be added to a cyclops scene.
  ******************************************************************************/
-#ifndef __CY_SCENE_LAYER__
-#define __CY_SCENE_LAYER__
+#ifndef __CY_SHADOW_MAP__
+#define __CY_SHADOW_MAP__
 
 #include "cyclopsConfig.h"
-#include <omega.h>
+
 #include <osg/Group>
+#include <osgShadow/ShadowedScene>
+#include <osgShadow/SoftShadowMap>
+
+#define OMEGA_NO_GL_HEADERS
+#include <omega.h>
+#include <omegaOsg/omegaOsg.h>
 
 namespace cyclops {
 	using namespace omega;
-	
-	class Entity;
-	
-	//!	A scene layer is an abstract class that groups entities together for a
-	//! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
-	//!	can form a hyerarchy similar to the scene node tree, but the scene 
-	//!	layer tree is used to represent properties of the scene different than 
-	//! spatial transformations.
-	class CY_API SceneLayer: public ReferenceType, public SceneNodeListener
-	{
-	friend class Entity;
-	public:
-		SceneLayer();
-		virtual ~SceneLayer();
+	using namespace omegaOsg;
 
-		//! Add a sub-layer 
-		virtual void addLayer(SceneLayer* layer);
-		//! remove a sub-layer
-		virtual void removeLayer(SceneLayer* layer);
-		List< Ref<SceneLayer> >& getLayers();
-		SceneLayer* getParentLayer() { return myParent; }
+	class LightingLayer;
+	class Light;
 
-		//! @internal SceneNodeListener overrides
-		//! These methods are needed to handle entities when they get attached
-		//! or detached from the scene
-		virtual void onAttachedToScene(SceneNode* source);
-		virtual void onDetachedFromScene(SceneNode* source);
-
-		virtual osg::Group* getOsgNode() { return myRoot; }
-
-		//! Invokes the updateLayer function on this layer and all sub-layers
-		void update();
-
-	protected:
-		virtual void updateLayer() {}
-		virtual void addEntity(Entity* e);
-		virtual void removeEntity(Entity* e);
-
-	protected:
-		SceneLayer* myParent;
-		Ref<osg::Group> myRoot;
-
-		List< Ref<Entity> > myEntities;
-		List< Ref<SceneLayer> > myLayers;
-	};	
-	
 	///////////////////////////////////////////////////////////////////////////
-	inline List< Ref<SceneLayer> >& SceneLayer::getLayers()
-	{ return myLayers; }
+	class ShadowMap: public ReferenceType
+	{
+	friend class Light;
+	public:
+		static const int ReceivesShadowTraversalMask = 0x1;
+		static const int CastsShadowTraversalMask = 0x2;
+
+	public:
+		ShadowMap();
+		osgShadow::ShadowedScene* getOsgNode()
+		{ return myShadowedScene; }
+
+		void setTextureSize(int width, int height);
+
+	private:
+		//! used by Light to notify tell this shadow map who is its owner.
+		void setLight(Light* l); 
+
+		// Attaches this shadow map to the specified layer
+		void setLayer(LightingLayer* layer);
+		void addToLayer(LightingLayer* layer);
+		void removeFromLayer(LightingLayer* layer);
+
+	protected:
+		virtual void initialize();
+		void checkInitialized();
+
+	protected:
+		bool myInitialized;
+		Light* myLight;
+		LightingLayer* myLayer;
+		Ref<osgShadow::ShadowedScene> myShadowedScene;
+        Ref<osgShadow::ShadowMap> myShadowMap;
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+	class SoftShadowMap: public ShadowMap
+	{
+	protected:
+		virtual void initialize();
+
+	private:
+        Ref<osgShadow::SoftShadowMap> mySoftShadowMap;
+	};
 };
 
 #endif

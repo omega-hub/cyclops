@@ -44,6 +44,7 @@ namespace cyclops {
 	using namespace omega;
 	using namespace omegaOsg;
 	class SceneManager;
+	class ShaderManager;
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	class CY_API EffectNode: public osgFX::Effect
@@ -67,12 +68,17 @@ namespace cyclops {
 		String getDefinition() { return myDefinition; }
 		void setDefinition(const String& definition);
 
+		//TODO: Is this needed?
 		SceneManager* getSceneManager() { return mySceneManager; }
 
 		Material* getMaterial(unsigned int index);
 		void addMaterial(Material* mat);
 		int getMaterialCount();
 		void clearMaterials();
+
+		//! @internal sets the shader manager used by this effect to manage
+		//! material shaders
+		void setShaderManager(ShaderManager* sm);
 
 	private:
 		Ref<osgFX::Technique> myCurrentTechnique;
@@ -81,6 +87,7 @@ namespace cyclops {
 
 		String myDefinition;
 		SceneManager* mySceneManager;
+		ShaderManager* myShaderManager;
 	};
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////

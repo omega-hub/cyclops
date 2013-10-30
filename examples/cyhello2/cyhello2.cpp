@@ -111,7 +111,6 @@ void HelloApplication::initialize()
 	light->setColor(Color(1.0f, 1.0f, 1.0f));
 	light->setAmbient(Color(0.1f, 0.1f, 0.1f));
 	//light->setSoftShadowWidth(0.01f);
-	mySceneManager->setMainLight(light);
 
 	// Setup a light for the scene.
 	Light* light2 = new Light(mySceneManager);
