@@ -40,6 +40,7 @@
 // forward declarations
 class btRigidBody;
 class btBoxShape;
+class btVector3;
 struct btDefaultMotionState;
 
 namespace cyclops {
@@ -74,6 +75,12 @@ namespace cyclops {
 		void setUserControlled(bool value);
 		bool isUserControlled();
 
+    // Forces
+    void applyForce(const Vector3f& force, const Vector3f& relPos);
+    void applyCentralImpulse(const Vector3f& impulse);
+    void applyImpulse(const Vector3f& impulse, const Vector3f& relPos);
+    void setAngularVelocity(const Vector3f& angularVelocity);
+
 	private:
 		Entity* myEntity;
 
@@ -105,6 +112,7 @@ namespace cyclops {
 	{
 		return myUserControlled;
 	}
+
 };
 
 #endif

@@ -218,6 +218,10 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(RigidBody, sync)
 		PYAPI_METHOD(RigidBody, isUserControlled)
 		PYAPI_METHOD(RigidBody, setUserControlled)
+    PYAPI_METHOD(RigidBody, applyForce)
+    PYAPI_METHOD(RigidBody, applyImpulse)
+    PYAPI_METHOD(RigidBody, applyCentralImpulse)
+    PYAPI_METHOD(RigidBody, setAngularVelocity)
 		;
 
 	// Entity

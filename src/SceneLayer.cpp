@@ -51,7 +51,7 @@ SceneLayer::SceneLayer():
 ///////////////////////////////////////////////////////////////////////////////
 SceneLayer::~SceneLayer()
 {
-	List< Ref<Entity> > tmpList = myEntities;
+	List< Entity* > tmpList = myEntities;
 	// Detach all the attached entities.
 	foreach(Entity* e, tmpList)
 	{
@@ -102,7 +102,7 @@ void SceneLayer::onDetachedFromScene(SceneNode* source)
 	Entity* e = dynamic_cast<Entity*>(source);
 	if(e != NULL)
 	{
-		myRoot->addChild(e->getOsgNode());
+		myRoot->removeChild(e->getOsgNode());
 	}
 }
 
