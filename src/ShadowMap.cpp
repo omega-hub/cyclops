@@ -43,7 +43,8 @@ using namespace cyclops;
 ShadowMap::ShadowMap():
 	myLayer(NULL),
 	myLight(NULL),
-	myInitialized(false)
+	myInitialized(false),
+	myShadowTextureUnit(-1)
 {
 	myShadowedScene = new osgShadow::ShadowedScene();
 	myShadowedScene->setReceivesShadowTraversalMask(ShadowMap::ReceivesShadowTraversalMask);
@@ -82,8 +83,6 @@ void ShadowMap::addToLayer(LightingLayer* layer)
 	ShadowMap* sm = myLight->getShadow();
 	oassert(sm);
 
-	//osg::Group* curChild = (osg::Group*)layer->getOsgNode()->getChild(0);
-	//layer->getOsgNode()->removeChild(curChild);
 	layer->getOsgNode()->addChild(sm->getOsgNode());
 	sm->getOsgNode()->addChild(layer->getPostShadowOsgNode());
 
@@ -91,9 +90,6 @@ void ShadowMap::addToLayer(LightingLayer* layer)
 	oassert(li);
 	myShadowMap->setLight(li->getOsgLight());
 	myShadowMap->setShadowedSceneStateSet(layer->getPostShadowOsgNode()->getOrCreateStateSet());
-
-	//ShaderManager* shm = layer->getShaderManager();
-	//shm->setActiveCacheId("sm");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,25 +99,18 @@ void ShadowMap::removeFromLayer(LightingLayer* layer)
 
 	ShadowMap* sm = myLight->getShadow();
 	oassert(sm);
-	// Bypass the shadow map.
-	//osg::Group* shadowNode = sm->getOsgNode();
-	//osg::Group* parent = shadowNode->getParent(0);
-	//parent->removeChild(shadowNode);
-	//parent->addChild(shadowNode->getChild(0));
-	//shadowNode->removeChild(0, 1);
-	//sm->getOsgNode()->removeChildren(0, 1);
 	layer->getOsgNode()->removeChild(sm->getOsgNode());
 	sm->getOsgNode()->removeChild(layer->getPostShadowOsgNode());
 
-
-	//ShaderManager* shm = layer->getShaderManager();
-	//shm->setActiveCacheId("nosm");
+	myShadowTextureUnit = -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void ShadowMap::setTextureUnit(int unit)
 {
 	checkInitialized();
+	myShadowTextureUnit = unit;
+	//ofmsg("Setting shadow for light %1% to %2%", %myLight->getName() %unit);
 	myShadowMap->setTextureUnit(unit);
 }
 
@@ -129,7 +118,7 @@ void ShadowMap::setTextureUnit(int unit)
 int ShadowMap::getTextureUnit()
 {
 	checkInitialized();
-	return myShadowMap->getTextureUnit();
+	return myShadowTextureUnit;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

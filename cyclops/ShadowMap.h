@@ -91,6 +91,7 @@ namespace cyclops {
 	protected:
 		bool myInitialized;
 		Light* myLight;
+		int myShadowTextureUnit;
 		LightingLayer* myLayer;
         Ref<ShadowMapGenerator> myShadowMap;
 		Ref<osgShadow::ShadowedScene> myShadowedScene;
