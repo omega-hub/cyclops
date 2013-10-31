@@ -57,7 +57,9 @@ using namespace cyclops;
 ShadowMapGenerator::ShadowMapGenerator():
     _shadowTextureUnit(1),
     _polyOffset(1.0,1.0),
-    _textureSize(1024,1024)
+    _textureSize(1024,1024),
+	myManualRefreshEnabled(false),
+	myDirty(true)
 {
 	_stateset = new osg::StateSet;
     _texture = new osg::Texture2D;
@@ -326,8 +328,12 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
         cv.setTraversalMask( traversalMask &
             getShadowedScene()->getCastsShadowTraversalMask() );
 
-        // do RTT camera traversal
-        _camera->accept(cv);
+        // do RTT camera traversal (only if shadow map needs to be refreshed)
+		if(!myManualRefreshEnabled || myDirty)
+		{
+			myDirty = false;
+			_camera->accept(cv);
+		}
 
         _texgen->setMode(osg::TexGen::EYE_LINEAR);
 

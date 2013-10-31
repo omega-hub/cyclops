@@ -57,7 +57,8 @@ Light::Light(SceneManager* scene):
 	// map, causing errors.
 	mySpotCutoff(180),
 	mySpotExponent(1),
-	myLayer(NULL)
+	myLayer(NULL),
+	myShadowRefreshMode(OnFrame)
 {
 	setLayer(mySceneManager->getLightingLayer());
 	setLightType(Point);
@@ -66,6 +67,20 @@ Light::Light(SceneManager* scene):
 ///////////////////////////////////////////////////////////////////////////////
 Light::~Light()
 {}
+
+///////////////////////////////////////////////////////////////////////////////
+void Light::updateTraversal(const UpdateContext& context)
+{
+	if(myShadow != NULL && myShadowRefreshMode == OnLightMove)
+	{
+		if(myLastShadowPos != getDerivedPosition())
+		{
+			myShadow->setDirty();
+			myLastShadowPos = getDerivedPosition();
+		}
+	}
+	SceneNode::updateTraversal(context);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 void Light::setEnabled(bool value)
@@ -96,6 +111,23 @@ void Light::setShadow(ShadowMap* s)
 	{
 		s->setLight(this);
 		s->setLayer(myLayer);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Light::setShadowRefreshMode(ShadowRefreshMode srm)
+{
+	myShadowRefreshMode = srm;
+	if(myShadow != NULL)
+	{
+		if(myShadowRefreshMode != OnFrame)
+		{
+			myShadow->setManualRefreshEnabled(true);
+		}
+		else
+		{
+			myShadow->setManualRefreshEnabled(false);
+		}
 	}
 }
 

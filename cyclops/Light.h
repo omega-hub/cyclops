@@ -64,6 +64,7 @@ namespace cyclops {
 	friend class LightInstance;
 	public:
 		enum LightType { Point, Directional, Spot, Custom };
+		enum ShadowRefreshMode { OnFrame, OnLightMove, Manual };
 
 		//! Convenience method for creating Light instances
 		static Light* create();
@@ -74,6 +75,7 @@ namespace cyclops {
 
 		ShadowMap* getShadow() { return myShadow; }
 		void setShadow(ShadowMap* s);
+		void setShadowRefreshMode(ShadowRefreshMode srm);
 
 		//! Sets or gets the layer this light is applied to
 		virtual void setLayer(LightingLayer* layer);
@@ -115,6 +117,7 @@ namespace cyclops {
 		void setLightFunction(const String& function) { myLightFunction = function; }
 		String getLightFunction() { return myLightFunction; }
 
+		virtual void updateTraversal(const UpdateContext& context);
 	private:
 		void requestShaderUpdate();
 
@@ -141,6 +144,8 @@ namespace cyclops {
 
 		// Shadow stuff
 		Ref<ShadowMap> myShadow;
+		ShadowRefreshMode myShadowRefreshMode;
+		Vector3f myLastShadowPos;
 	};
 
 	///////////////////////////////////////////////////////////////////////////

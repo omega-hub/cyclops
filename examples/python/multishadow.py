@@ -8,9 +8,9 @@ from omegaToolkit import *
 # light1Color = Color("#ff5555")
 # light2Color = Color("#55ff55")
 # light3Color = Color("#5555ff")
-light1Color = Color("#888888")
-light2Color = Color("#888888")
-light3Color = Color("#888888")
+light1Color = Color("#ff8888")
+light2Color = Color("#ffff88")
+light3Color = Color("#8888ff")
 blackColor = Color("black")
 whiteColor = Color("white")
 
@@ -20,24 +20,36 @@ scene.setBackgroundColor(blackColor)
 getDefaultCamera().setPosition(0,0,2)
 getDefaultCamera().pitch(radians(-10))
 
-sphere1 = SphereShape.create(0.5, 4)
-sphere1.setPosition(-1, 1, -4)
-sphere1.setEffect("colored -d white -s 10 -g 1.0")
+n = 3
+for i in range(0, n):
+	for j in range(0, n):
+		for k in range(0, n):
+			x = float(i) / n * 2 - 1
+			y = float(j) / n * 2 - 1
+			z = float(k) / n * 2 - 1
+			s = 0.8 / n
+			sphere = SphereShape.create(s, 2)
+			sphere.setPosition(Vector3(x + 0.5, y + 1, -5 + z))
+			sphere.setEffect('colored -d white -s 10 -g 1.0')
 
-sphere2 = SphereShape.create(0.5, 4)
-sphere2.setPosition(0, 1, -4)
-sphere2.setEffect("colored -d white -s 10 -g 1.0")
+# sphere1 = SphereShape.create(0.5, 4)
+# sphere1.setPosition(-1, 1, -4)
+# sphere1.setEffect("colored -d white -s 10 -g 1.0")
 
-sphere3 = SphereShape.create(0.5, 4)
-sphere3.setPosition(1, 1, -4)
-sphere3.setEffect("colored -d white -s 10 -g 1.0")
+# sphere2 = SphereShape.create(0.5, 4)
+# sphere2.setPosition(0, 1, -4)
+# sphere2.setEffect("colored -d white -s 10 -g 1.0")
+
+# sphere3 = SphereShape.create(0.5, 4)
+# sphere3.setPosition(1, 1, -4)
+# sphere3.setEffect("colored -d white -s 10 -g 1.0")
 
 # Create first light, light sphere and interactor
 light1 = Light.create()
 light1.setColor(light1Color)
 light1.setAmbient(Color("#202020"))
 light1.setEnabled(True)
-light1.setAttenuation(1, 0.1, 0.1)
+light1.setAttenuation(1, 0.1, 0.05)
 lightSphere1 = BoxShape.create(0.05, 0.1, 0.05)
 lightSphere1.setEffect("colored -d black -e white")
 lightSphere1.setPosition(Vector3(-1, 2, -4))
@@ -55,7 +67,7 @@ light2 = Light.create()
 light2.setColor(light2Color)
 light2.setAmbient(Color("#202020"))
 light2.setEnabled(True)
-light2.setAttenuation(1, 0.1, 0.1)
+light2.setAttenuation(1, 0.1, 0.05)
 lightSphere2 = BoxShape.create(0.05, 0.1, 0.05)
 lightSphere2.setEffect("colored -d black -e white")
 lightSphere2.setPosition(Vector3(0, 2, -4))
@@ -72,7 +84,7 @@ light3 = Light.create()
 light3.setColor(light3Color)
 light3.setAmbient(Color("#202020"))
 light3.setEnabled(True)
-light3.setAttenuation(1, 0.1, 0.1)
+light3.setAttenuation(1, 0.1, 0.05)
 lightSphere3 = BoxShape.create(0.05, 0.1, 0.05)
 lightSphere3.setEffect("colored -d black -e white")
 lightSphere3.setPosition(Vector3(1, 2, -4))
@@ -106,7 +118,6 @@ sm3.setTextureSize(1024,1024)
 light1.setShadow(sm1)
 light2.setShadow(sm2)
 light3.setShadow(sm3)
-
 
 # create ground
 plane = PlaneShape.create(10, 10)
@@ -154,6 +165,16 @@ def onUpdate(frame, time, dt):
 	lightSphere1.lookAt(Vector3(0, 1, -4), Vector3(1, 0, 0))
 	lightSphere2.lookAt(Vector3(0, 1, -4), Vector3(1, 0, 0))
 	lightSphere3.lookAt(Vector3(0, 1, -4), Vector3(1, 0, 0))
+	# little trick: wait 5 frames then set light to lazy
+	# shadow update to increase performance (works because all 
+	# shadow casting objects in the scene are static).
+	# we wait a few frames before doing this to make sure the
+	# scene is fully populated. 
+	if(frame == 5):
+		light1.setShadowRefreshMode(ShadowRefreshMode.OnLightMove)
+		light2.setShadowRefreshMode(ShadowRefreshMode.OnLightMove)
+		light3.setShadowRefreshMode(ShadowRefreshMode.OnLightMove)
+	
 	
 setUpdateFunction(onUpdate)
 

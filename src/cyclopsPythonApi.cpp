@@ -325,6 +325,12 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_ENUM_VALUE(Light, Spot)
 		PYAPI_ENUM_VALUE(Light, Custom);
 
+	// ShadowUpdateMode
+	PYAPI_ENUM(Light::ShadowRefreshMode, ShadowRefreshMode)
+		PYAPI_ENUM_VALUE(Light, OnFrame)
+		PYAPI_ENUM_VALUE(Light, OnLightMove)
+		PYAPI_ENUM_VALUE(Light, Manual);
+
 	// ShadowMap
 	PYAPI_REF_BASE_CLASS_WITH_CTOR(ShadowMap)
 		PYAPI_METHOD(ShadowMap, setTextureSize)
@@ -356,6 +362,7 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(Light, getSpotExponent)
 		PYAPI_METHOD(Light, setSpotExponent)
 		PYAPI_METHOD(Light, setShadow)
+		PYAPI_METHOD(Light, setShadowRefreshMode)
 		PYAPI_REF_GETTER(Light, getShadow)
 		;
 

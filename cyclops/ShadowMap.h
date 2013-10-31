@@ -78,6 +78,11 @@ namespace cyclops {
 		void setLayer(LightingLayer* layer);
 		void addToLayer(LightingLayer* layer);
 		void removeFromLayer(LightingLayer* layer);
+		void setManualRefreshEnabled(bool value) 
+		{ myShadowMap->setManualRefreshEnabled(value); }
+		
+		void setDirty() 
+		{ myShadowMap->setDirty(); }
 
 	protected:
 		virtual void initialize();

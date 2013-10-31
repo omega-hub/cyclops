@@ -90,6 +90,12 @@ namespace cyclops {
         /** Clean scene graph from any shadow technique specific nodes, state and drawables.*/
         virtual void cleanSceneGraph();
 
+		void setManualRefreshEnabled(bool value) 
+		{ myManualRefreshEnabled = value; }
+		
+		void setDirty() 
+		{ myDirty = true; }
+
     protected:
         virtual ~ShadowMapGenerator(void) {};
         osg::ref_ptr<osg::Camera>       _camera;
@@ -105,6 +111,8 @@ namespace cyclops {
         osg::Vec2                        _polyOffset;
         osg::Vec2s                      _textureSize;
 
+		bool myManualRefreshEnabled;
+		bool myDirty;
     };
 }
 
