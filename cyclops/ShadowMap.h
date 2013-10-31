@@ -36,6 +36,7 @@
 #define __CY_SHADOW_MAP__
 
 #include "cyclopsConfig.h"
+#include "ShadowMapGenerator.h"
 
 #include <osg/Group>
 #include <osgShadow/ShadowedScene>
@@ -65,6 +66,8 @@ namespace cyclops {
 		osgShadow::ShadowedScene* getOsgNode()
 		{ return myShadowedScene; }
 
+		void setTextureUnit(int unit);
+		int getTextureUnit();
 		void setTextureSize(int width, int height);
 
 	private:
@@ -84,19 +87,19 @@ namespace cyclops {
 		bool myInitialized;
 		Light* myLight;
 		LightingLayer* myLayer;
+        Ref<ShadowMapGenerator> myShadowMap;
 		Ref<osgShadow::ShadowedScene> myShadowedScene;
-        Ref<osgShadow::ShadowMap> myShadowMap;
 	};
 
 	///////////////////////////////////////////////////////////////////////////
-	class SoftShadowMap: public ShadowMap
+	/*class SoftShadowMap: public ShadowMap
 	{
 	protected:
 		virtual void initialize();
 
 	private:
         Ref<osgShadow::SoftShadowMap> mySoftShadowMap;
-	};
+	};*/
 };
 
 #endif

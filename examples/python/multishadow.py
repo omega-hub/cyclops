@@ -4,36 +4,43 @@ from omega import *
 from cyclops import *
 from omegaToolkit import *
 
-scene = getSceneManager()
-
 # define some colors
-light1Color = Color("#ff5555")
-light2Color = Color("#55ff55")
-light3Color = Color("#5555ff")
+# light1Color = Color("#ff5555")
+# light2Color = Color("#55ff55")
+# light3Color = Color("#5555ff")
+light1Color = Color("#888888")
+light2Color = Color("#888888")
+light3Color = Color("#888888")
 blackColor = Color("black")
 whiteColor = Color("white")
 
+scene = getSceneManager()
+scene.setBackgroundColor(blackColor)
+
+getDefaultCamera().setPosition(0,0,2)
+getDefaultCamera().pitch(radians(-10))
+
 sphere1 = SphereShape.create(0.5, 4)
-sphere1.setPosition(-1, 2, -4)
+sphere1.setPosition(-1, 1, -4)
 sphere1.setEffect("colored -d white -s 10 -g 1.0")
 
 sphere2 = SphereShape.create(0.5, 4)
-sphere2.setPosition(0, 2, -4)
+sphere2.setPosition(0, 1, -4)
 sphere2.setEffect("colored -d white -s 10 -g 1.0")
 
 sphere3 = SphereShape.create(0.5, 4)
-sphere3.setPosition(1, 2, -4)
+sphere3.setPosition(1, 1, -4)
 sphere3.setEffect("colored -d white -s 10 -g 1.0")
 
 # Create first light, light sphere and interactor
 light1 = Light.create()
 light1.setColor(light1Color)
-light1.setAmbient(Color("#200000"))
+light1.setAmbient(Color("#202020"))
 light1.setEnabled(True)
 light1.setAttenuation(1, 0.1, 0.1)
-lightSphere1 = SphereShape.create(0.1, 4)
-lightSphere1.setEffect("colored -d black -e #ff5555")
-lightSphere1.setPosition(Vector3(-1, 3, -4))
+lightSphere1 = BoxShape.create(0.05, 0.1, 0.05)
+lightSphere1.setEffect("colored -d black -e white")
+lightSphere1.setPosition(Vector3(-1, 2, -4))
 interactor1 = ToolkitUtils.setupInteractor("config/interactor")
 interactor1.setSceneNode(lightSphere1)
 lightSphere1.addChild(light1)
@@ -46,19 +53,16 @@ menu.addButton("Toggle", "toggleLight1()")
 # Create second light, light sphere and interactor
 light2 = Light.create()
 light2.setColor(light2Color)
-light2.setAmbient(Color("#002000"))
+light2.setAmbient(Color("#202020"))
 light2.setEnabled(True)
 light2.setAttenuation(1, 0.1, 0.1)
-lightSphere2 = SphereShape.create(0.1, 4)
-lightSphere2.setEffect("colored -d black -e #55ff55")
-lightSphere2.setPosition(Vector3(0, 3, -4))
+lightSphere2 = BoxShape.create(0.05, 0.1, 0.05)
+lightSphere2.setEffect("colored -d black -e white")
+lightSphere2.setPosition(Vector3(0, 2, -4))
 interactor2 = ToolkitUtils.setupInteractor("config/interactor")
 interactor2.setSceneNode(lightSphere2)
 lightSphere2.addChild(light2)
 lightSphere2.castShadow(False)
-
-sm = ShadowMap()
-light2.setShadow(sm)
 
 menu = lightSphere2.createContextMenu()
 menu.addButton("Toggle", "toggleLight2()")
@@ -66,12 +70,12 @@ menu.addButton("Toggle", "toggleLight2()")
 # Create third light, light sphere and interactor
 light3 = Light.create()
 light3.setColor(light3Color)
-light3.setAmbient(Color("#000020"))
+light3.setAmbient(Color("#202020"))
 light3.setEnabled(True)
 light3.setAttenuation(1, 0.1, 0.1)
-lightSphere3 = SphereShape.create(0.1, 4)
-lightSphere3.setEffect("colored -d black -e #5555ff")
-lightSphere3.setPosition(Vector3(1, 3, -4))
+lightSphere3 = BoxShape.create(0.05, 0.1, 0.05)
+lightSphere3.setEffect("colored -d black -e white")
+lightSphere3.setPosition(Vector3(1, 2, -4))
 interactor3 = ToolkitUtils.setupInteractor("config/interactor")
 interactor3.setSceneNode(lightSphere3)
 lightSphere3.addChild(light3)
@@ -80,17 +84,29 @@ lightSphere3.castShadow(False)
 menu = lightSphere3.createContextMenu()
 menu.addButton("Toggle", "toggleLight3()")
 
-mainLayer = scene.getLightingLayer()
-# create two layers that will contain one sphere and one light each.
-leftLayer = LightingLayer()
-mainLayer.addLayer(leftLayer)
-light1.setLayer(leftLayer)
-sphere1.setLayer(leftLayer)
+light1.setLightType(LightType.Spot)
+light2.setLightType(LightType.Spot)
+light3.setLightType(LightType.Spot)
+light1.setSpotCutoff(50)
+light2.setSpotCutoff(50)
+light3.setSpotCutoff(50)
+light1.setSpotExponent(10)
+light2.setSpotExponent(10)
+light3.setSpotExponent(10)
+light1.setLightDirection(Vector3(0, 0, 1))
+light2.setLightDirection(Vector3(0, 0, 1))
+light3.setLightDirection(Vector3(0, 0, 1))
 
-rightLayer = LightingLayer()
-mainLayer.addLayer(rightLayer)
-light3.setLayer(rightLayer)
-sphere3.setLayer(rightLayer)
+sm1 = ShadowMap()
+sm2 = ShadowMap()
+sm3 = ShadowMap()
+sm1.setTextureSize(1024,1024)
+sm2.setTextureSize(1024,1024)
+sm3.setTextureSize(1024,1024)
+light1.setShadow(sm1)
+light2.setShadow(sm2)
+light3.setShadow(sm3)
+
 
 # create ground
 plane = PlaneShape.create(10, 10)
@@ -131,6 +147,15 @@ def toggleLight3():
 		lightSphere3.getMaterial().setColor(blackColor, light3Color)
 	else:
 		lightSphere3.getMaterial().setColor(whiteColor, blackColor)
+
+#------------------------------------------------------------------------------
+# Update function
+def onUpdate(frame, time, dt):
+	lightSphere1.lookAt(Vector3(0, 1, -4), Vector3(1, 0, 0))
+	lightSphere2.lookAt(Vector3(0, 1, -4), Vector3(1, 0, 0))
+	lightSphere3.lookAt(Vector3(0, 1, -4), Vector3(1, 0, 0))
+	
+setUpdateFunction(onUpdate)
 
 #------------------------------------------------------------------------------
 # Event function

@@ -30,6 +30,7 @@ set(SRCS
 		SceneLoader.cpp
 		SceneManager.cpp
 		ShadowMap.cpp
+		ShadowMapGenerator.cpp
 		StaticObject.cpp
 		Text3D.cpp
 		Uniforms.cpp
@@ -53,6 +54,8 @@ set(HEADERS
 		../cyclops/Text3D.h
 		../cyclops/Skybox.h
 		../cyclops/ShaderManager.h
+		../cyclops/ShadowMap.h
+		../cyclops/ShadowMapGenerator.h
 		../cyclops/StaticObject.h
 		../cyclops/SceneLoader.h
 		../cyclops/SceneManager.h

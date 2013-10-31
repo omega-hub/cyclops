@@ -90,7 +90,7 @@ namespace cyclops {
 		void setAmbient(const Color& value) { myAmbient = value; }
 		const Color& getAmbient() { return myAmbient; }
 
-		void setEnabled(bool value) { myEnabled = value; }
+		void setEnabled(bool value);
 		bool isEnabled() { return myEnabled; }
 
 		void setAttenuation(float constant, float linear, float quadratic) 

@@ -68,6 +68,26 @@ Light::~Light()
 {}
 
 ///////////////////////////////////////////////////////////////////////////////
+void Light::setEnabled(bool value)
+{
+	if(myEnabled != value)
+	{
+		myEnabled = value;
+		if(myShadow != NULL)
+		{
+			if(myEnabled)
+			{
+				myShadow->setLayer(myLayer);
+			}
+			else
+			{
+				myShadow->setLayer(NULL);
+			}
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Light::setShadow(ShadowMap* s)
 {
 	if(myShadow != NULL) myShadow->setLayer(NULL);
@@ -181,7 +201,11 @@ bool LightInstance::update()
 		ol->setConstantAttenuation(myLight->myAttenuation[0]);
 		ol->setLinearAttenuation(myLight->myAttenuation[1]);
 		ol->setQuadraticAttenuation(myLight->myAttenuation[2]);
-		ol->setDirection(osg::Vec3(myLight->myLightDirection[0], myLight->myLightDirection[1], myLight->myLightDirection[2]));
+
+		// Re-orient light direction based on light node orientation.
+		Vector3f lightDir = myLight->getDerivedOrientation() * myLight->myLightDirection;
+
+		ol->setDirection(osg::Vec3(lightDir[0], lightDir[1], lightDir[2]));
 		ol->setSpotCutoff(myLight->mySpotCutoff);
 		ol->setSpotExponent(myLight->mySpotExponent);
 

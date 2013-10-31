@@ -30,7 +30,7 @@ lightSphere1.castShadow(False)
 
 dirSphere1 = SphereShape.create(0.05, 4)
 dirSphere1.setEffect("colored -d black -e blue")
-dirSphere1.setPosition(Vector3(-0.5, 0, 0))
+dirSphere1.setPosition(Vector3(-1, 0, 0))
 lightSphere1.addChild(dirSphere1)
 interactor2 = ToolkitUtils.setupInteractor("config/interactor")
 interactor2.setSceneNode(dirSphere1)

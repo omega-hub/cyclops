@@ -36,6 +36,7 @@
  * settings)
  ******************************************************************************/
 #include "cyclops/ShaderManager.h"
+#include "cyclops/ShadowMap.h"
 
 // We need to include this instead of fstream or we get duplicate symbols on
 // linking.
@@ -69,8 +70,8 @@ ShaderManager::ShaderManager():
 	setShaderMacroToString("customFragmentDefs", "");
 	setShaderMacroToFile("postLightingSection", "cyclops/common/postLighting/default.frag");
 
-	setShaderMacroToFile("vsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.vert");
-	setShaderMacroToFile("fsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.frag");
+	setShaderMacroToFile("fsinclude shadowFunctions", "cyclops/common/forward/shadowFunctions.frag");
+	setShaderMacroToFile("vsinclude shadowFunctions", "cyclops/common/forward/shadowFunctions.vert");
 
 	setShaderMacroToString("unlit", 
 		"$@fragmentLightSection\n"
@@ -130,12 +131,28 @@ void ShaderManager::setShaderMacroToFile(const String& macroName, const String& 
 void ShaderManager::update()
 {
 	int i = 0;
+	int numShadows = 0;
 	bool needShaderUpdate = false;
 	foreach(LightInstance* l, myActiveLights)
 	{
-		if(l->getLight()->isEnabled())
+		Light* light = l->getLight();
+		if(light->isEnabled())
 		{
 			l->setLightIndex(i++);
+			// If light has a shadow map, give allocate a texture unit to it
+			ShadowMap* shadow = light->getShadow();
+			if(shadow != NULL)
+			{
+				int unit = ShadowFirstTexUnit + numShadows++;
+				// Re-set the texture unit only if needed (for performance)
+				if(unit != shadow->getTextureUnit())
+				{
+					shadow->setTextureUnit(unit);
+					// Shadow texture unit assignment changed: update 
+					// shaders accordingly.
+					needShaderUpdate = true;
+				}
+			}
 		}
 		needShaderUpdate |= l->update();
 	}
@@ -189,6 +206,23 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 {
 	String shaderPreSrc = source;
 	String lightSectionMacroName = "fragmentLightSection";
+	String shadowSectionMacroName = "vertexShadowSection";
+
+	if(shader->getType() == osg::Shader::FRAGMENT)
+	{
+		// Create texture sampler uniforms for shadow maps
+		String shadowTexUniforms = "";
+		foreach(LightInstance* li, myActiveLights)
+		{
+			Light* light = li->getLight();
+			if(light->isEnabled() && light->getShadow() != NULL)
+			{
+				int unit = light->getShadow()->getTextureUnit();
+				shadowTexUniforms += ostr("uniform sampler2DShadow shadowTexture%1%;\n", %unit);
+			}
+		}
+		shaderPreSrc = shadowTexUniforms + shaderPreSrc;
+	}
 
 	// Replace shader macros.
 	// Do a multiple replacement passes to process macros-within macros.
@@ -197,7 +231,8 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 	{
 		foreach(ShaderMacroDictionary::Item macro, myShaderMacros)
 		{
-			if(macro.getKey() != lightSectionMacroName)
+			if(macro.getKey() != lightSectionMacroName &&
+				macro.getKey() != shadowSectionMacroName)
 			{
 				String macroName = ostr("@%1%", %macro.getKey());
 				shaderPreSrc = StringUtils::replaceAll(shaderPreSrc, macroName, macro.getValue());
@@ -205,7 +240,8 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 		}
 	}
 
-	// Read local macro definitions (only supported one now is fragmentLightSection)
+	// Read local macro definitions (only supported one now are
+	// fragmentLightSection and vertexShadowSection)
 	String shaderSrc = "";
 	Vector<String> segments = StringUtils::split(shaderPreSrc, "$");
 	//ofmsg("segments %1%", %segments.size());
@@ -227,7 +263,8 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 		}
 	}
 
-	// Special section: replicate lighting code as many times as the active lights
+	// Fragment special section: replicate lighting code as many times as the 
+	//active lights
 	String fragmentShaderLightCode = myShaderMacros[lightSectionMacroName];
 	String fragmentShaderLightSection = "";
 	foreach(LightInstance* li, myActiveLights)
@@ -241,6 +278,19 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 				"@lightIndex", 
 				boost::lexical_cast<String>(li->getLightIndex()));
 
+			// Add the shadow value to the section
+			if(light->getShadow() != NULL)
+			{
+				int unit = light->getShadow()->getTextureUnit();
+				fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
+					"@shadowValue", ostr("computeShadowMap(shadowTexture%1%, gl_TexCoord[%2%])", %unit %unit));
+			}
+			else
+			{
+				fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
+					"@shadowValue", "1.0");
+			}
+
 			// Replace light function call with light function name specified for light.
 			fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
 				"@lightFunction", light->getLightFunction());
@@ -251,6 +301,27 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 	shaderSrc = StringUtils::replaceAll(shaderSrc, 
 		"@" + lightSectionMacroName, 
 		fragmentShaderLightSection);
+
+	// Vertex special section: setup shadows 
+	String shadowSectionCode = "";
+	String shadowSectionInstance = myShaderMacros["vertexShadowSection"];
+	foreach(LightInstance* li, myActiveLights)
+	{
+		Light* light = li->getLight();
+		if(light->isEnabled())
+		{
+			// Add the shadow value to the section
+			if(light->getShadow() != NULL)
+			{
+				int unit = light->getShadow()->getTextureUnit();
+				String funcCall = StringUtils::replaceAll(shadowSectionInstance,
+					"@shadowUnit", boost::lexical_cast<String>(unit));
+				shadowSectionCode += funcCall;
+			}
+		}
+	}
+	shaderSrc = StringUtils::replaceAll(shaderSrc, 
+		"@vertexShadowSection", shadowSectionCode);
 
 	//ofmsg("Loading shader file %1%", %name);
 	// omsg("#############################################################");
@@ -448,7 +519,18 @@ void ShaderManager::recompileShaders()
 	String lightFunc = "";
 	foreach(LightInstance* li, myActiveLights)
 	{
-		lightFunc.append(li->getLight()->getLightFunction());
+		Light* l = li->getLight();
+		if(l->isEnabled())
+		{
+			lightFunc.append(l->getLightFunction());
+			if(l->getShadow() != NULL)
+			{
+				// Here we could append a different string for different shadow
+				// functions so we can cache different shader sets.
+				lightFunc.append(ostr("shadow%1%", 
+					%l->getShadow()->getTextureUnit()));
+			}
+		}
 	}
 #ifdef OMEGA_OS_WIN
 	std::hash<String> hashFx;

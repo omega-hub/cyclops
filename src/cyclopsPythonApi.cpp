@@ -327,7 +327,7 @@ BOOST_PYTHON_MODULE(cyclops)
 		;
 
 	// ShadowMap
-	PYAPI_REF_CLASS_WITH_CTOR(SoftShadowMap, ShadowMap)
+	//PYAPI_REF_CLASS_WITH_CTOR(SoftShadowMap, ShadowMap)
 		;
 
 	// Light

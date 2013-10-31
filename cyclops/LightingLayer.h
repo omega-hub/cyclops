@@ -59,6 +59,7 @@ namespace cyclops {
 		virtual void removeLayer(SceneLayer* layer);
 
 		virtual osg::Group* getOsgNode() { return myPreShadowNode; }
+		virtual osg::Group* getPostShadowOsgNode() { return myRoot; }
 
 		//! Given a light, find a corresponding light instance attached to this
 		//! layer. Returns NULL if no instance is found.

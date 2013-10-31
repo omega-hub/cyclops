@@ -34,6 +34,7 @@
 #include "cyclops/Light.h"
 #include "cyclops/SceneManager.h"
 #include "cyclops/LightingLayer.h"
+#include "cyclops/ShadowMap.h"
 
 using namespace cyclops;
 
@@ -81,21 +82,18 @@ void ShadowMap::addToLayer(LightingLayer* layer)
 	ShadowMap* sm = myLight->getShadow();
 	oassert(sm);
 
-	osg::Group* curChild = (osg::Group*)layer->getOsgNode()->getChild(0);
-	layer->getOsgNode()->removeChild(curChild);
+	//osg::Group* curChild = (osg::Group*)layer->getOsgNode()->getChild(0);
+	//layer->getOsgNode()->removeChild(curChild);
 	layer->getOsgNode()->addChild(sm->getOsgNode());
-	sm->getOsgNode()->addChild(curChild);
+	sm->getOsgNode()->addChild(layer->getPostShadowOsgNode());
 
 	LightInstance* li = layer->findLightInstance(myLight);
 	oassert(li);
 	myShadowMap->setLight(li->getOsgLight());
+	myShadowMap->setShadowedSceneStateSet(layer->getPostShadowOsgNode()->getOrCreateStateSet());
 
-	ShaderManager* shm = layer->getShaderManager();
-	shm->setShaderMacroToFile(
-		"vsinclude shadowMap", "cyclops/common/shadowMap/softShadowMap.vert");
-    shm->setShaderMacroToFile(
-		"fsinclude shadowMap", "cyclops/common/shadowMap/softShadowMap.frag");
-	shm->setActiveCacheId("sm");
+	//ShaderManager* shm = layer->getShaderManager();
+	//shm->setActiveCacheId("sm");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,18 +104,32 @@ void ShadowMap::removeFromLayer(LightingLayer* layer)
 	ShadowMap* sm = myLight->getShadow();
 	oassert(sm);
 	// Bypass the shadow map.
-	osg::Group* shadowNode = sm->getOsgNode();
-	osg::Group* parent = shadowNode->getParent(0);
-	parent->removeChild(shadowNode);
-	parent->addChild(shadowNode->getChild(0));
-	shadowNode->removeChild(0, 1);
+	//osg::Group* shadowNode = sm->getOsgNode();
+	//osg::Group* parent = shadowNode->getParent(0);
+	//parent->removeChild(shadowNode);
+	//parent->addChild(shadowNode->getChild(0));
+	//shadowNode->removeChild(0, 1);
+	//sm->getOsgNode()->removeChildren(0, 1);
+	layer->getOsgNode()->removeChild(sm->getOsgNode());
+	sm->getOsgNode()->removeChild(layer->getPostShadowOsgNode());
 
-	ShaderManager* shm = layer->getShaderManager();
-	shm->setShaderMacroToFile(
-		"vsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.vert");
-    shm->setShaderMacroToFile(
-		"fsinclude shadowMap", "cyclops/common/shadowMap/noShadowMap.frag");
-	shm->setActiveCacheId("nosm");
+
+	//ShaderManager* shm = layer->getShaderManager();
+	//shm->setActiveCacheId("nosm");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void ShadowMap::setTextureUnit(int unit)
+{
+	checkInitialized();
+	myShadowMap->setTextureUnit(unit);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+int ShadowMap::getTextureUnit()
+{
+	checkInitialized();
+	return myShadowMap->getTextureUnit();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,28 +142,25 @@ void ShadowMap::setTextureSize(int width, int height)
 ///////////////////////////////////////////////////////////////////////////////
 void ShadowMap::initialize()
 {
-    myShadowMap = new osgShadow::ShadowMap;
-    // Hardcoded ambient bias for shadow map. Shadowed areas receive zero light. 
-    // Unshadowed areas receive full light.
-    myShadowMap->setAmbientBias(osg::Vec2(0.0f, 1.0f));
-	myShadowMap->setTextureUnit(4);
+    myShadowMap = new ShadowMapGenerator();
+	//myShadowMap->setTextureUnit(7);
     myShadowedScene->setShadowTechnique(myShadowMap);
 	myShadowMap->setTextureSize(osg::Vec2s(512, 512));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void SoftShadowMap::initialize()
-{
-    mySoftShadowMap = new osgShadow::SoftShadowMap;
-    // Hardcoded ambient bias for shadow map. Shadowed areas receive zero light. 
-    // Unshadowed areas receive full light.
-    mySoftShadowMap->setAmbientBias(osg::Vec2(0.0f, 1.0f));
-    // Hardcoded texture unit arguments for shadow map.
-	mySoftShadowMap->setSoftnessWidth(0.005f);
-    mySoftShadowMap->setJitteringScale(32);
-	mySoftShadowMap->setTextureUnit(4);
-    mySoftShadowMap->setJitterTextureUnit(5);
-    myShadowedScene->setShadowTechnique(mySoftShadowMap);
-	mySoftShadowMap->setTextureSize(osg::Vec2s(512, 512));
-	myShadowMap = mySoftShadowMap;
-}
+//void SoftShadowMap::initialize()
+//{
+//    mySoftShadowMap = new osgShadow::SoftShadowMap;
+//    // Hardcoded ambient bias for shadow map. Shadowed areas receive zero light. 
+//    // Unshadowed areas receive full light.
+//    mySoftShadowMap->setAmbientBias(osg::Vec2(0.0f, 1.0f));
+//    // Hardcoded texture unit arguments for shadow map.
+//	mySoftShadowMap->setSoftnessWidth(0.005f);
+//    mySoftShadowMap->setJitteringScale(32);
+//	mySoftShadowMap->setTextureUnit(4);
+//    mySoftShadowMap->setJitterTextureUnit(5);
+//    myShadowedScene->setShadowTechnique(mySoftShadowMap);
+//	mySoftShadowMap->setTextureSize(osg::Vec2s(512, 512));
+//	myShadowMap = mySoftShadowMap;
+//}

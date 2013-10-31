@@ -46,7 +46,6 @@
 #include "Light.h"
 
 namespace cyclops {
-
 	///////////////////////////////////////////////////////////////////////////
 	//! Stores all programs and shaders that make p an independent shading
 	//! environment. Multiple shading environments can exist at the same time
@@ -98,6 +97,11 @@ namespace cyclops {
 	public:
 		typedef Dictionary<String, String> ShaderMacroDictionary;
 		typedef Dictionary<String, String> ShaderCache;
+
+		// A shader may process at most 8 simultaneous shadow maps.
+		static const int MaxShadows = 4;
+		// First texture unit used by shadow maps.
+		static const int ShadowFirstTexUnit = 3;
 
 	public:
 		ShaderManager();
