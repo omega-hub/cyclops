@@ -316,6 +316,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(AnimatedObject, setCurrentModelIndex)
 		PYAPI_METHOD(AnimatedObject, getCurrentModelIndex)
 		PYAPI_METHOD(AnimatedObject, getNumModels)
+		PYAPI_METHOD(AnimatedObject, setOnAnimationEndedScript)
+		PYAPI_METHOD(AnimatedObject, getOnAnimationEndedScript)
 		;
 
 	// LightType

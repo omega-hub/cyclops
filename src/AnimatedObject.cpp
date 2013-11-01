@@ -123,6 +123,7 @@ AnimatedObject::AnimatedObject(SceneManager* scene, const String& modelName):
 void AnimatedObject::updateTraversal(const UpdateContext& context)
 {
 	myCurTime = context.time;
+
 	if(myCurAnimation != NULL)
 	{
 		if(myNeedStartAnimation)
@@ -245,6 +246,7 @@ float AnimatedObject::getAnimationLength(int id)
 	if(hasAnimations() && id < getNumAnimations())
 	{
 		osgAnimation::Animation* anim = myAnimations->at(id);
+		anim->computeDuration(); // osgAnimation: Duration must be computed before calling getDuration()
 		return anim->getDuration();
 	}
 	return 0;
@@ -258,7 +260,6 @@ float AnimatedObject::getAnimationStart(int id)
 		osgAnimation::Animation* anim = myAnimations->at(id);
 		return anim->getDuration();
 	}
-	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

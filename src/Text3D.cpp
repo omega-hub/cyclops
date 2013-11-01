@@ -64,6 +64,10 @@ Text3D::Text3D(SceneManager* scene):
 
 	// Lighting disabled on text objects.
 	getMaterial()->setLit(false);
+	// Make sure cube map textures are disabled, or text color will be 
+	// modulated by them.
+	// NOTE: The SKyBox class uses texture stage 3 for the cube map texture.
+	getMaterial()->getStateSet()->setTextureMode(3, GL_TEXTURE_CUBE_MAP, osg::StateAttribute::OFF);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

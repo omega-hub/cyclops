@@ -150,7 +150,8 @@ osg::Node* Skybox::createSkyBox()
 
 		stateset->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
 		stateset->setMode( GL_CULL_FACE, osg::StateAttribute::OFF );
-		stateset->setMode( GL_TEXTURE_2D, osg::StateAttribute::ON );
+		//stateset->setMode( GL_TEXTURE_2D, osg::StateAttribute::ON ); 
+		stateset->setTextureMode( 0, GL_TEXTURE_2D, osg::StateAttribute::ON ); // Removes Warning: texture mode '3553'
 
 		// clear the depth to the far plane.
 		Ref<osg::Depth> depth = new osg::Depth;
@@ -189,7 +190,7 @@ void Skybox::updateSkyBox()
 	if(myTexture != NULL && myGeode != NULL)
 	{
 		omsg("Updating Skybox");
-
+		
 		SceneManager* sm = SceneManager::instance();
 		ProgramAsset* cubeMapProgram = NULL;
 		cubeMapProgram = sm->getOrCreateProgram(
@@ -202,7 +203,7 @@ void Skybox::updateSkyBox()
 		{
 			stateset->setAttributeAndModes(cubeMapProgram->program, osg::StateAttribute::ON);
 		}
-
+		
 		// Setup the root state set to apply the environment map to scene objects.
 		// Use Texture stage 3, 6 for the environment map (0-2 reserved for object textures, 4,5 reserved for shadow maps)
 		myRootStateSet->setTextureAttributeAndModes(3, myTexture, osg::StateAttribute::ON);
