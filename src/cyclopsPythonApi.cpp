@@ -41,6 +41,7 @@
 #include "cyclops/ModelGeometry.h"
 #include "cyclops/SceneLayer.h"
 #include "cyclops/LightingLayer.h"
+#include "cyclops/CompositingLayer.h"
 
 #ifdef OMEGA_USE_PYTHON
 
@@ -113,10 +114,16 @@ BOOST_PYTHON_MODULE(cyclops)
 	PYAPI_REF_CLASS_WITH_CTOR(LightingLayer, SceneLayer)
 		;
 
+	PYAPI_REF_CLASS_WITH_CTOR(CompositingLayer, SceneLayer)
+		PYAPI_METHOD(CompositingLayer, reset)
+		PYAPI_METHOD(CompositingLayer, loadCompositor)
+		;
+
 	// SceneManager
 	void (SceneManager::*loadModelAsync1)(ModelInfo*, const String&) = &SceneManager::loadModelAsync;
 	PYAPI_REF_CLASS(SceneManager, ShaderManager)
 		PYAPI_REF_GETTER(SceneManager, getLightingLayer)
+		PYAPI_REF_GETTER(SceneManager, getCompositingLayer)
 		PYAPI_METHOD(SceneManager, addModel)
 		PYAPI_METHOD(SceneManager, loadModel)
 		.def("loadModelAsync", loadModelAsync1)

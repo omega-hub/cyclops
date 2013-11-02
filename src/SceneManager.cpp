@@ -164,7 +164,6 @@ SceneManager::SceneManager():
 	myWandEntity(NULL),
 	myDynamicsWorld(NULL),
 	myPhysicsEnabled(false),
-	myRootLayer(NULL),
 	myEngine(Engine::instance())
 {
 #ifdef OMEGA_USE_PYTHON
@@ -201,18 +200,18 @@ SceneManager::~SceneManager()
 		delete myDynamicsWorld;
 		myDynamicsWorld = NULL;
 	}
-
-	if(myRootLayer != NULL)
-	{
-		delete myRootLayer;
-		myRootLayer = NULL;
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 LightingLayer* SceneManager::getLightingLayer() 
 { 
-	return myRootLayer; 
+	return myLightingLayer; 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+CompositingLayer* SceneManager::getCompositingLayer()
+{
+	return myCompositingLayer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -226,7 +225,7 @@ void SceneManager::loadConfiguration()
 	osg::Texture2D* defaultTexture = getTexture(defaultTextureName);
 	if(defaultTexture != NULL)
 	{
-		osg::StateSet* ss = myRootLayer->getOsgNode()->getOrCreateStateSet();
+		osg::StateSet* ss = myCompositingLayer->getOsgNode()->getOrCreateStateSet();
 		ss->setTextureAttribute(0, defaultTexture);
 	}
 	else
@@ -242,8 +241,14 @@ void SceneManager::initialize()
 	if(!myOsg->isInitialized()) myOsg->initialize();
 
 	// Pass myself to the lighting layer, so it will use me as the shader manager.
-	myRootLayer = new LightingLayer(this);
-	myOsg->setRootNode(myRootLayer->getOsgNode());
+	myLightingLayer = new LightingLayer(this);
+	myCompositingLayer = new CompositingLayer();
+
+	myCompositingLayer->addLayer(myLightingLayer);
+
+	myOsg->setRootNode(myCompositingLayer->getOsgNode());
+	//myOsg->setRootNode(myRootLayer->getOsgNode());
+
 
 	loadConfiguration();
 
@@ -295,16 +300,13 @@ void SceneManager::unload()
 
 	ofmsg("SceneManager::unload: releasing %1% programs", %myTextures.size());
 	myTextures.clear();
-
-	// Delete the root layer
-	myRootLayer = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::update(const UpdateContext& context) 
 {
 	// Update the scene layers.
-	myRootLayer->update();
+	myCompositingLayer->update();
 
 	// Loop through pixel buffers associated to textures. If a texture pixel buffer is dirty, 
 	// update the relative texture.
@@ -333,7 +335,7 @@ Uniforms* SceneManager::getGlobalUniforms()
 { 
 	if(myGlobalUniforms == NULL)
 	{
-		osg::StateSet* ss = myRootLayer->getOsgNode()->getOrCreateStateSet();
+		osg::StateSet* ss = myCompositingLayer->getOsgNode()->getOrCreateStateSet();
 		myGlobalUniforms = new Uniforms(ss);
 	}
 	return myGlobalUniforms; 
@@ -624,7 +626,7 @@ void SceneManager::setSkyBox(Skybox* skyBox)
 	// If a skybox is currently active, remove it.
 	if(mySkyBox != NULL)
 	{
-		myRootLayer->getOsgNode()->removeChild(mySkyBox->getNode());
+		myLightingLayer->getOsgNode()->removeChild(mySkyBox->getNode());
 	}
 
 	mySkyBox = skyBox;
@@ -633,8 +635,8 @@ void SceneManager::setSkyBox(Skybox* skyBox)
 		setShaderMacroToFile("vsinclude envMap", "cyclops/common/envMap/cubeEnvMap.vert");
 		setShaderMacroToFile("fsinclude envMap", "cyclops/common/envMap/cubeEnvMap.frag");
 		omsg("Environment cube map shaders enabled");
-		mySkyBox->initialize(myRootLayer->getOsgNode()->getOrCreateStateSet());
-		myRootLayer->getOsgNode()->addChild(mySkyBox->getNode());
+		mySkyBox->initialize(myLightingLayer->getOsgNode()->getOrCreateStateSet());
+		myLightingLayer->getOsgNode()->addChild(mySkyBox->getNode());
 	}
 	else
 	{

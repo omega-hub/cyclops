@@ -205,7 +205,7 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
     // record the traversal mask on entry so we can reapply it later.
     unsigned int traversalMask = cv.getTraversalMask();
 
-    osgUtil::RenderStage* orig_rs = cv.getRenderStage();
+    osgUtil::RenderStage* orig_rs = cv.getCurrentRenderStage();
 
     // do traversal of shadow recieving scene which does need to be decorated by the shadow map
     //{

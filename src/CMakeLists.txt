@@ -12,9 +12,12 @@ if(WIN32)
 endif()
 
 set(SRCS 
-		Entity.cpp
-		EffectNode.cpp
 		AnimatedObject.cpp
+		Compositor.cpp
+		CompositorXML.cpp
+		CompositingLayer.cpp
+		EffectNode.cpp
+		Entity.cpp
 		LineSet.cpp
 		Light.cpp
 		LightingLayer.cpp
@@ -38,9 +41,11 @@ set(SRCS
     
 set(HEADERS 
 		../cyclops/cyclopsConfig.h
+		../cyclops/AnimatedObject.h
+		../cyclops/Compositor.h
+		../cyclops/CompositingLayer.h
 		../cyclops/Entity.h
 		../cyclops/EffectNode.h
-		../cyclops/AnimatedObject.h
 		../cyclops/LineSet.h
 		../cyclops/Light.h
 		../cyclops/LightingLayer.h

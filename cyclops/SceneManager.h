@@ -43,6 +43,8 @@
 #include "ModelLoader.h"
 #include "ShaderManager.h"
 #include "LightingLayer.h"
+#include "CompositingLayer.h"
+#include "Compositor.h"
 
 #include <osg/Texture2D>
 #include <osg/Light>
@@ -90,6 +92,7 @@ namespace cyclops {
 		//! Scene manager exists before this call, createAndInitialize will be called internally.
 		static SceneManager* instance();
 
+		CompositingLayer* getCompositingLayer();
 		LightingLayer* getLightingLayer();
 
 		void initialize();
@@ -171,8 +174,9 @@ namespace cyclops {
 		Dictionary< String, Ref<ModelLoader> > myLoaderDictionary;
 		// The default loader. Used when all the other loaders fail.
 		ModelLoader* myDefaultLoader;
-
-		Ref<LightingLayer> myRootLayer;
+		
+		Ref<CompositingLayer> myCompositingLayer;
+		Ref<LightingLayer> myLightingLayer;
 
 		Dictionary<String, Ref<osg::Texture2D> > myTextures;
 		Dictionary<String, Ref<PixelData> > myTexturePixels;
