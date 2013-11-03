@@ -40,6 +40,8 @@
 
 namespace cyclops {
 	using namespace omega;
+
+	class Uniform;
 	
 	class CY_API CompositingLayer: public SceneLayer
 	{
@@ -53,6 +55,11 @@ namespace cyclops {
 		void reset();
 		//! Loads a compositor from an xml definition.
 		void loadCompositor(const String& filename);
+
+		void setPassActive(const String& passName, bool active);
+		bool isPassActive(const String& passName);
+
+		Uniform* getUniform(const String& name);
 
 	protected:
 		Ref<Compositor> myCompositor;

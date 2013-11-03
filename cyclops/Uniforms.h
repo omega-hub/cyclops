@@ -57,6 +57,10 @@ namespace cyclops {
 		static Uniform* create(const String& name, Type type, uint elements);
 
 	public:
+		//! Create a cyclops uniform encapsulating an osg uniform. The uniform
+		//! type and number of elements will be derived from the osg uniform.
+		Uniform(osg::Uniform* uniform);
+
 		Uniform(osg::Uniform* uniform, Type type, uint elements = 1);
 		virtual ~Uniform();
 

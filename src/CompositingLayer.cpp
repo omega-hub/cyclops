@@ -32,6 +32,7 @@
  * What's in this file
  ******************************************************************************/
 #include "cyclops/CompositingLayer.h"
+#include "cyclops/Uniforms.h"
 
 using namespace cyclops;
 
@@ -75,4 +76,37 @@ void CompositingLayer::loadCompositor(const String& filename)
 		myOutputNode->addChild(myCompositor);
 		myCompositor->addChild(myRoot);
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void CompositingLayer::setPassActive(const String& passName, bool active)
+{
+	if(myCompositor != NULL)
+	{
+		myCompositor->setPassActivated(passName, active);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool CompositingLayer::isPassActive(const String& passName)
+{
+	if(myCompositor != NULL)
+	{
+		return myCompositor->getPassActivated(passName);
+	}
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+Uniform* CompositingLayer::getUniform(const String& name)
+{
+	if(myCompositor != NULL)
+	{
+		osg::Uniform* u = myCompositor->getUniform(name);
+		if(u != NULL)
+		{
+			return new Uniform(u);
+		}
+	}
+	return NULL;
 }

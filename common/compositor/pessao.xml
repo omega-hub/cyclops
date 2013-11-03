@@ -356,11 +356,11 @@
     </uniform>
     
     <uniform name="contrastValue" type="float">
-        <value>2.0</value>
+        <value>50.0</value>
     </uniform>
     
     <uniform name="colorBlendFactor" type="float">
-        <value>1.0</value>
+        <value>0.0</value>
     </uniform>
     
     <uniform name="viewportWidth" type="float"><inbuilt_value>viewport_width</inbuilt_value></uniform>

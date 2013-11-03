@@ -117,6 +117,9 @@ BOOST_PYTHON_MODULE(cyclops)
 	PYAPI_REF_CLASS_WITH_CTOR(CompositingLayer, SceneLayer)
 		PYAPI_METHOD(CompositingLayer, reset)
 		PYAPI_METHOD(CompositingLayer, loadCompositor)
+		PYAPI_METHOD(CompositingLayer, isPassActive)
+		PYAPI_METHOD(CompositingLayer, setPassActive)
+		PYAPI_REF_GETTER(CompositingLayer, getUniform)
 		;
 
 	// SceneManager

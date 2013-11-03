@@ -194,7 +194,7 @@
     </uniform>
     
     <uniform name="contrast" type="float">
-        <value>1.2</value>
+        <value>3.0</value>
     </uniform>
     
     <buffer name="originalScene" type="2d" width="1024" height="1024">

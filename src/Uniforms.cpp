@@ -50,6 +50,23 @@ Uniform* Uniform::create(const String& name, Type type, uint elements)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+Uniform::Uniform(osg::Uniform* uniform):
+	myOsgUniform(uniform)
+{
+	oassert(uniform);
+
+	switch(uniform->getType())
+	{
+	case osg::Uniform::INT: myType = Uniform::Int;
+	case osg::Uniform::FLOAT: myType = Uniform::Float;
+	case osg::Uniform::FLOAT_VEC2: myType = Uniform::Vector2f;
+	case osg::Uniform::FLOAT_VEC3: myType = Uniform::Vector3f;
+	case osg::Uniform::FLOAT_VEC4: myType = Uniform::Color;
+	}
+	myNumElements = uniform->getNumElements();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 Uniform::Uniform(osg::Uniform* uniform, Type type, uint elements):
 	myOsgUniform(uniform),
 	myType(type),
