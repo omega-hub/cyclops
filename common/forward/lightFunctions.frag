@@ -28,7 +28,7 @@ vec4 spotLightFunction(SurfaceData sd, LightData ld)
 	float lambertTerm = dot(sd.normal, ld.dir) * ld.shadow; 
 	if (lambertTerm > 0.0) 
 	{ 
-		float spot = dot(ld.spotDirection, ld.dir);
+		float spot = dot(ld.spotDirection, -ld.dir);
 		
 		if(spot > ld.spotCutoff)
 		{

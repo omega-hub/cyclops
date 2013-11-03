@@ -29,7 +29,7 @@ for i in range(0, n):
 			z = float(k) / n * 2 - 1
 			s = 0.8 / n
 			sphere = SphereShape.create(s, 2)
-			sphere.setPosition(Vector3(x + 0.5, y + 1, -5 + z))
+			sphere.setPosition(Vector3(x + 0.5, y + 1, -4.5 + z))
 			sphere.setEffect('colored -d white -s 10 -g 1.0')
 
 # sphere1 = SphereShape.create(0.5, 4)
@@ -70,7 +70,7 @@ light2.setEnabled(True)
 light2.setAttenuation(1, 0.1, 0.05)
 lightSphere2 = BoxShape.create(0.05, 0.1, 0.05)
 lightSphere2.setEffect("colored -d black -e white")
-lightSphere2.setPosition(Vector3(0, 2, -4))
+lightSphere2.setPosition(Vector3(0, 2, -3))
 interactor2 = ToolkitUtils.setupInteractor("config/interactor")
 interactor2.setSceneNode(lightSphere2)
 lightSphere2.addChild(light2)
