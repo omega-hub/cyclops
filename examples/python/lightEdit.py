@@ -168,7 +168,7 @@ def onUpdate(frame, time, dt):
 	l = dir.magnitude()
 	if(l > 1): l = 1
 	dir.normalize()
-	light1.setLightDirection(dir)
+	light1.setLightDirection(-dir)
 	#print(l)
 	light1.setSpotCutoff(l * 90)
 setUpdateFunction(onUpdate)
