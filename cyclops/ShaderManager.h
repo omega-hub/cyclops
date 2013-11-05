@@ -101,7 +101,7 @@ namespace cyclops {
 		// A shader may process at most 8 simultaneous shadow maps.
 		static const int MaxShadows = 4;
 		// First texture unit used by shadow maps.
-		static const int ShadowFirstTexUnit = 3;
+		static const int ShadowFirstTexUnit = 4;
 
 	public:
 		ShaderManager();

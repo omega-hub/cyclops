@@ -53,16 +53,25 @@
 
 using namespace cyclops;
 
+Ref<osg::Texture3D> ShadowMapGenerator::myJitterTexture;
+
 ///////////////////////////////////////////////////////////////////////////////
 ShadowMapGenerator::ShadowMapGenerator():
     _shadowTextureUnit(1),
     _polyOffset(1.0,1.0),
     _textureSize(1024,1024),
 	myManualRefreshEnabled(false),
-	myDirty(true)
+	myDirty(true),
+	mySoft(false),
+	myJitteringScale(1.0f),
+	mySoftnessWidth(0.002f)
 {
 	_stateset = new osg::StateSet;
     _texture = new osg::Texture2D;
+	
+	// First shadow map takes care of initializing the jitter texture.
+	if(myJitterTexture == NULL) initJitterTexture();
+	myJitterTextureUnit = 3;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,11 +96,52 @@ void ShadowMapGenerator::setTextureUnit(unsigned int unit)
 		ostr("shadowTexture%1%", %_shadowTextureUnit).c_str(),
 		(int)_shadowTextureUnit);
 	_stateset->addUniform(_textureUnitUniform);
+
+	if(myJitteringScaleUniform != NULL)
+	{
+		_stateset->removeUniform(myJitteringScaleUniform);
+	}
+	myJitteringScaleUniform = new osg::Uniform(
+		ostr("jitteringScale%1%", %_shadowTextureUnit).c_str(),
+		(float)myJitteringScale);
+	_stateset->addUniform(myJitteringScaleUniform);
+
+	if(mySoftnessWidthUniform != NULL)
+	{
+		_stateset->removeUniform(mySoftnessWidthUniform);
+	}
+	mySoftnessWidthUniform = new osg::Uniform(
+		ostr("softnessWidth%1%", %_shadowTextureUnit).c_str(),
+		(float)mySoftnessWidth);
+	_stateset->addUniform(mySoftnessWidthUniform);
+
     _stateset->setTextureAttributeAndModes(_shadowTextureUnit,_texture.get(),osg::StateAttribute::ON); // | osg::StateAttribute::OVERRIDE);
     _stateset->setTextureMode(_shadowTextureUnit,GL_TEXTURE_GEN_S,osg::StateAttribute::ON);
     _stateset->setTextureMode(_shadowTextureUnit,GL_TEXTURE_GEN_T,osg::StateAttribute::ON);
     _stateset->setTextureMode(_shadowTextureUnit,GL_TEXTURE_GEN_R,osg::StateAttribute::ON);
     _stateset->setTextureMode(_shadowTextureUnit,GL_TEXTURE_GEN_Q,osg::StateAttribute::ON);
+
+	if(mySoft)
+	{
+		_stateset->setTextureAttributeAndModes(myJitterTextureUnit, myJitterTexture, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
+		_stateset->setTextureMode(myJitterTextureUnit,GL_TEXTURE_GEN_S,osg::StateAttribute::ON);
+		_stateset->setTextureMode(myJitterTextureUnit,GL_TEXTURE_GEN_T,osg::StateAttribute::ON);
+		_stateset->setTextureMode(myJitterTextureUnit,GL_TEXTURE_GEN_R,osg::StateAttribute::ON);
+		osg::Uniform* jitterTextureSampler = new osg::Uniform("osgShadow_jitterTexture",(int)myJitterTextureUnit);
+		_stateset->addUniform(jitterTextureSampler);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void ShadowMapGenerator::setSoftShadowParameters(float softnessWidth, float jitteringScale)
+{
+	mySoftnessWidth = softnessWidth;
+	myJitteringScale = jitteringScale;
+	if(mySoftnessWidthUniform != NULL && myJitteringScaleUniform != NULL)
+	{
+		mySoftnessWidthUniform->set(mySoftnessWidth);
+		myJitteringScaleUniform->set(myJitteringScale);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,17 +236,8 @@ void ShadowMapGenerator::init()
         stateset->setMode(GL_POLYGON_OFFSET_FILL, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
     }
 
-    {
-        _texgen = new osg::TexGen;
-    }
-
+    _texgen = new osg::TexGen;
     _dirty = false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void ShadowMapGenerator::update(osg::NodeVisitor& nv)
-{
-    //_shadowedScene->osg::Group::traverse(nv);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,13 +247,6 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
     unsigned int traversalMask = cv.getTraversalMask();
 
     osgUtil::RenderStage* orig_rs = cv.getCurrentRenderStage();
-
-    // do traversal of shadow recieving scene which does need to be decorated by the shadow map
-    //{
-    //    cv.pushStateSet(_stateset.get());
-    //    _shadowedScene->osg::Group::traverse(cv);
-    //    cv.popStateSet();
-    //}
 
     // need to compute view frustum for RTT camera.
     // 1) get the light position
@@ -263,8 +297,6 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
 
     if (selectLight)
     {
-        //std::cout<<"----- VxOSG::ShadowMap selectLight spot cutoff "<<selectLight->getSpotCutoff()<<std::endl;
-
         float fov = selectLight->getSpotCutoff() * 2;
         if(fov < 180.0f)   // spotlight, then we don't need the bounding box
         {
@@ -321,8 +353,6 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
                 _camera->setProjectionMatrixAsOrtho(-right, right, -top, top, znear, zfar);
                 _camera->setViewMatrixAsLookAt(position,bb.center(),computeOrthogonalVector(lightDir));
             }
-
-
         }
 
         cv.setTraversalMask( traversalMask &
@@ -350,14 +380,100 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
 
         cv.getRenderStage()->getPositionalStateContainer()->
              addPositionedTextureAttribute( _shadowTextureUnit, refMatrix, _texgen.get() );
-   } // if(selectLight)
+	}
 
-
-    // reapply the original traversal mask
-    cv.setTraversalMask( traversalMask );
+	// reapply the original traversal mask
+	cv.setTraversalMask( traversalMask );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void ShadowMapGenerator::cleanSceneGraph()
+// Implementation from Chapter 17, Efficient Soft-Edged Shadows Using Pixel 
+// Shader Branching, Yury Uralsky. GPU Gems 2, Matt Pharr ed. Addison-Wesley.
+// Creates a 3D texture containing jittering data used in the shader to take 
+// samples of the shadow map.
+void ShadowMapGenerator::initJitterTexture()
 {
+	// create a 3D texture with hw mipmapping
+    myJitterTexture = new osg::Texture3D;
+    myJitterTexture->setFilter(osg::Texture3D::MIN_FILTER,osg::Texture3D::NEAREST);
+    myJitterTexture->setFilter(osg::Texture3D::MAG_FILTER,osg::Texture3D::NEAREST);
+    myJitterTexture->setWrap(osg::Texture3D::WRAP_S,osg::Texture3D::REPEAT);
+    myJitterTexture->setWrap(osg::Texture3D::WRAP_T,osg::Texture3D::REPEAT);
+    myJitterTexture->setWrap(osg::Texture3D::WRAP_R,osg::Texture3D::REPEAT);
+    myJitterTexture->setUseHardwareMipMapGeneration(true);
+
+    const unsigned int size = 16;
+    const unsigned int gridW =  8;
+    const unsigned int gridH =  8;
+    unsigned int R = (gridW * gridH / 2);
+    myJitterTexture->setTextureSize(size, size, R);
+
+    // then create the 3d image to fill with jittering data
+    osg::Image* image3D = new osg::Image;
+    unsigned char *data3D = new unsigned char[size * size * R * 4];
+
+    for ( unsigned int s = 0; s < size; ++s )
+    {
+        for ( unsigned int t = 0; t < size; ++t )
+        {
+            float v[4], d[4];
+
+            for ( unsigned int r = 0; r < R; ++r )
+            {
+                const int x = r % ( gridW / 2 );
+                const int y = ( gridH - 1 ) - ( r / (gridW / 2) );
+
+                // Generate points on a  regular gridW x gridH rectangular
+                // grid.   We  multiply  x   by  2  because,  we  treat  2
+                // consecutive x  each loop iteration.  Add 0.5f  to be in
+                // the center of the pixel. x, y belongs to [ 0.0, 1.0 ].
+                v[0] = float( x * 2     + 0.5f ) / gridW;
+                v[1] = float( y         + 0.5f ) / gridH;
+                v[2] = float( x * 2 + 1 + 0.5f ) / gridW;
+                v[3] = v[1];
+
+                // Jitter positions. ( 0.5f / w ) == ( 1.0f / 2*w )
+                v[0] += ((float)rand() * 2.f / RAND_MAX - 1.f) * ( 0.5f / gridW );
+                v[1] += ((float)rand() * 2.f / RAND_MAX - 1.f) * ( 0.5f / gridH );
+                v[2] += ((float)rand() * 2.f / RAND_MAX - 1.f) * ( 0.5f / gridW );
+                v[3] += ((float)rand() * 2.f / RAND_MAX - 1.f) * ( 0.5f / gridH );
+
+                // Warp to disk; values in [-1,1]
+                d[0] = sqrtf( v[1] ) * cosf( 2.f * 3.1415926f * v[0] );
+                d[1] = sqrtf( v[1] ) * sinf( 2.f * 3.1415926f * v[0] );
+                d[2] = sqrtf( v[3] ) * cosf( 2.f * 3.1415926f * v[2] );
+                d[3] = sqrtf( v[3] ) * sinf( 2.f * 3.1415926f * v[2] );
+
+                // store d into unsigned values [0,255]
+                const unsigned int tmp = ( (r * size * size) + (t * size) + s ) * 4;
+                data3D[ tmp + 0 ] = (unsigned char)( ( 1.f + d[0] ) * 127  );
+                data3D[ tmp + 1 ] = (unsigned char)( ( 1.f + d[1] ) * 127  );
+                data3D[ tmp + 2 ] = (unsigned char)( ( 1.f + d[2] ) * 127  );
+                data3D[ tmp + 3 ] = (unsigned char)( ( 1.f + d[3] ) * 127  );
+
+            }
+        }
+    }
+
+    // the GPU Gem implementation uses a NV specific internal texture format (GL_SIGNED_RGBA_NV)
+    // In order to make it more generic, we use GL_RGBA4 which should be cross platform.
+    #ifdef GL_RGBA4
+    GLenum internalTextureFormat = GL_RGBA4;
+    #else
+    // OpenGLES 1.1 doesn't define GL_RGBA4, so we'll just assume RGBA
+    GLenum internalTextureFormat = GL_RGBA;
+    #endif
+    image3D->setImage(size, size, R, internalTextureFormat, GL_RGBA, GL_UNSIGNED_BYTE, data3D, osg::Image::USE_NEW_DELETE);
+
+    myJitterTexture->setImage(image3D);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void ShadowMapGenerator::setSoft(bool value)
+{
+	if(mySoft != value)
+	{
+		mySoft = value;
+	}
 }
