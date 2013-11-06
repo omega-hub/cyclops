@@ -42,6 +42,7 @@
 #include <osg/Material>
 #include <osg/MatrixTransform>
 #include <osg/LightSource>
+#include <osg/Texture3D>
 
 #include <osgShadow/ShadowTechnique>
 
@@ -82,13 +83,11 @@ namespace cyclops {
         virtual void init();
 
         /** run the update traversal of the ShadowedScene and update any loca chached data structures.*/
-        virtual void update(osg::NodeVisitor& nv);
+        virtual void update(osg::NodeVisitor& nv) {}
+		virtual void cleanSceneGraph() {}
 
         /** run the cull traversal of the ShadowedScene and set up the rendering for this ShadowTechnique.*/
         virtual void cull(osgUtil::CullVisitor& cv);
-
-        /** Clean scene graph from any shadow technique specific nodes, state and drawables.*/
-        virtual void cleanSceneGraph();
 
 		void setManualRefreshEnabled(bool value) 
 		{ myManualRefreshEnabled = value; }
@@ -96,7 +95,16 @@ namespace cyclops {
 		void setDirty() 
 		{ myDirty = true; }
 
-    protected:
+		void setSoft(bool value);
+		bool isSoft() 
+		{ return mySoft; }
+
+		void setSoftShadowParameters(float softnessWidth, float jitteringScale);
+
+	protected:
+		static void initJitterTexture();
+
+	protected:
         virtual ~ShadowMapGenerator(void) {};
         osg::ref_ptr<osg::Camera>       _camera;
         osg::ref_ptr<osg::TexGen>       _texgen;
@@ -111,8 +119,16 @@ namespace cyclops {
         osg::Vec2                        _polyOffset;
         osg::Vec2s                      _textureSize;
 
+		static Ref<osg::Texture3D> myJitterTexture;
+		float myJitteringScale;
+		float mySoftnessWidth;
+        osg::ref_ptr<osg::Uniform>      myJitteringScaleUniform;
+        osg::ref_ptr<osg::Uniform>      mySoftnessWidthUniform;
+		unsigned int myJitterTextureUnit;
+
 		bool myManualRefreshEnabled;
 		bool myDirty;
+		bool mySoft;
     };
 }
 

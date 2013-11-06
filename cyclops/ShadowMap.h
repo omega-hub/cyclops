@@ -70,6 +70,13 @@ namespace cyclops {
 		int getTextureUnit();
 		void setTextureSize(int width, int height);
 
+		void setSoft(bool value)
+		{ myShadowMap->setSoft(value); }
+		bool isSoft()
+		{ return myShadowMap->isSoft(); }
+		void setSoftShadowParameters(float softnessWidth, float jitteringScale)
+		{ return myShadowMap->setSoftShadowParameters(softnessWidth, jitteringScale); }
+
 	private:
 		//! used by Light to notify tell this shadow map who is its owner.
 		void setLight(Light* l); 

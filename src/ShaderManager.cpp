@@ -219,6 +219,13 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 			{
 				int unit = light->getShadow()->getTextureUnit();
 				shadowTexUniforms += ostr("uniform sampler2DShadow shadowTexture%1%;\n", %unit);
+
+				// Add the soft shadow parameters
+				if(light->getShadow()->isSoft())
+				{
+					shadowTexUniforms += ostr("uniform float jitteringScale%1%;\n", %unit);
+					shadowTexUniforms += ostr("uniform float softnessWidth%1%;\n", %unit);
+				}
 			}
 		}
 		shaderPreSrc = shadowTexUniforms + shaderPreSrc;
@@ -281,9 +288,18 @@ void ShaderManager::compileShader(osg::Shader* shader, const String& source)
 			// Add the shadow value to the section
 			if(light->getShadow() != NULL)
 			{
-				int unit = light->getShadow()->getTextureUnit();
-				fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
-					"@shadowValue", ostr("computeShadowMap(shadowTexture%1%, gl_TexCoord[%2%])", %unit %unit));
+				if(light->getShadow()->isSoft())
+				{
+					int unit = light->getShadow()->getTextureUnit();
+					fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
+						"@shadowValue", ostr("computeSoftShadowMap(shadowTexture%1%, gl_TexCoord[%2%], softnessWidth%3%, jitteringScale%4%)", %unit %unit %unit %unit));
+				}
+				else
+				{
+					int unit = light->getShadow()->getTextureUnit();
+					fragmentShaderLightCodeIndexed = StringUtils::replaceAll(fragmentShaderLightCodeIndexed,
+						"@shadowValue", ostr("computeShadowMap(shadowTexture%1%, gl_TexCoord[%2%])", %unit %unit));
+				}
 			}
 			else
 			{
@@ -348,7 +364,7 @@ ProgramAsset* ShaderManager::getOrCreateProgram(const String& name, const String
 
 	myPrograms[name] = asset;
 
-	recompileShaders(asset, myShaderVariationName);
+	//recompileShaders(asset, myShaderVariationName);
 
 	return asset;
 }
@@ -527,8 +543,8 @@ void ShaderManager::recompileShaders()
 			{
 				// Here we could append a different string for different shadow
 				// functions so we can cache different shader sets.
-				lightFunc.append(ostr("shadow%1%", 
-					%l->getShadow()->getTextureUnit()));
+				lightFunc.append(ostr("shadow%1%%2%", 
+					%l->getShadow()->getTextureUnit() %l->getShadow()->isSoft()));
 			}
 		}
 	}

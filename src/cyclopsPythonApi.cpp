@@ -348,6 +348,9 @@ BOOST_PYTHON_MODULE(cyclops)
 	// ShadowMap
 	PYAPI_REF_BASE_CLASS_WITH_CTOR(ShadowMap)
 		PYAPI_METHOD(ShadowMap, setTextureSize)
+		PYAPI_METHOD(ShadowMap, setSoft)
+		PYAPI_METHOD(ShadowMap, isSoft)
+		PYAPI_METHOD(ShadowMap, setSoftShadowParameters)
 		;
 
 	// ShadowMap
