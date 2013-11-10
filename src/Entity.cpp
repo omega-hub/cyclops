@@ -48,286 +48,289 @@ using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
 Entity::Entity(SceneManager* scene):
-	SceneNode(scene->getEngine()),
-		mySceneManager(scene),
-		myOsgNode(NULL),
-		myEffect(NULL),
-		myOsgSceneObject(NULL),
-		myCastShadow(true),
-		myCullingActive(true),
-		myLayer(NULL)
+    SceneNode(scene->getEngine()),
+        mySceneManager(scene),
+        myOsgNode(NULL),
+        myEffect(NULL),
+        myOsgSceneObject(NULL),
+        myCastShadow(true),
+        myCullingActive(true),
+        myLayer(NULL)
 {
-	// By default attach new entities to the root node of the scene.
-	myEffect = new EffectNode(scene);
-	Engine* engine = mySceneManager->getEngine();
+    // By default attach new entities to the root node of the scene.
+    myEffect = new EffectNode(scene);
+    Engine* engine = mySceneManager->getEngine();
 
-	// Add an empty material by default
-	addMaterial(new Material(new osg::StateSet(), scene));
+    // Add an empty material by default
+    addMaterial(new Material(new osg::StateSet(), scene));
 
-	//engine->getScene()->addChild(this);
+    //engine->getScene()->addChild(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Entity::~Entity()
 {
-	setLayer(NULL);
-	// Make sure rigid body is unregistered.
-	myRigidBody->setEnabled(false);
+    setLayer(NULL);
+    // Make sure rigid body is unregistered.
+    myRigidBody->setEnabled(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::setLayer(SceneLayer* layer)
 {
-	if(myLayer != NULL) myLayer->removeEntity(this);
-	if(layer != NULL) layer->addEntity(this);
-	myLayer = layer;
+    if(myLayer != NULL) myLayer->removeEntity(this);
+    if(layer != NULL) layer->addEntity(this);
+    myLayer = layer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::updateTraversal(const UpdateContext& context)
 {
-	if(myRigidBody)
-	{
-		myRigidBody->updateEntity();
-	}
-	SceneNode::updateTraversal(context);
+    if(myRigidBody)
+    {
+        myRigidBody->updateEntity();
+    }
+    SceneNode::updateTraversal(context);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::initialize(osg::Node* node)
 {
-	myOsgNode = node;
-	myOsgNode->setCullingActive(myCullingActive);
+    myOsgNode = node;
+    myOsgNode->setCullingActive(myCullingActive);
 
-	// Make sure the shadow caster flags are up to date.
-	castShadow(myCastShadow);
+    // Make sure the shadow caster flags are up to date.
+    castShadow(myCastShadow);
 
-	// Create an omegalib scene node. The scene node will be used to manipulate 
-	// some of this drawable object basic properties like transform and visibility. 
-	// The scene node also gives access to the object bounding sphere and allows 
-	// for simple hit tests.
-	//Engine* engine = mySceneManager->getEngine();
-	//mySceneNode = new SceneNode(engine);
-	//engine->getScene()->addChild(mySceneNode);
+    // Create an omegalib scene node. The scene node will be used to manipulate 
+    // some of this drawable object basic properties like transform and visibility. 
+    // The scene node also gives access to the object bounding sphere and allows 
+    // for simple hit tests.
+    //Engine* engine = mySceneManager->getEngine();
+    //mySceneNode = new SceneNode(engine);
+    //engine->getScene()->addChild(mySceneNode);
 
-	myOsgSceneObject = new OsgSceneObject(myOsgNode);
-	myEffect->addChild(myOsgSceneObject->getTransformedNode());
+    myOsgSceneObject = new OsgSceneObject(myOsgNode);
+    myEffect->addChild(myOsgSceneObject->getTransformedNode());
 
-	// OsgSceneObject is the 'glue point' between an osg Node and an omegalib scene node.
-	addComponent(myOsgSceneObject);
+    // OsgSceneObject is the 'glue point' between an osg Node and an omegalib scene node.
+    addComponent(myOsgSceneObject);
 
-	// Now add this drawable object to the scene.
-	//addListener(mySceneManager);
-	setLayer(mySceneManager->getLightingLayer());
+    // Now add this drawable object to the scene.
+    //addListener(mySceneManager);
+    setLayer(mySceneManager->getLightingLayer());
 
-	getEngine()->getScene()->addChild(this);
+    getEngine()->getScene()->addChild(this);
 
-	myRigidBody = new RigidBody(this);
+    myRigidBody = new RigidBody(this);
+
+    // Force a GL object recompilation after adding a new entity to the scene.
+    mySceneManager->getOsgModule()->compileObjectsOnNextDraw();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::setCullingActive(bool value)
 { 
-	myCullingActive = value; 
-	if(myOsgNode != NULL)
-	{
-		myOsgNode->setCullingActive(value);
-	}
+    myCullingActive = value; 
+    if(myOsgNode != NULL)
+    {
+        myOsgNode->setCullingActive(value);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 bool Entity::isCullingActive()
 { 
-	return myCullingActive; 
+    return myCullingActive; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 bool Entity::hasEffect()
 {
-	return (myEffect != NULL);
+    return (myEffect != NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::setEffect(const String& effectDefinition)
 {
-	if(myEffect != NULL)
-	{
-		myEffect->setDefinition(effectDefinition);
-	}
-	else
-	{
-		ofwarn("Entity:setEffect: entity '%1' does not support effects", %getName());
-	}
+    if(myEffect != NULL)
+    {
+        myEffect->setDefinition(effectDefinition);
+    }
+    else
+    {
+        ofwarn("Entity:setEffect: entity '%1' does not support effects", %getName());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Material* Entity::getMaterial()
 {
-	return getMaterialByIndex(0);
+    return getMaterialByIndex(0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Material* Entity::getMaterialByIndex(unsigned int index)
 {
-	return myEffect->getMaterial(index);
+    return myEffect->getMaterial(index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 int Entity::getMaterialCount()
 {
-	return myEffect->getMaterialCount();
+    return myEffect->getMaterialCount();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::addMaterial(Material* mat)
 {
-	// NOTE: We have to reset the effect definition, otherwise all materials 
-	// will be recreated. This will also force an effect refresh.
-	myEffect->addMaterial(mat);
-	myEffect->setDefinition("");
+    // NOTE: We have to reset the effect definition, otherwise all materials 
+    // will be recreated. This will also force an effect refresh.
+    myEffect->addMaterial(mat);
+    myEffect->setDefinition("");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::clearMaterials()
 {
-	myEffect->clearMaterials();
-	myEffect->setDefinition("");
+    myEffect->clearMaterials();
+    myEffect->setDefinition("");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::setShaderManager(ShaderManager* sm)
 {
-	oassert(sm != NULL);
-	myEffect->setShaderManager(sm);
+    oassert(sm != NULL);
+    myEffect->setShaderManager(sm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::castShadow(bool value)
 {
-	myCastShadow = value;
-	if(myOsgNode != NULL)
-	{
-		if(!myCastShadow)
-		{
-			myOsgNode->setNodeMask(0xffffffff & ~ShadowMap::CastsShadowTraversalMask);
-		}
-		else
-		{
-			myOsgNode->setNodeMask(0xffffffff);
-		}
-	}
+    myCastShadow = value;
+    if(myOsgNode != NULL)
+    {
+        if(!myCastShadow)
+        {
+            myOsgNode->setNodeMask(0xffffffff & ~ShadowMap::CastsShadowTraversalMask);
+        }
+        else
+        {
+            myOsgNode->setNodeMask(0xffffffff);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 bool Entity::doesCastShadow()
 {
-	return myCastShadow;
+    return myCastShadow;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 omegaToolkit::ui::Menu* Entity::getContextMenu()
 {
-	return myContextMenu;
+    return myContextMenu;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 omegaToolkit::ui::Menu* Entity::createContextMenu()
 {
-	myContextMenu = mySceneManager->createContextMenu(this);
-	return myContextMenu;
+    myContextMenu = mySceneManager->createContextMenu(this);
+    return myContextMenu;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void Entity::deleteContextMenu()
 {
-	mySceneManager->deleteContextMenu(this);
-	myContextMenu = NULL;
+    mySceneManager->deleteContextMenu(this);
+    myContextMenu = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 osg::Group* Entity::findSubGroup(const String& path)
 {
-	osg::Group* target = myOsgNode->asGroup();
+    osg::Group* target = myOsgNode->asGroup();
 
-	// If the head node is not a group, it has no parts for sure.
-	if(target == NULL) return NULL;
+    // If the head node is not a group, it has no parts for sure.
+    if(target == NULL) return NULL;
 
-	// If a non-empty path has been specified, follow it to find a sub-node 
-	// and enumerate its pieces.
-	if(path != "")
-	{
-		Vector<String> pathParts = StringUtils::split(path, "/");
-		foreach(String pathPart, pathParts)
-		{
-			osg::Group* newTarget = NULL;
-			for(int i = 0; i < target->getNumChildren(); i++)
-			{
-				if(target->getChild(i)->getName() == pathPart)
-				{
-					newTarget = target->getChild(i)->asGroup();
-					if(newTarget == NULL) return NULL;
-				}
-			}
-			// Have we found the node in the path?
-			if(newTarget != NULL) 
-			{
-				target = newTarget;
-			}
-			else
-			{
-				ofwarn("Entity::listPieces: could not find %1% in path %2% for entity %3%", %pathPart %path %getName());
-				return NULL;
-			}
-		}
-	}
-	return target;
+    // If a non-empty path has been specified, follow it to find a sub-node 
+    // and enumerate its pieces.
+    if(path != "")
+    {
+        Vector<String> pathParts = StringUtils::split(path, "/");
+        foreach(String pathPart, pathParts)
+        {
+            osg::Group* newTarget = NULL;
+            for(int i = 0; i < target->getNumChildren(); i++)
+            {
+                if(target->getChild(i)->getName() == pathPart)
+                {
+                    newTarget = target->getChild(i)->asGroup();
+                    if(newTarget == NULL) return NULL;
+                }
+            }
+            // Have we found the node in the path?
+            if(newTarget != NULL) 
+            {
+                target = newTarget;
+            }
+            else
+            {
+                ofwarn("Entity::listPieces: could not find %1% in path %2% for entity %3%", %pathPart %path %getName());
+                return NULL;
+            }
+        }
+    }
+    return target;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 vector<String> Entity::listPieces(const String& path)
 {
-	osg::Group* target = findSubGroup(path);
-	Vector<String> pieces;
-	if(target != NULL)
-	{
-		// If we are here, we have found a target node to enumerate pieces of.
-		for(int i = 0; i < target->getNumChildren(); i++)
-		{
-			osg::Group* piece = target->getChild(i)->asGroup();
-			if(piece != NULL) pieces.push_back(piece->getName());
-		}
-	}
-	return pieces;
+    osg::Group* target = findSubGroup(path);
+    Vector<String> pieces;
+    if(target != NULL)
+    {
+        // If we are here, we have found a target node to enumerate pieces of.
+        for(int i = 0; i < target->getNumChildren(); i++)
+        {
+            osg::Group* piece = target->getChild(i)->asGroup();
+            if(piece != NULL) pieces.push_back(piece->getName());
+        }
+    }
+    return pieces;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 SceneNode* Entity::getPiece(const String& path)
 {
-	osg::Group* target = findSubGroup(path);
-	if(target != NULL)
-	{
-		SceneNode* sn = new SceneNode(getEngine());
-		OsgSceneObject* oso = new OsgSceneObject(target);
-		// Use local transforms, since the osg node is already part of a transform hierarchy.
-		oso->useLocalTransform(true);
-		sn->addComponent(oso);
+    osg::Group* target = findSubGroup(path);
+    if(target != NULL)
+    {
+        SceneNode* sn = new SceneNode(getEngine());
+        OsgSceneObject* oso = new OsgSceneObject(target);
+        // Use local transforms, since the osg node is already part of a transform hierarchy.
+        oso->useLocalTransform(true);
+        sn->addComponent(oso);
 
 
-		addChild(sn);
+        addChild(sn);
 
-		// If the osg node is a transform node, copy its transformation to the scene node to
-		// preserve it.
-		osg::MatrixTransform* mtf = dynamic_cast<osg::MatrixTransform*>(target);
-		if(mtf != NULL)
-		{
-			osg::Vec3d t = mtf->getMatrix().getTrans();
-			osg::Vec3d s = mtf->getMatrix().getScale();
-			osg::Quat o = mtf->getMatrix().getRotate();
-			sn->setPosition(t[0], t[1], t[2]);
-			sn->setOrientation(o.w(), o.x(), o.y(), o.z());
-			sn->setScale(s[0], s[1], s[2]);
-		}
-		return sn;
-	}
-	return NULL;
+        // If the osg node is a transform node, copy its transformation to the scene node to
+        // preserve it.
+        osg::MatrixTransform* mtf = dynamic_cast<osg::MatrixTransform*>(target);
+        if(mtf != NULL)
+        {
+            osg::Vec3d t = mtf->getMatrix().getTrans();
+            osg::Vec3d s = mtf->getMatrix().getScale();
+            osg::Quat o = mtf->getMatrix().getRotate();
+            sn->setPosition(t[0], t[1], t[2]);
+            sn->setOrientation(o.w(), o.x(), o.y(), o.z());
+            sn->setScale(s[0], s[1], s[2]);
+        }
+        return sn;
+    }
+    return NULL;
 }
