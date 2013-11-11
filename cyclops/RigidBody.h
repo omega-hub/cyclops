@@ -54,7 +54,7 @@ namespace cyclops {
 	class CY_API RigidBody: public ReferenceType
 	{
 	public:
-		enum BodyType { Box, Sphere };
+		enum BodyType { Box, Sphere, Cylinder };
 
 	public:
 		RigidBody(Entity* e);

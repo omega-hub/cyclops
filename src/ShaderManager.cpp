@@ -364,7 +364,8 @@ ProgramAsset* ShaderManager::getOrCreateProgram(const String& name, const String
 
 	myPrograms[name] = asset;
 
-	//recompileShaders(asset, myShaderVariationName);
+	// Do not remove this, bitch!
+	recompileShaders(asset, myShaderVariationName);
 
 	return asset;
 }

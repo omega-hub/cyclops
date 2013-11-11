@@ -74,7 +74,7 @@ void RigidBody::initialize(BodyType type, float mass)
 {
 	myMass = mass;
 	btVector3 inertia(0,0,0);
-	if(type == Box || type == Sphere)
+	if(type == Box || type == Sphere || type == Cylinder)
 	{
 		if (type==Box)
 		{
@@ -82,9 +82,13 @@ void RigidBody::initialize(BodyType type, float mass)
 			//Vector3f he = myEntity->getBoundMaximum() - myEntity->getBoundMinimum();
 			//myCollisionShape = new btBoxShape(btVector3(btVector3(he.x() / 2, he.y() / 2, he.z() / 2)));
 		}
-		else
+		else if (type==Sphere)
 		{
 			myCollisionShape = btSphereCollisionShapeFromOSG(myEntity->getOsgNode());
+		}
+		else if (type==Cylinder)
+		{
+			myCollisionShape = btCylinderCollisionShapeFromOSG(myEntity->getOsgNode());
 		}
 		if(myMass != 0)
 		{
