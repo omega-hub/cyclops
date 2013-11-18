@@ -558,6 +558,9 @@ void SceneManager::removeLoader(ModelLoader* loader)
 ///////////////////////////////////////////////////////////////////////////////
 bool SceneManager::loadModel(ModelInfo* info)
 {
+    static Lock smodloaderlock;
+    smodloaderlock.lock();
+
 	omsg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SceneManager::loadModel");
 	bool result = false;
 
@@ -605,6 +608,7 @@ bool SceneManager::loadModel(ModelInfo* info)
 		}
 	}
 	omsg("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SceneManager::loadModel\n");
+    smodloaderlock.unlock();
 	return result;
 }
 
