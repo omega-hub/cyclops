@@ -49,6 +49,7 @@ ShadowMap::ShadowMap():
 	myShadowedScene = new osgShadow::ShadowedScene();
 	myShadowedScene->setReceivesShadowTraversalMask(ShadowMap::ReceivesShadowTraversalMask);
 	myShadowedScene->setCastsShadowTraversalMask(ShadowMap::CastsShadowTraversalMask);
+    initialize();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

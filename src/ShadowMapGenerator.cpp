@@ -238,6 +238,13 @@ void ShadowMapGenerator::init()
 
     _texgen = new osg::TexGen;
     _dirty = false;
+
+    // Force-reset the shadow texture unit, to register the new texture.
+    setTextureUnit(_shadowTextureUnit);
+
+    // Setting the dirty flag to true makes sure we regenerate the shadow map
+    // after initializing it.
+    myDirty = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
