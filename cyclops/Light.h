@@ -48,144 +48,144 @@
 #include <omegaToolkit.h>
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
+    using namespace omega;
+    using namespace omegaOsg;
 
-	class SceneLoader;
-	class SceneManager;
-	class AnimatedObject;
-	class LightingLayer;
-	class LightInstance;
+    class SceneLoader;
+    class SceneManager;
+    class AnimatedObject;
+    class LightingLayer;
+    class LightInstance;
 
-	///////////////////////////////////////////////////////////////////////////
-	class CY_API Light: public SceneNode
-	{
-	friend class SceneManager;
-	friend class LightInstance;
-	public:
-		enum LightType { Point, Directional, Spot, Custom };
-		enum ShadowRefreshMode { OnFrame, OnLightMove, Manual };
+    ///////////////////////////////////////////////////////////////////////////
+    class CY_API Light: public SceneNode
+    {
+    friend class SceneManager;
+    friend class LightInstance;
+    public:
+        enum LightType { Point, Directional, Spot, Custom };
+        enum ShadowRefreshMode { OnFrame, OnLightMove, Manual };
 
-		//! Convenience method for creating Light instances
-		static Light* create();
-	
-	public:
-		Light(SceneManager* scene);
-		virtual ~Light();
+        //! Convenience method for creating Light instances
+        static Light* create();
+    
+    public:
+        Light(SceneManager* scene);
+        virtual ~Light();
 
-		ShadowMap* getShadow() { return myShadow; }
-		void setShadow(ShadowMap* s);
-		void setShadowRefreshMode(ShadowRefreshMode srm);
+        ShadowMap* getShadow() { return myShadow; }
+        void setShadow(ShadowMap* s);
+        void setShadowRefreshMode(ShadowRefreshMode srm);
 
-		//! Sets or gets the layer this light is applied to
-		virtual void setLayer(LightingLayer* layer);
-		virtual LightingLayer* getLayer();
+        //! Sets or gets the layer this light is applied to
+        virtual void setLayer(LightingLayer* layer);
+        virtual LightingLayer* getLayer();
 
-		//! Create a new instance of this light and attach it to the specified
-		//! node.
-		LightInstance* createInstance(osg::Group* rootNode);
-		void destroyInstance(LightInstance* i);
+        //! Create a new instance of this light and attach it to the specified
+        //! node.
+        LightInstance* createInstance(osg::Group* rootNode);
+        void destroyInstance(LightInstance* i);
 
-		void setColor(const Color& value) { myColor = value; }
-		const Color& getColor() { return myColor; }
+        void setColor(const Color& value) { myColor = value; }
+        const Color& getColor() { return myColor; }
 
-		void setAmbient(const Color& value) { myAmbient = value; }
-		const Color& getAmbient() { return myAmbient; }
+        void setAmbient(const Color& value) { myAmbient = value; }
+        const Color& getAmbient() { return myAmbient; }
 
-		void setEnabled(bool value);
-		bool isEnabled() { return myEnabled; }
+        void setEnabled(bool value);
+        bool isEnabled() { return myEnabled; }
 
-		void setAttenuation(float constant, float linear, float quadratic) 
-		{ 
-			myAttenuation[0] = constant; 
-			myAttenuation[1] = linear; 
-			myAttenuation[2] = quadratic; 
-		}
-		const Vector3f& getAttenuation() { return myAttenuation; }
+        void setAttenuation(float constant, float linear, float quadratic) 
+        { 
+            myAttenuation[0] = constant; 
+            myAttenuation[1] = linear; 
+            myAttenuation[2] = quadratic; 
+        }
+        const Vector3f& getAttenuation() { return myAttenuation; }
 
-		void setLightType(LightType type);
-		LightType getLightType() { return myType; }
+        void setLightType(LightType type);
+        LightType getLightType() { return myType; }
 
-		void setLightDirection(const Vector3f& value) { myLightDirection = value; }
-		Vector3f getLightDirection() { return myLightDirection; }
+        void setLightDirection(const Vector3f& value) { myLightDirection = value; }
+        Vector3f getLightDirection() { return myLightDirection; }
 
-		void setSpotExponent(float value) { mySpotExponent = value; }
-		float getSpotExponent() { return mySpotExponent; }
-		void setSpotCutoff(float value) { mySpotCutoff = value; }
-		float getSpotCutoff() { return mySpotCutoff; }
+        void setSpotExponent(float value) { mySpotExponent = value; }
+        float getSpotExponent() { return mySpotExponent; }
+        void setSpotCutoff(float value) { mySpotCutoff = value; }
+        float getSpotCutoff() { return mySpotCutoff; }
 
-		void setLightFunction(const String& function) { myLightFunction = function; }
-		String getLightFunction() { return myLightFunction; }
+        void setLightFunction(const String& function) { myLightFunction = function; }
+        String getLightFunction() { return myLightFunction; }
 
-		virtual void updateTraversal(const UpdateContext& context);
-	private:
-		void requestShaderUpdate();
+        virtual void updateTraversal(const UpdateContext& context);
 
-	private:
-		SceneManager* mySceneManager;
-		LightingLayer* myLayer;
+        //! Forces a regeneration of shaders using this light.
+        void requestShaderUpdate();
 
-		Color myColor;
-		Color myAmbient;
-		bool myEnabled;
-		Vector3f myAttenuation;
+    private:
+        SceneManager* mySceneManager;
+        LightingLayer* myLayer;
 
-		float mySpotExponent;
-		float mySpotCutoff;
+        Color myColor;
+        Color myAmbient;
+        bool myEnabled;
+        Vector3f myAttenuation;
 
-		Vector3f myLightDirection;
+        float mySpotExponent;
+        float mySpotCutoff;
 
-		// Light instances 
-		// (will replace osg light stuff)
-		List< Ref<LightInstance> > myInstances;
+        Vector3f myLightDirection;
 
-		LightType myType;
-		String myLightFunction;
+        // Light instances 
+        // (will replace osg light stuff)
+        List< Ref<LightInstance> > myInstances;
 
-		// Shadow stuff
-		Ref<ShadowMap> myShadow;
-		ShadowRefreshMode myShadowRefreshMode;
-		Vector3f myLastShadowPos;
-	};
+        LightType myType;
+        String myLightFunction;
 
-	///////////////////////////////////////////////////////////////////////////
-	//! Represents an instance of a light in the scene. A single light may have
-	//! Multiple instances, each one being represented by a different 
-	//! OpenGL light.
-	class CY_API LightInstance: public ReferenceType
-	{
-	friend class Light;
-	public:
-		~LightInstance();
+        // Shadow stuff
+        Ref<ShadowMap> myShadow;
+        ShadowRefreshMode myShadowRefreshMode;
+        Vector3f myLastShadowPos;
+    };
 
-		//! @internal update the osg light parameters. Returns true if shaders
-		//! need to be recompiled due to light changes.
-		bool update();
+    ///////////////////////////////////////////////////////////////////////////
+    //! Represents an instance of a light in the scene. A single light may have
+    //! Multiple instances, each one being represented by a different 
+    //! OpenGL light.
+    class CY_API LightInstance: public ReferenceType
+    {
+    friend class Light;
+    public:
+        ~LightInstance();
 
-		Light* getLight() { return myLight; }
-		int getLightIndex() { return myIndex; }
-		void setLightIndex(int index);
+        //! @internal update the osg light parameters. Returns true if shaders
+        //! need to be recompiled due to light changes.
+        bool update();
 
-		osg::Light* getOsgLight() { return myOsgLight; }
+        Light* getLight() { return myLight; }
+        int getLightIndex() { return myIndex; }
+        void setLightIndex(int index);
 
-	private:
-		//! Create a new light instance and attach it to the specified
-		//! osg group
-		LightInstance(Light* l, osg::Group* root);
+        osg::Light* getOsgLight() { return myOsgLight; }
 
-		void requestShaderUpdate() { myShaderUpdateNeeded = true; }
+    private:
+        //! Create a new light instance and attach it to the specified
+        //! osg group
+        LightInstance(Light* l, osg::Group* root);
 
-	private:
-		Ref<Light> myLight;
-		int myIndex;
+        void requestShaderUpdate() { myShaderUpdateNeeded = true; }
+    private:
+        Ref<Light> myLight;
+        int myIndex;
 
-		// osg light stuff.
-		Ref<osg::Group> myGroup;
-		Ref<osg::Light> myOsgLight;
-		Ref<osg::LightSource> myOsgLightSource;
+        // osg light stuff.
+        Ref<osg::Group> myGroup;
+        Ref<osg::Light> myOsgLight;
+        Ref<osg::LightSource> myOsgLightSource;
 
-		bool myShaderUpdateNeeded;
-	};
+        bool myShaderUpdateNeeded;
+    };
 };
 
 #endif

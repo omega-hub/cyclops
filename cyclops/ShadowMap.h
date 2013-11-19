@@ -70,8 +70,7 @@ namespace cyclops {
 		int getTextureUnit();
 		void setTextureSize(int width, int height);
 
-		void setSoft(bool value)
-		{ myShadowMap->setSoft(value); }
+		void setSoft(bool value);
 		bool isSoft()
 		{ return myShadowMap->isSoft(); }
 		void setSoftShadowParameters(float softnessWidth, float jitteringScale)

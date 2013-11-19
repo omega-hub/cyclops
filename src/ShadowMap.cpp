@@ -138,6 +138,15 @@ void ShadowMap::initialize()
 	myShadowMap->setTextureSize(osg::Vec2s(512, 512));
 }
 
+void ShadowMap::setSoft(bool value)
+{ 
+    if(myShadowMap->isSoft() != value)
+    {
+        myShadowMap->setSoft(value); 
+        if(myLight != NULL) myLight->requestShaderUpdate();
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //void SoftShadowMap::initialize()
 //{

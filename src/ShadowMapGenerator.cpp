@@ -482,5 +482,6 @@ void ShadowMapGenerator::setSoft(bool value)
 	if(mySoft != value)
 	{
 		mySoft = value;
+        dirty();
 	}
 }

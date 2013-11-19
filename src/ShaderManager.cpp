@@ -139,7 +139,7 @@ void ShaderManager::update()
 		if(light->isEnabled())
 		{
 			l->setLightIndex(i++);
-			// If light has a shadow map, give allocate a texture unit to it
+			// If light has a shadow map, allocate a texture unit to it
 			ShadowMap* shadow = light->getShadow();
 			if(shadow != NULL)
 			{
@@ -544,8 +544,13 @@ void ShaderManager::recompileShaders()
 			{
 				// Here we could append a different string for different shadow
 				// functions so we can cache different shader sets.
+                // NOTE: We replace the soft flag to two strings HARD and SOFT
+                // since setting a single different character on the string does not 
+                // generate a different hash value on Visual Studio 2010
+                // ('cause their hash func implementation is silly).
 				lightFunc.append(ostr("shadow%1%%2%", 
-					%l->getShadow()->getTextureUnit() %l->getShadow()->isSoft()));
+					%l->getShadow()->getTextureUnit() 
+                    %(l->getShadow()->isSoft() ? "SOFT" : "HARD")));
 			}
 		}
 	}
