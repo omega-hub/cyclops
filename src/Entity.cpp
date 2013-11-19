@@ -116,11 +116,11 @@ void Entity::initialize(osg::Node* node)
     // OsgSceneObject is the 'glue point' between an osg Node and an omegalib scene node.
     addComponent(myOsgSceneObject);
 
+    getEngine()->getScene()->addChild(this);
+
     // Now add this drawable object to the scene.
     //addListener(mySceneManager);
     setLayer(mySceneManager->getLightingLayer());
-
-    getEngine()->getScene()->addChild(this);
 
     myRigidBody = new RigidBody(this);
 

@@ -43,99 +43,106 @@ using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
 SceneLayer::SceneLayer():
-	myParent(NULL)
+    myParent(NULL)
 {
-	myRoot = new osg::Group();
+    myRoot = new osg::Group();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 SceneLayer::~SceneLayer()
 {
-	List< Entity* > tmpList = myEntities;
-	// Detach all the attached entities.
-	foreach(Entity* e, tmpList)
-	{
-		e->setLayer(NULL);
-	}
-	myEntities.clear();
+    List< Entity* > tmpList = myEntities;
+    // Detach all the attached entities.
+    foreach(Entity* e, tmpList)
+    {
+        e->setLayer(NULL);
+    }
+    myEntities.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::addEntity(Entity* e)
 {
-	// Add an entity to the clip plane: we are now in charge of the entity
-	// scene change events, so we set ourselves as the entity listeners
-	oassert(e != NULL);
-	e->addListener(this);
-	myRoot->addChild(e->getOsgNode());
-	myEntities.push_back(e);
+    // Add an entity to the clip plane: we are now in charge of the entity
+    // scene change events, so we set ourselves as the entity listeners
+    oassert(e != NULL);
+    e->addListener(this);
+    myRoot->addChild(e->getOsgNode());
+    myEntities.push_back(e);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::removeEntity(Entity* e)
 {
-	// Entity removed from the clip plane: reset the scene manager as the entity
-	// listener for scene change events.
-	oassert(e != NULL);
-	e->removeListener(this);
-	myRoot->removeChild(e->getOsgNode());
-	myEntities.remove(e);
+    // Entity removed from the clip plane: reset the scene manager as the entity
+    // listener for scene change events.
+    oassert(e != NULL);
+    e->removeListener(this);
+    myRoot->removeChild(e->getOsgNode());
+    myEntities.remove(e);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::onAttachedToScene(SceneNode* source)
 {
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
-	{
-		myRoot->addChild(e->getOsgNode());
-	}
+    // Called by entities when their parent node changes. Update the osg parent node
+    // accordingly.
+    Entity* e = dynamic_cast<Entity*>(source);
+    if(e != NULL)
+    {
+        if(myRoot->getChildIndex(e->getOsgNode()) == -1)
+        {
+            myRoot->addChild(e->getOsgNode());
+        }
+        else
+        {
+            owarn("SceneLayer::onAttachedToScene: trying to attach node twice");
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::onDetachedFromScene(SceneNode* source)
 {
-	// Called by entities when their parent node changes. Update the osg parent node
-	// accordingly.
-	Entity* e = dynamic_cast<Entity*>(source);
-	if(e != NULL)
-	{
-		myRoot->removeChild(e->getOsgNode());
-	}
+    // Called by entities when their parent node changes. Update the osg parent node
+    // accordingly.
+    Entity* e = dynamic_cast<Entity*>(source);
+    if(e != NULL)
+    {
+        myRoot->removeChild(e->getOsgNode());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::addLayer(SceneLayer* layer)
 {
-	if(layer != NULL)
-	{
-		if(layer->getParentLayer() != NULL)
-		{
-			layer->getParentLayer()->removeLayer(layer);
-		}
-		myLayers.push_back(layer);
-		// Attach the layer osg node to this layer osg node
-		myRoot->addChild(layer->getOsgNode());
-	}
+    if(layer != NULL)
+    {
+        if(layer->getParentLayer() != NULL)
+        {
+            layer->getParentLayer()->removeLayer(layer);
+        }
+        myLayers.push_back(layer);
+        // Attach the layer osg node to this layer osg node
+        myRoot->addChild(layer->getOsgNode());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::removeLayer(SceneLayer* layer)
 {
-	if(layer != NULL)
-	{
-		layer->myParent = NULL;
-		myLayers.remove(layer);
-		// Detach the layer osg node to this layer osg node
-		myRoot->removeChild(layer->getOsgNode());
-	}
+    if(layer != NULL)
+    {
+        layer->myParent = NULL;
+        myLayers.remove(layer);
+        // Detach the layer osg node to this layer osg node
+        myRoot->removeChild(layer->getOsgNode());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::update()
 {
-	updateLayer();
-	foreach(SceneLayer* l, myLayers) l->update();
+    updateLayer();
+    foreach(SceneLayer* l, myLayers) l->update();
 }
