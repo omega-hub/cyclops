@@ -220,6 +220,7 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_ENUM_VALUE(RigidBody, Box)
 		PYAPI_ENUM_VALUE(RigidBody, Sphere)
 		PYAPI_ENUM_VALUE(RigidBody, Cylinder)
+		PYAPI_ENUM_VALUE(RigidBody, Plane)
 		;
 
 	// RigidBody

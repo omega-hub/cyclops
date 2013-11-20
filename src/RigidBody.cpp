@@ -74,7 +74,7 @@ void RigidBody::initialize(BodyType type, float mass)
 {
 	myMass = mass;
 	btVector3 inertia(0,0,0);
-	if(type == Box || type == Sphere || type == Cylinder)
+	if(type == Box || type == Sphere || type == Cylinder || type == Plane)
 	{
 		if (type==Box)
 		{
@@ -89,6 +89,10 @@ void RigidBody::initialize(BodyType type, float mass)
 		else if (type==Cylinder)
 		{
 			myCollisionShape = btCylinderCollisionShapeFromOSG(myEntity->getOsgNode());
+		}
+		else if (type==Plane)
+		{
+			myCollisionShape = btBoxCollisionShapeFromOSG(myEntity->getOsgNode());
 		}
 		if(myMass != 0)
 		{
