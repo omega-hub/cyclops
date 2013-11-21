@@ -76,9 +76,11 @@ namespace cyclops {
 		bool isUserControlled();
 
     // Forces
+	void applyCentralForce(const Vector3f& force);
     void applyForce(const Vector3f& force, const Vector3f& relPos);
     void applyCentralImpulse(const Vector3f& impulse);
     void applyImpulse(const Vector3f& impulse, const Vector3f& relPos);
+    void setLinearVelocity(const Vector3f& linearVelocity);
     void setAngularVelocity(const Vector3f& angularVelocity);
 
 	private:
