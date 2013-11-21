@@ -70,7 +70,7 @@ RigidBody::~RigidBody()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void RigidBody::initialize(BodyType type, float mass)
+void RigidBody::initialize(RigidBodyType type, float mass)
 {
 	myMass = mass;
 	btVector3 inertia(0,0,0);
