@@ -54,7 +54,7 @@ namespace cyclops {
 	{
 		ModelInfo(): 
 			numFiles(1), size(0.0f), generateNormals(false), 
-			normalizeNormals(false), optimize(false), usePowerOfTwoTextures(false), 
+			normalizeNormals(false), optimize(true), usePowerOfTwoTextures(false), 
 			buildKdTree(false), generateTangents(false)
 		{}
 
