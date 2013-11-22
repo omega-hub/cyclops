@@ -68,6 +68,7 @@ CylinderShape::CylinderShape(SceneManager* scene, float length, float radius1, f
 	//tsg->unref();
 
 	initialize(node);
+    getMaterial()->setColor(Color(1,1,1), Color(0,0,0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,6 +105,7 @@ SphereShape::SphereShape(SceneManager* scene, float radius, int subdivisions, Ve
 	tsg->unref();
 
 	initialize(node);
+    getMaterial()->setColor(Color(1,1,1), Color(0,0,0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +147,7 @@ PlaneShape::PlaneShape(SceneManager* scene, float width, float height, Vector2f 
 	tsg->unref();
 
 	initialize(node);
+    getMaterial()->setColor(Color(1,1,1), Color(0,0,0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,4 +182,5 @@ BoxShape::BoxShape(SceneManager* scene, float width, float height, float depth, 
 	tsg->unref();
 
 	initialize(node);
+    getMaterial()->setColor(Color(1,1,1), Color(0,0,0));
 }
