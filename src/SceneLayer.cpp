@@ -38,6 +38,8 @@
 #include "cyclops/SceneLayer.h"
 #include "cyclops/Entity.h"
 
+#include <osgUtil/CullVisitor>
+
 using namespace omega;
 using namespace cyclops;
 
@@ -63,8 +65,6 @@ SceneLayer::~SceneLayer()
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::addEntity(Entity* e)
 {
-    // Add an entity to the clip plane: we are now in charge of the entity
-    // scene change events, so we set ourselves as the entity listeners
     oassert(e != NULL);
     e->addListener(this);
     myRoot->addChild(e->getOsgNode());
@@ -74,8 +74,6 @@ void SceneLayer::addEntity(Entity* e)
 ///////////////////////////////////////////////////////////////////////////////
 void SceneLayer::removeEntity(Entity* e)
 {
-    // Entity removed from the clip plane: reset the scene manager as the entity
-    // listener for scene change events.
     oassert(e != NULL);
     e->removeListener(this);
     myRoot->removeChild(e->getOsgNode());
@@ -90,7 +88,7 @@ void SceneLayer::onAttachedToScene(SceneNode* source)
     Entity* e = dynamic_cast<Entity*>(source);
     if(e != NULL)
     {
-        if(myRoot->getChildIndex(e->getOsgNode()) == -1)
+        if(myRoot->getChildIndex(e->getOsgNode()) == myRoot->getNumChildren())
         {
             myRoot->addChild(e->getOsgNode());
         }
