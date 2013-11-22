@@ -216,10 +216,11 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(Material, getAlpha);
 
 	// RigidBodyType
-	PYAPI_ENUM(RigidBody::BodyType, RigidBodyType)
+	PYAPI_ENUM(RigidBody::RigidBodyType, RigidBodyType)
 		PYAPI_ENUM_VALUE(RigidBody, Box)
 		PYAPI_ENUM_VALUE(RigidBody, Sphere)
 		PYAPI_ENUM_VALUE(RigidBody, Cylinder)
+		PYAPI_ENUM_VALUE(RigidBody, Plane)
 		;
 
 	// RigidBody
@@ -231,8 +232,10 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(RigidBody, isUserControlled)
 		PYAPI_METHOD(RigidBody, setUserControlled)
 	    PYAPI_METHOD(RigidBody, applyForce)
+	    PYAPI_METHOD(RigidBody, applyCentralForce)
 	    PYAPI_METHOD(RigidBody, applyImpulse)
 	    PYAPI_METHOD(RigidBody, applyCentralImpulse)
+	    PYAPI_METHOD(RigidBody, setLinearVelocity)
 	    PYAPI_METHOD(RigidBody, setAngularVelocity)
 		;
 

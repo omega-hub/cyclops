@@ -54,13 +54,13 @@ namespace cyclops {
 	class CY_API RigidBody: public ReferenceType
 	{
 	public:
-		enum BodyType { Box, Sphere, Cylinder };
+		enum RigidBodyType { Box, Sphere, Cylinder, Plane };
 
 	public:
 		RigidBody(Entity* e);
 		virtual ~RigidBody();
 
-		void initialize(BodyType type, float mass);
+		void initialize(RigidBodyType type, float mass);
 
 		//! updates the attached entity transform with the transform coming
 		//! from the physics simlation. Called by Entity::updateTraversal
@@ -76,9 +76,11 @@ namespace cyclops {
 		bool isUserControlled();
 
     // Forces
+	void applyCentralForce(const Vector3f& force);
     void applyForce(const Vector3f& force, const Vector3f& relPos);
     void applyCentralImpulse(const Vector3f& impulse);
     void applyImpulse(const Vector3f& impulse, const Vector3f& relPos);
+    void setLinearVelocity(const Vector3f& linearVelocity);
     void setAngularVelocity(const Vector3f& angularVelocity);
 
 	private:
@@ -86,7 +88,7 @@ namespace cyclops {
 
 		bool myEnabled;
 		bool myUserControlled;
-		BodyType myType;
+		RigidBodyType myType;
 		float myMass;
 
 		// List of possible rigid body shapes (not sure this is the best
