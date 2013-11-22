@@ -3,6 +3,7 @@
 #include <osg/Geometry>
 #include <osg/View>
 #include <osgUtil/CullVisitor>
+#include <osg/BlendFunc>
 #include <iostream>
 #include <sstream>
 #include "cyclops/Compositor.h"
@@ -407,6 +408,11 @@ osg::Geode* Compositor::getOrCreateQuad()
         _quad->getOrCreateStateSet()->setAttribute(
             new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::FILL), values );
         _quad->getOrCreateStateSet()->setMode( GL_LIGHTING, values );
+        _quad->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON  | osg::StateAttribute::PROTECTED);
+        _quad->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF  | osg::StateAttribute::PROTECTED);
+		osg::BlendFunc* bf = new osg::BlendFunc();
+		bf->setFunction(GL_SRC_ALPHA, GL_ONE);
+		_quad->getOrCreateStateSet()->setAttribute(bf, osg::StateAttribute::PROTECTED);
     }
     return _quad.get();
 }
@@ -530,5 +536,6 @@ osg::Geode* Compositor::createScreenQuad( float width, float height, float scale
     quad->getOrCreateStateSet()->setAttribute(
         new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::FILL), values );
     quad->getOrCreateStateSet()->setMode( GL_LIGHTING, values );
+    quad->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF  | osg::StateAttribute::PROTECTED);
     return quad.release();
 }

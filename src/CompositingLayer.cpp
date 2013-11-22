@@ -72,7 +72,7 @@ void CompositingLayer::loadCompositor(const String& filename)
 	myCompositor = readEffectFile(filename);
 	if(myCompositor != NULL)
 	{
-		myOutputNode->removeChild(myOutputNode);
+		myOutputNode->removeChild(myRoot);
 		myOutputNode->addChild(myCompositor);
 		myCompositor->addChild(myRoot);
 	}

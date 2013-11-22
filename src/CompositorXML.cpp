@@ -13,6 +13,8 @@
 #include <osgDB/ReadFile>
 #include <osgDB/FileUtils>
 #include <osgDB/FileNameUtils>
+#include <osg/BlendFunc>
+
 #include <iostream>
 #include <sstream>
 
@@ -142,7 +144,24 @@ osg::Camera* Compositor::createPassFromXML( osgDB::XmlNode* xmlNode )
         const std::string& childName = xmlChild->name;
         if ( !isXMLNodeType(xmlChild) ) continue;
         
-        if ( childName=="output_buffer" )
+        if ( childName=="blend_mode" )
+        {
+            std::stringstream ss; ss << xmlChild->getTrimmedContents();
+            String mode; ss >> mode;
+
+            stateset->setMode(GL_BLEND, osg::StateAttribute::ON  | osg::StateAttribute::PROTECTED);
+		    osg::BlendFunc* bf = new osg::BlendFunc();
+            if(mode == "modulate")
+            {
+                bf->setFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else if(mode == "add")
+            {
+                bf->setFunction(GL_SRC_ALPHA, GL_ONE);
+            }
+		    stateset->setAttribute(bf, osg::StateAttribute::PROTECTED);
+        }
+        else if ( childName=="output_buffer" )
         {
             std::string bufferTarget = xmlChild->properties["target"];
             osg::Camera::BufferComponent bc = osg::Camera::COLOR_BUFFER;

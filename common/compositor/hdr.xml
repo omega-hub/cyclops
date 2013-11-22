@@ -62,48 +62,27 @@
         uniform float exposure;
         const float gamma = 0.5;
         
-        vec4 calculateRadial(vec2 uv, int samples, float startScale, float scaleMul)
-        {
-            vec4 tempColor = vec4(0.0);
-            vec2 tempTexCoord = vec2(0.0);
-            float currentScale = startScale;
-            
-            for (int i=0; i<samples; ++i)
-            {
-                tempTexCoord = (uv - 0.5) * currentScale + 0.5;
-                tempColor += texture2D(blurredTex, tempTexCoord);
-                currentScale *= scaleMul;
-            }
-            tempColor /= float(samples);
-            return tempColor;
-        }
-        
-        float calculateVignette(vec2 position, float inner, float outer)
-        { return 1.0 - smoothstep(inner, outer, length(position)); }
-        
         void main()
         {
             vec2 uv = gl_TexCoord[0].st;
             vec4 sceneColor = texture2D(sceneTex, uv);
             vec4 blurredColor = texture2D(blurredTex, uv) * exposure;
-            vec4 radialColor = calculateRadial(uv, 20, 1.0, 0.9);
             
-            vec4 tempColor = mix(sceneColor, blurredColor, blurFactor);
-            tempColor += radialColor * radialAmount;
-            tempColor *= calculateVignette(uv*2.0 - 1.0, 0.7, 1.5);
+            vec4 tempColor = sceneColor + blurredColor;
             tempColor.rgb = pow(tempColor.rgb, vec3(gamma));
             gl_FragColor = tempColor;
+            //gl_FragColor = blurredColor;
         }
         ]]>
         </source>
     </shader>
     
     <uniform name="brightThreshold" type="float">
-        <value>0.4</value>
+        <value>1.0</value>
     </uniform>
     
     <uniform name="blurFactor" type="float">
-        <value>0.4</value>
+        <value>0.2</value>
     </uniform>
     
     <uniform name="radialAmount" type="float">
@@ -117,7 +96,7 @@
     <buffer_template name="sceneBufferTemplate" type="2d">
         <internal_format>rgba</internal_format>
         <source_format>rgba</source_format>
-        <source_type>ubyte</source_type>
+        <source_type>float</source_type>
     </buffer_template>
     
     <buffer name="originalScene" width="1024" height="1024" template="sceneBufferTemplate" />
@@ -129,11 +108,14 @@
     
     <technique>
         <forward_pass name="HDR_OriginalScene">
-            <clear_color>0 0 0 1</clear_color>
+            <clear_color>0 0 0 0</clear_color>
+            <near_far computation="none" />
             <output_buffer target="color">originalScene</output_buffer>
         </forward_pass>
         
         <deferred_pass name="HDR_Extract">
+            <clear_color>0 0 0 0</clear_color>
+			<blend_mode>add</blend_mode>
             <uniform>brightThreshold</uniform>
             <input_buffer unit="0">originalScene</input_buffer>
             <output_buffer target="color">extractedScene</output_buffer>
@@ -152,7 +134,7 @@
         </deferred_pass>
         
         <deferred_pass name="HDR_Blur1">
-            <uniform name="blurOffset" type="vec2"><value>0.01 0</value></uniform>
+            <uniform name="blurOffset" type="vec2"><value>0.008 0</value></uniform>
             <input_buffer unit="0" varname="sceneTex">downsamplingScene2</input_buffer>
             <output_buffer target="color">blurredScene1</output_buffer>
             <shader>standard_vs</shader>
@@ -160,7 +142,7 @@
         </deferred_pass>
         
         <deferred_pass name="HDR_Blur2">
-            <uniform name="blurOffset" type="vec2"><value>0 0.01</value></uniform>
+            <uniform name="blurOffset" type="vec2"><value>0 0.008</value></uniform>
             <input_buffer unit="0" varname="sceneTex">blurredScene1</input_buffer>
             <output_buffer target="color">blurredScene2</output_buffer>
             <shader>standard_vs</shader>
@@ -168,6 +150,7 @@
         </deferred_pass>
         
         <deferred_pass name="HDR_ToneMapping">
+			<blend_mode>modulate</blend_mode>
             <uniform>blurFactor</uniform>
             <uniform>radialAmount</uniform>
             <uniform>exposure</uniform>
