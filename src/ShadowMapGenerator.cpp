@@ -51,6 +51,9 @@
 
 #include "cyclops/ShadowMapGenerator.h"
 
+// For OsgDrawInformation
+#include "omegaOsg/omegaOsg/OsgRenderPass.h"
+
 using namespace cyclops;
 
 Ref<osg::Texture3D> ShadowMapGenerator::myJitterTexture;
@@ -234,6 +237,7 @@ void ShadowMapGenerator::init()
         polygon_offset->setUnits(units);
         stateset->setAttribute(polygon_offset.get(), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
         stateset->setMode(GL_POLYGON_OFFSET_FILL, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
+        stateset->setAttributeAndModes(new osg::Program(), osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
     }
 
     _texgen = new osg::TexGen;
@@ -250,6 +254,34 @@ void ShadowMapGenerator::init()
 ///////////////////////////////////////////////////////////////////////////////
 void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
 {
+    bool needShadowRefresh = true;
+    // Here we process a couple of quick exit conditions:
+    omegaOsg::OsgDrawInformation* odi = 
+        dynamic_cast<omegaOsg::OsgDrawInformation*>(cv.getRenderStage()->getCamera()->getUserData());
+    if(odi != NULL)
+    {
+        // Condition 1: do RTT camera traversal only if depth partitoning is off or
+        // if we are drawing the near partition (far partition will never have 
+        // shadow maps).
+        if(odi->depthPartitionMode == omegaOsg::OsgDrawInformation::DepthPartitionFarOnly) 
+        {
+            needShadowRefresh = false;
+        }
+
+        // Condition 3: only do RTT traversal on one eye (cyclops or the first eye in
+        // stereo mode)
+        if(odi->context->eye == DrawContext::EyeRight)
+        {
+            needShadowRefresh = false;
+        }
+    }
+
+    // Condition 3: do RTT camera traversal only if shadow map needs to be refreshed
+    if(myManualRefreshEnabled && !myDirty)
+    {
+        needShadowRefresh = false;
+    }
+
     // record the traversal mask on entry so we can reapply it later.
     unsigned int traversalMask = cv.getTraversalMask();
 
@@ -365,8 +397,7 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
         cv.setTraversalMask( traversalMask &
             getShadowedScene()->getCastsShadowTraversalMask() );
 
-        // do RTT camera traversal (only if shadow map needs to be refreshed)
-        if(!myManualRefreshEnabled || myDirty)
+        if(needShadowRefresh)
         {
             myDirty = false;
             // NOTE: Camera accept will use the ShadowTechnique::CameraCallback
@@ -390,10 +421,10 @@ void ShadowMapGenerator::cull(osgUtil::CullVisitor& cv)
 
         cv.getRenderStage()->getPositionalStateContainer()->
              addPositionedTextureAttribute( _shadowTextureUnit, refMatrix, _texgen.get() );
-    }
+        // reapply the original traversal mask
+        cv.setTraversalMask( traversalMask );
 
-    // reapply the original traversal mask
-    cv.setTraversalMask( traversalMask );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

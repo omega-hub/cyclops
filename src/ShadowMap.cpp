@@ -58,7 +58,6 @@ void ShadowMap::checkInitialized()
 	if(!myInitialized)
 	{
 		initialize();
-		myInitialized = true;
 	}
 }
 
@@ -136,6 +135,7 @@ void ShadowMap::initialize()
 	//myShadowMap->setTextureUnit(7);
     myShadowedScene->setShadowTechnique(myShadowMap);
 	myShadowMap->setTextureSize(osg::Vec2s(512, 512));
+	myInitialized = true;
 }
 
 void ShadowMap::setSoft(bool value)
