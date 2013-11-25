@@ -75,7 +75,8 @@ source_group(osg REGULAR_EXPRESSION osg/)
 target_link_libraries(cyclops
 	omega 
 	omegaToolkit
-    omegaOsg
+    	omegaOsg
+	${OSG_LIBS}
 	${OSGBULLET_LIBS})
 
 add_dependencies(cyclops omegaOsg)
