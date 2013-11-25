@@ -74,7 +74,7 @@
             float pw = 1.0 / viewportWidth;
             float ph = 1.0 / viewportHeight;
             float aoMultiplier = 1000.0;
-            float aoScale = 2.0;
+            float aoScale = 0.5;
             float ao = 0.0;
             
             float uvFactor = uv.y + uv.x + (uv.x * uv.y);
@@ -162,7 +162,7 @@
             vec2 aoCoord =  gl_FragCoord.xy * invScreenSize;
             vec4 sceneColor = texture2D(sceneTex, aoCoord);
             vec4 aoColor = texture2D(aoTex, aoCoord);
-            float off = 5.0 * pow(1.0 - aoColor.z, 3.0);
+            float off = 10.0 * pow(1.0 - aoColor.z, 10.0);
             float ssao = aoColor.x;
             
             vec4 ssao4;
@@ -171,7 +171,7 @@
             ssao4.z = texture2D(aoTex, vec2((gl_FragCoord.x+off)*invScreenSize.x, (gl_FragCoord.y-off)*invScreenSize.y)).x;
             ssao4.w = texture2D(aoTex, vec2((gl_FragCoord.x+off)*invScreenSize.x, (gl_FragCoord.y+off)*invScreenSize.y)).x;
             ssao = sum4(ssao4) + ssao - 2.0 * max(ssao, max4(ssao4)) - 2.0 * min(ssao, min4(ssao4));
-            gl_FragColor = vec4(vec3(sceneColor.rgb * ssao), sceneColor.a);
+            gl_FragColor = vec4(vec3(ssao), sceneColor.a);
         }
         ]]>
         </source>
@@ -194,7 +194,7 @@
     </uniform>
     
     <uniform name="contrast" type="float">
-        <value>3.0</value>
+        <value>1.0</value>
     </uniform>
     
     <buffer name="originalScene" type="2d" width="1024" height="1024">
@@ -217,11 +217,13 @@
     
     <technique>
         <forward_pass name="SSAO_OriginalScene">
-            <clear_color>0 0 0 1</clear_color>
+            <clear_color>0 0 0 0</clear_color>
             <output_buffer target="color">originalScene</output_buffer>
         </forward_pass>
         
         <forward_pass name="SSAO_LinearDepth" override="1">
+            <clear_color>0 0 0 0</clear_color>
+			<blend_mode>add</blend_mode>
             <uniform>nearPlaneValue</uniform>
             <uniform>farPlaneValue</uniform>
             <output_buffer target="color">linearDepth</output_buffer>
@@ -230,6 +232,8 @@
         </forward_pass>
         
         <deferred_pass name="SSAO_Processing">
+            <clear_color>0 0 0 0</clear_color>
+			<blend_mode>add</blend_mode>
             <uniform>nearPlaneValue</uniform>
             <uniform>farPlaneValue</uniform>
             <uniform>viewportWidth</uniform>
@@ -242,6 +246,7 @@
         </deferred_pass>
         
         <deferred_pass name="SSAO_Combining">
+			<blend_mode>modulate</blend_mode>
             <uniform>viewportWidth</uniform>
             <uniform>viewportHeight</uniform>
             <input_buffer unit="0" varname="sceneTex">originalScene</input_buffer>
