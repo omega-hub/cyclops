@@ -54,8 +54,8 @@ vec4 spotLightFunction(SurfaceData sd, LightData ld)
 ///////////////////////////////////////////////////////////////////////////////
 vec4 directionalLightFunction(SurfaceData sd, LightData ld)
 {
-	ld.dir = normalize(ld.spotDirection);
+	ld.dir = -normalize(ld.spotDirection);
 	ld.distance = 0.0;
-	ld.halfDir = reflect(-ld.dir, sd.normal);
+	ld.halfDir = -reflect(-ld.dir, sd.normal);
 	return pointLightFunction(sd, ld);
 }
