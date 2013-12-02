@@ -36,6 +36,7 @@
 
 #include "SceneLayer.h"
 #include "Compositor.h"
+#include "ShaderManager.h"
 
 
 namespace cyclops {
@@ -59,10 +60,14 @@ namespace cyclops {
 		void setPassActive(const String& passName, bool active);
 		bool isPassActive(const String& passName);
 
+		// Reimplemented, so we can tell Entities to use the layer shader manager
+		virtual void addEntity(Entity* e);
+
 		Uniform* getUniform(const String& name);
 
 	protected:
 		Ref<Compositor> myCompositor;
+		Ref<ShaderManager> myShaderManager;
 		Ref<osg::Group> myOutputNode;
 	};	
 };

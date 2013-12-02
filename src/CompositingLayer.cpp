@@ -33,11 +33,13 @@
  ******************************************************************************/
 #include "cyclops/CompositingLayer.h"
 #include "cyclops/Uniforms.h"
+#include "cyclops/Entity.h"
 
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
-CompositingLayer::CompositingLayer()
+CompositingLayer::CompositingLayer():
+	myShaderManager(new ShaderManager())
 {
 	myOutputNode = new osg::Group();
 
@@ -50,6 +52,13 @@ CompositingLayer::CompositingLayer()
 CompositingLayer::~CompositingLayer()
 {
 	reset();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void CompositingLayer::addEntity(Entity* e)
+{
+	SceneLayer::addEntity(e);
+	e->setShaderManager(myShaderManager);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
