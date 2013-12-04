@@ -146,6 +146,8 @@ BOOST_PYTHON_MODULE(cyclops)
 		PYAPI_METHOD(SceneManager, setGravity)
 		PYAPI_METHOD(SceneManager, setPhysicsEnabled)
 		PYAPI_METHOD(SceneManager, isPhysicsEnabled)
+		PYAPI_METHOD(SceneManager, setColDetectionEnabled)
+		PYAPI_METHOD(SceneManager, isColDetectionEnabled)
 		;
 
 	// osg Texture2D
