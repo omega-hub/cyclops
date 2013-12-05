@@ -71,12 +71,16 @@ set(HEADERS
 # Setup compile info
 add_library( cyclops SHARED ${SRCS} ${HEADERS})
 
-source_group(osg REGULAR_EXPRESSION osg/)		
+source_group(cyclops REGULAR_EXPRESSION cyclops/)		
 target_link_libraries(cyclops
 	omega 
 	omegaToolkit
-    	omegaOsg
+    omegaOsg
 	${OSG_LIBS}
 	${OSGBULLET_LIBS})
+
+if(MODULES_omegaOsgEarth)
+    target_link_libraries(cyclops ${OSGEARTH_LIBS})
+endif()
 
 add_dependencies(cyclops omegaOsg)
