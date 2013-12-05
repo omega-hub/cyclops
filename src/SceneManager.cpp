@@ -601,7 +601,7 @@ bool SceneManager::loadModel(ModelInfo* info)
 			{
 				if(ml->load(asset)) 
 				{
-					result = true;
+                    result = true;
 					break;
 				}
 			}
@@ -609,7 +609,16 @@ bool SceneManager::loadModel(ModelInfo* info)
 		// All loaders failed or none was able to handle the model file extension. Use the default loader.
 		if(!result)
 		{
+#ifdef omegaOsgEarth_ENABLED
+            if( info->mapName != "" ) {
+                ModelAsset *mapAsset = getModel(info->mapName);
+                result = myDefaultLoader->load(asset, mapAsset);
+            } else {
+                result = myDefaultLoader->load(asset);
+            }
+#else
 			result = myDefaultLoader->load(asset);
+#endif
 		}
 	}
 	omsg("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SceneManager::loadModel\n");

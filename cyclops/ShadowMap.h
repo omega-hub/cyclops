@@ -57,6 +57,7 @@ namespace cyclops {
 	class ShadowMap: public ReferenceType
 	{
 	friend class Light;
+	friend class LightingLayer;
 	public:
 		static const int ReceivesShadowTraversalMask = 0x1;
 		static const int CastsShadowTraversalMask = 0x2;

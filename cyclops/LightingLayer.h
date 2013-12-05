@@ -65,6 +65,12 @@ namespace cyclops {
 		//! layer. Returns NULL if no instance is found.
 		LightInstance* findLightInstance(Light* l);
 
+		//! @internal SceneNodeListener overrides
+		//! These methods are needed to handle entities when they get attached
+		//! or detached from the scene
+		virtual void onAttachedToScene(SceneNode* source);
+		virtual void onDetachedFromScene(SceneNode* source);
+
 		ShaderManager* getShaderManager() { return myShaderManager; }
 
 	protected:

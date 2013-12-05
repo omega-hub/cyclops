@@ -35,6 +35,11 @@
 #include "cyclops/ModelLoader.h"
 #include "cyclops/AnimatedObject.h"
 
+#ifdef omegaOsgEarth_ENABLED
+#include <osgEarth/MapNode>
+using namespace osgEarth;
+#endif
+
 using namespace cyclops;
 using namespace omegaToolkit;
 using namespace omegaToolkit::ui;
@@ -207,7 +212,11 @@ osg::Node* ModelLoader::processDefaultOptions(osg::Node* node, ModelAsset* asset
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef omegaOsgEarth_ENABLED
+bool DefaultModelLoader::load(ModelAsset* asset, ModelAsset* mapAsset)
+#else
 bool DefaultModelLoader::load(ModelAsset* asset)
+#endif
 {
 	String orfp = StringUtils::replaceAll(asset->name, "*", "%1%");
 	String filePath = asset->info->path;
@@ -225,7 +234,21 @@ bool DefaultModelLoader::load(ModelAsset* asset)
 		{ 
 			ofmsg("Loading model %1%", %filePath);
 			osgDB::Options* options = new osgDB::Options; 
-			options->setOptionString("noTesselateLargePolygons noTriStripPolygons noRotation"); 
+			options->setOptionString("noTesselateLargePolygons noTriStripPolygons noRotation");
+
+#ifdef omegaOsgEarth_ENABLED
+            if( mapAsset ) 
+            {
+                if( StringUtils::endsWith( filePath, ".kml" ) || StringUtils::endsWith( filePath, ".kmz") )
+                {
+                    omsg("Adding mapNode option"); 
+                    MapNode *mapNode = MapNode::findMapNode(mapAsset->nodes[0]);
+                    if(mapNode)
+                        options->setPluginData( "osgEarth::MapNode", mapNode );
+                }
+            }
+#endif
+
 
 			if(asset->info->buildKdTree)
 			{
