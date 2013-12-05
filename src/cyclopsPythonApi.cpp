@@ -398,6 +398,9 @@ BOOST_PYTHON_MODULE(cyclops)
 		.def_readwrite("optimize", &ModelInfo::optimize)
 		.def_readwrite("usePowerOfTwoTextures", &ModelInfo::usePowerOfTwoTextures)
 		.def_readwrite("loaderOutput", &ModelInfo::loaderOutput)
+#ifdef omegaOsgEarth_ENABLED
+        .def_readwrite("mapName", &ModelInfo::mapName)
+#endif
 		;
 
 	// SkyBox
