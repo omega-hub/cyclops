@@ -37,6 +37,7 @@
  ******************************************************************************/
 #include "cyclops/SceneLayer.h"
 #include "cyclops/Entity.h"
+#include "cyclops/Light.h"
 
 #include <osgUtil/CullVisitor>
 
