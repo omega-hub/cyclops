@@ -164,6 +164,7 @@ SceneManager::SceneManager():
 	myWandEntity(NULL),
 	myDynamicsWorld(NULL),
 	myPhysicsEnabled(false),
+	myColDetectionEnabled(false),
 	myEngine(Engine::instance())
 {
 #ifdef OMEGA_USE_PYTHON
@@ -327,6 +328,10 @@ void SceneManager::update(const UpdateContext& context)
 	if(myPhysicsEnabled)
 	{
 		myDynamicsWorld->stepSimulation( context.dt, 4, context.dt/2. );
+	}
+	if (myColDetectionEnabled)
+	{
+		myDynamicsWorld->performDiscreteCollisionDetection();
 	}
 }
 
