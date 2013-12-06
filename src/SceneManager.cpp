@@ -612,7 +612,9 @@ bool SceneManager::loadModel(ModelInfo* info)
 #ifdef omegaOsgEarth_ENABLED
             if( info->mapName != "" ) {
                 ModelAsset *mapAsset = getModel(info->mapName);
-                result = myDefaultLoader->load(asset, mapAsset);
+                DefaultModelLoader* mdl = dynamic_cast<DefaultModelLoader*>(myDefaultLoader);
+                if(mdl) result = mdl->load(asset, mapAsset);
+                else result = myDefaultLoader->load(asset);
             } else {
                 result = myDefaultLoader->load(asset);
             }

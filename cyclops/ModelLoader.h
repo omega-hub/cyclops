@@ -143,11 +143,11 @@ namespace cyclops {
 	public:
 		DefaultModelLoader(): ModelLoader("default") {}
 
-        virtual bool load(ModelAsset* model, ModelAsset* mapAsset);
+    virtual bool load(ModelAsset* model, ModelAsset* mapAsset);
 		virtual bool load(ModelAsset* model)
-        {
-            return load(model, NULL);
-        }
+    {
+      return load(model, NULL);
+    }
         
 		virtual bool supportsExtension(const String& ext) { return true; }
 	};
