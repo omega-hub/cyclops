@@ -212,11 +212,7 @@ osg::Node* ModelLoader::processDefaultOptions(osg::Node* node, ModelAsset* asset
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef omegaOsgEarth_ENABLED
 bool DefaultModelLoader::load(ModelAsset* asset, ModelAsset* mapAsset)
-#else
-bool DefaultModelLoader::load(ModelAsset* asset)
-#endif
 {
 	String orfp = StringUtils::replaceAll(asset->name, "*", "%1%");
 	String filePath = asset->info->path;

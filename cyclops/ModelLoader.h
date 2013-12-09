@@ -125,11 +125,7 @@ namespace cyclops {
 	public:
 		ModelLoader(const String& name): myName(name) {}
 
-#ifdef omegaOsgEarth_ENABLED
-        virtual bool load(ModelAsset* model, ModelAsset* mapAsset = NULL) = 0;
-#else
 		virtual bool load(ModelAsset* model) = 0;
-#endif
 		virtual bool supportsExtension(const String& ext) { return false; }
 
 		const String& getName() { return myName; }
@@ -147,11 +143,12 @@ namespace cyclops {
 	public:
 		DefaultModelLoader(): ModelLoader("default") {}
 
-#ifdef omegaOsgEarth_ENABLED
-        virtual bool load(ModelAsset* model, ModelAsset* mapAsset = NULL);
-#else
-		virtual bool load(ModelAsset* model);
-#endif
+    virtual bool load(ModelAsset* model, ModelAsset* mapAsset);
+		virtual bool load(ModelAsset* model)
+    {
+      return load(model, NULL);
+    }
+        
 		virtual bool supportsExtension(const String& ext) { return true; }
 	};
 };

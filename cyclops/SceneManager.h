@@ -145,7 +145,9 @@ namespace cyclops {
         Vector3f getGravity();
         btDynamicsWorld* getDynamicsWorld() { return myDynamicsWorld; }
         void setPhysicsEnabled(bool value) { myPhysicsEnabled = value; }
+        void setColDetectionEnabled(bool value) { myColDetectionEnabled = value; }
         bool isPhysicsEnabled() { return myPhysicsEnabled; }
+        bool isColDetectionEnabled() { return myPhysicsEnabled; }
         //@}
 
         omegaToolkit::ui::Menu* createContextMenu(Entity* entity);
@@ -195,6 +197,7 @@ namespace cyclops {
 
         // Physics stuff
         bool myPhysicsEnabled;
+        bool myColDetectionEnabled;
         btDynamicsWorld* myDynamicsWorld;
     };
 };
