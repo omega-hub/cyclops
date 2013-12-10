@@ -43,66 +43,10 @@
 
 using namespace cyclops;
 
-////////////////////////////////////////////////////////////////////////////////
-class Technique: public osgFX::Technique
-{
-public:
-    Technique(const String& definition, EffectNode* fx): myDefinition(definition), myFxNode(fx)
-    { define_passes(); }
-
-    /// Validate.
-    bool validate(osg::State&) const { return true; }
-protected:
-
-    ////////////////////////////////////////////////////////////////////////////
-    virtual void define_passes()
-    {
-        // If an effect definition is specified, clear the effect materials and recreate them use
-        // the effect definition string.
-        if(myDefinition != "")
-        {
-            myFxNode->clearMaterials();
-
-            Vector<String> passes = StringUtils::split(myDefinition, "|");
-
-            for(Vector<String>::iterator iter = passes.begin(); iter != passes.end(); iter++)
-            {
-                StringUtils::trim(*iter);
-                osg::StateSet* ss = new osg::StateSet();
-                Material* mat = new Material(ss, myFxNode->getSceneManager());
-                if(mat->parse(*iter)) 
-                {
-                    myFxNode->addMaterial(mat);
-                    addPass(ss);
-
-                    // Renrer bin hack: addPass resets the render bin for the stateset, so we force
-                    // the opaque / transparent renderbin settings here. Re-calling setTransparent
-                    // will make sure the render bin is correct.
-                    mat->setTransparent(mat->isTransparent());
-                }
-            }
-        }
-        else
-        {
-            // No definition specified: create passes using the existing materials in the effect node.
-            for(int i = 0; i < myFxNode->getMaterialCount(); i++)
-            {
-                addPass(myFxNode->getMaterial(i)->getStateSet());
-            }
-        }
-    }
-
-private:
-    String myDefinition;
-    EffectNode* myFxNode;
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 EffectNode::EffectNode(SceneManager* sm):
     mySceneManager(sm)
 {
-    dirtyTechniques();
-    //myMaterial = new Material(getOrCreateStateSet(), sm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,19 +77,37 @@ void EffectNode::setDefinition(const String& definition)
 {
     myDefinition = definition;
     
-    dirtyTechniques();
+    //dirtyTechniques();
     
     // Force a node traversal to regenerate techniques
-    osg::NodeVisitor nv;
-    traverse(nv);
-}
+    //osg::NodeVisitor nv;
+    //traverse(nv);
 
-///////////////////////////////////////////////////////////////////////////////
-bool EffectNode::define_techniques()
-{
-    myCurrentTechnique = new Technique(myDefinition, this);
-    this->addTechnique(myCurrentTechnique);
-    return true;
+    // If an effect definition is specified, clear the effect materials and recreate them use
+    // the effect definition string.
+    if(myDefinition != "")
+    {
+        clearMaterials();
+
+        Vector<String> passes = StringUtils::split(myDefinition, "|");
+
+        for(Vector<String>::iterator iter = passes.begin(); iter != passes.end(); iter++)
+        {
+            StringUtils::trim(*iter);
+            osg::StateSet* ss = new osg::StateSet();
+            Material* mat = new Material(ss, mySceneManager);
+            if(mat->parse(*iter)) 
+            {
+                addMaterial(mat);
+                //addPass(ss);
+
+                // Renrer bin hack: addPass resets the render bin for the stateset, so we force
+                // the opaque / transparent renderbin settings here. Re-calling setTransparent
+                // will make sure the render bin is correct.
+                mat->setTransparent(mat->isTransparent());
+            }
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,3 +120,22 @@ void EffectNode::setShaderManager(ShaderManager* sm)
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void EffectNode::traverse(osg::NodeVisitor& nv)
+{
+    if(nv.getVisitorType() == osg::NodeVisitor::CULL_VISITOR)
+    {
+        // Do a traversal for each active material.
+        osgUtil::CullVisitor* cv = (osgUtil::CullVisitor*)&nv;
+        foreach(Material* mat, myMaterials)
+        {
+            cv->pushStateSet(mat->getStateSet());
+            Group::traverse(nv);
+            cv->popStateSet();
+        }
+    }
+    else
+    {
+        Group::traverse(nv);
+    }
+}

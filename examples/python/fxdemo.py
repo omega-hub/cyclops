@@ -26,7 +26,6 @@ light.setEnabled(True)
 lightDistance = 0.5
 
 scene = getSceneManager()
-scene.setMainLight(light)
 
 # selected will store the currently active object
 selected = None

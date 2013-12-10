@@ -48,7 +48,7 @@
 #include "omega/PythonInterpreterWrapper.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#define CYCLOPS_VERSION "1.0"
+#define CYCLOPS_VERSION "1.1"
 
 using namespace cyclops;
 
@@ -148,8 +148,8 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(SceneManager, setGravity)
         PYAPI_METHOD(SceneManager, setPhysicsEnabled)
         PYAPI_METHOD(SceneManager, isPhysicsEnabled)
-		PYAPI_METHOD(SceneManager, setColDetectionEnabled)
-		PYAPI_METHOD(SceneManager, isColDetectionEnabled)
+        PYAPI_METHOD(SceneManager, setColDetectionEnabled)
+        PYAPI_METHOD(SceneManager, isColDetectionEnabled)
         ;
 
     // osg Texture2D

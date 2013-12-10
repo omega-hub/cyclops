@@ -39,10 +39,9 @@
 #include "cyclopsConfig.h"
 #include "Material.h"
 
-#include <osgFX/Effect>
-#include <osgFX/Technique>
 #include <osg/Material>
 #include <osg/StateSet>
+#include <osgUtil/CullVisitor>
 
 #define OMEGA_NO_GL_HEADERS
 #include <omega.h>
@@ -56,7 +55,7 @@ namespace cyclops {
     class ShaderManager;
 
     ///////////////////////////////////////////////////////////////////////////
-    class CY_API EffectNode: public osgFX::Effect
+    class CY_API EffectNode: public osg::Group
     {
     public:
 
@@ -65,20 +64,16 @@ namespace cyclops {
         EffectNode(SceneManager* sm);
         virtual ~EffectNode();
 
-        EffectNode(const EffectNode& copy, const osg::CopyOp& op = osg::CopyOp::SHALLOW_COPY) : osgFX::Effect(copy, op) {	}
+        EffectNode(const EffectNode& copy, const osg::CopyOp& op = osg::CopyOp::SHALLOW_COPY) : osg::Group(copy, op) {	}
 
         // Effect class info
-        META_Effect(cyclops, EffectNode, "EffectNode",
-                    "Base effect class for cyclops effects.",
-                    "Alessandro Febretti");	
+        META_Object(cyclops, EffectNode);
 
-        virtual bool define_techniques();
-
-        String getDefinition() { return myDefinition; }
+        String getDefinition();
         void setDefinition(const String& definition);
 
         //TODO: Is this needed?
-        SceneManager* getSceneManager() { return mySceneManager; }
+        //SceneManager* getSceneManager() { return mySceneManager; }
 
         Material* getMaterial(unsigned int index);
         void addMaterial(Material* mat);
@@ -89,9 +84,10 @@ namespace cyclops {
         //! material shaders
         void setShaderManager(ShaderManager* sm);
 
-    private:
-        Ref<osgFX::Technique> myCurrentTechnique;
+        //! @internal
+        virtual void traverse(osg::NodeVisitor& nv);
 
+    private:
         Vector< Ref<Material> > myMaterials;
 
         String myDefinition;
@@ -102,6 +98,10 @@ namespace cyclops {
     ///////////////////////////////////////////////////////////////////////////
     inline int EffectNode::getMaterialCount()
     { return myMaterials.size(); }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline String EffectNode::getDefinition() 
+    { return myDefinition; }
 };
 
 #endif
