@@ -77,12 +77,6 @@ void EffectNode::setDefinition(const String& definition)
 {
     myDefinition = definition;
     
-    //dirtyTechniques();
-    
-    // Force a node traversal to regenerate techniques
-    //osg::NodeVisitor nv;
-    //traverse(nv);
-
     // If an effect definition is specified, clear the effect materials and recreate them use
     // the effect definition string.
     if(myDefinition != "")
@@ -99,11 +93,12 @@ void EffectNode::setDefinition(const String& definition)
             if(mat->parse(*iter)) 
             {
                 addMaterial(mat);
-                //addPass(ss);
 
                 // Renrer bin hack: addPass resets the render bin for the stateset, so we force
                 // the opaque / transparent renderbin settings here. Re-calling setTransparent
                 // will make sure the render bin is correct.
+                // NOTE: After stopping use of osgFX we probably don't need
+                // this anymore...
                 mat->setTransparent(mat->isTransparent());
             }
         }
@@ -127,11 +122,32 @@ void EffectNode::traverse(osg::NodeVisitor& nv)
     {
         // Do a traversal for each active material.
         osgUtil::CullVisitor* cv = (osgUtil::CullVisitor*)&nv;
+
+        // Retrieve the omegalib draw context from the osg cull visitor.
+        omegaOsg::OsgDrawInformation* odi = 
+            dynamic_cast<omegaOsg::OsgDrawInformation*>(cv->getRenderStage()->getCamera()->getUserData());
+
+        Camera* activeCamera = NULL;
+        if(odi != NULL)
+        {
+            activeCamera = odi->context->camera;
+        }
+
+        bool camExplicitMaterials = activeCamera->isFlagSet(Material::CameraDrawExplicitMaterials);
+
         foreach(Material* mat, myMaterials)
         {
-            cv->pushStateSet(mat->getStateSet());
-            Group::traverse(nv);
-            cv->popStateSet();
+            // We draw this material if:
+            // 1 - the camera only draws materials associated to it, and this material is
+            // 2 - the material has no associated camera
+            // 3 - the material is associated to this camera
+            if(mat->getCamera() == activeCamera ||
+                (!camExplicitMaterials && mat->getCamera() == NULL))
+            {
+                cv->pushStateSet(mat->getStateSet());
+                Group::traverse(nv);
+                cv->popStateSet();
+            }
         }
     }
     else

@@ -47,123 +47,144 @@
 #include <omegaToolkit.h>
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
-	class SceneManager;
-	class ShaderManager;
-	class ProgramAsset;
+    using namespace omega;
+    using namespace omegaOsg;
+    class SceneManager;
+    class ShaderManager;
+    class ProgramAsset;
 
-	///////////////////////////////////////////////////////////////////////////
-	//! The Material class encapsulates an OpenSceneGraph stateset and offers 
-	//! a quick interface  to a few commonly used settings. The Material class 
-	//! contains all the visual attributes of  an Entity.
-	class CY_API Material: public Uniforms
-	{
-	public:
-		static Material* create(); 
+    ///////////////////////////////////////////////////////////////////////////
+    //! The Material class encapsulates an OpenSceneGraph stateset and offers 
+    //! a quick interface  to a few commonly used settings. The Material class 
+    //! contains all the visual attributes of  an Entity.
+    class CY_API Material: public Uniforms
+    {
+    public:
+        //! Use this flag on cameras that should only draw materials 
+        //! explicitly attached to them.
+        static const uint CameraDrawExplicitMaterials = 1 << 16;
 
-	public:
-		Material(osg::StateSet* ss, SceneManager* sm);
-		~Material();
+        static Material* create(); 
 
-		void setColor(const Color& diffuse, const Color& emissive);
-		void setShininess(float value);
-		void setGloss(float value);
-		float getShininess();
-		float getGloss();
+    public:
+        Material(osg::StateSet* ss, SceneManager* sm);
+        ~Material();
 
-		//! Textures
-		//@{
-		void setDiffuseTexture(const String& name);
-		void setNormalTexture(const String& name);
-		const String& getDiffuseTexture() { return myDiffuseTexture; }
-		const String& getNormalTexture() { return myNormalTexture; }
-		//! Attaches a texture to a custom texture stae, and sets a shader uniform
-		//! to point to it.
-		void setTexture(const String& name, int stage, const String& uniformName);
-		//@}
+        void setColor(const Color& diffuse, const Color& emissive);
+        void setShininess(float value);
+        void setGloss(float value);
+        float getShininess();
+        float getGloss();
 
-		//! Creates a material from a string definition (uses the effect syntax)
-		bool parse(const String& definition);
+        //! Textures
+        //@{
+        void setDiffuseTexture(const String& name);
+        void setNormalTexture(const String& name);
+        const String& getDiffuseTexture() { return myDiffuseTexture; }
+        const String& getNormalTexture() { return myNormalTexture; }
+        //! Attaches a texture to a custom texture stae, and sets a shader uniform
+        //! to point to it.
+        void setTexture(const String& name, int stage, const String& uniformName);
+        //@}
 
-		//! Flags
-		//@{
-		void setTransparent(bool value);
-		bool isTransparent() { return myTransparent; }
-		void setAdditive(bool value);
-		bool isAdditive() { return myAdditive; }
-		void setDepthTestEnabled(bool value);
-		bool isDepthTestEnabled() { return myDepthTest; }
-		void setDoubleFace(bool value);
-		bool isDoubleFace() { return myDoubleFace; }
-		void setWireframe(bool value);
-		bool isWireframe() { return myWireframe; }
-		void setLit(bool value);
-		bool isLit() { return myLit; }
-		//@}
+        //! Creates a material from a string definition (uses the effect syntax)
+        bool parse(const String& definition);
 
-		//! Set the material polygon offset.
-		void setPolygonOffset(float factor, float units);
+        //! Flags
+        //@{
+        void setTransparent(bool value);
+        bool isTransparent() { return myTransparent; }
+        void setAdditive(bool value);
+        bool isAdditive() { return myAdditive; }
+        void setDepthTestEnabled(bool value);
+        bool isDepthTestEnabled() { return myDepthTest; }
+        void setDoubleFace(bool value);
+        bool isDoubleFace() { return myDoubleFace; }
+        void setWireframe(bool value);
+        bool isWireframe() { return myWireframe; }
+        void setLit(bool value);
+        bool isLit() { return myLit; }
+        //@}
 
-		//! Sets the material alpha value.
-		//! @remarks setAlpha only sets the value of the unif_Alpha uniform. 
-		//! By default, cyclops shaders use this uniform to modulate fragment 
-		//! alpha values after lighting (see postLightingSection/default.frag).
-		//! This behavior can be modified by the user, redefining the 
-		//! @postLightingSection shader macro.
-		void setAlpha(float value);
-		//! Gets the material alpha value.
-		float getAlpha();
+        //! Set the material polygon offset.
+        void setPolygonOffset(float factor, float units);
 
-		//void setProgram(const String& program) { myProgramName = program; }
-		//String getProgram() { return myProgramName; }
+        //! Sets the material alpha value.
+        //! @remarks setAlpha only sets the value of the unif_Alpha uniform. 
+        //! By default, cyclops shaders use this uniform to modulate fragment 
+        //! alpha values after lighting (see postLightingSection/default.frag).
+        //! This behavior can be modified by the user, redefining the 
+        //! @postLightingSection shader macro.
+        void setAlpha(float value);
+        //! Gets the material alpha value.
+        float getAlpha();
 
-		osg::StateSet* getStateSet() { return myStateSet; }
+        //void setProgram(const String& program) { myProgramName = program; }
+        //String getProgram() { return myProgramName; }
 
-		//! Resets all material properties to their default values. Colors and 
-		//! transparency will switch back to their default values (that is, 
-		//! whatever is specified in the entity effect. Uniforms attached to the 
-		//! material will not be deleted by this call. To delete uniforms, call 
-		//! `removeAllUniforms`
-		void reset();
+        osg::StateSet* getStateSet() { return myStateSet; }
 
-		//! Sets the gpu program attached to this material. Returns true if the
-		//! program has been set correctly.
-		bool setProgram(const String& name);
+        //! Resets all material properties to their default values. Colors and 
+        //! transparency will switch back to their default values (that is, 
+        //! whatever is specified in the entity effect. Uniforms attached to the 
+        //! material will not be deleted by this call. To delete uniforms, call 
+        //! `removeAllUniforms`
+        void reset();
 
-		//! @internal sets the shader manager used by this material to find
-		//! shaders
-		void setShaderManager(ShaderManager* sm);
+        //! Sets the gpu program attached to this material. Returns true if the
+        //! program has been set correctly.
+        bool setProgram(const String& name);
 
-	private:
-		ProgramAsset* getOrCreateProgram(const String& name, const String& variant = "");
+        //! @internal sets the shader manager used by this material to find
+        //! shaders
+        void setShaderManager(ShaderManager* sm);
 
-	private:
-		// No ref to avoid circular dependency.
-		SceneManager* mySceneManager;
+        //! The camera that will draw this material. If no camera is specified,
+        //! all cameras will draw this material
+        void setCamera(Camera* cam);
+        Camera* getCamera();
 
-		// Flags
-		bool myTransparent;
-		bool myAdditive;
-		bool myDepthTest;
-		bool myDoubleFace;
-		bool myWireframe;
-		bool myLit;
+    private:
+        ProgramAsset* getOrCreateProgram(const String& name, const String& variant = "");
 
-		Ref<osg::StateSet> myStateSet;
-		Ref<osg::Material> myMaterial;
+    private:
+        // No ref to avoid circular dependency.
+        SceneManager* mySceneManager;
 
-		Ref<cyclops::Uniform> myShininess;
-		Ref<cyclops::Uniform> myGloss;
-		Ref<cyclops::Uniform> myAlpha;
+        // Flags
+        bool myTransparent;
+        bool myAdditive;
+        bool myDepthTest;
+        bool myDoubleFace;
+        bool myWireframe;
+        bool myLit;
 
-		String myDiffuseTexture;
-		String myNormalTexture;
+        Ref<osg::StateSet> myStateSet;
+        Ref<osg::Material> myMaterial;
 
-		String myProgramName;
-		ShaderManager* myShaderManager;
-		//Ref<ProgramAsset> myProgram;
-	};
+        Ref<cyclops::Uniform> myShininess;
+        Ref<cyclops::Uniform> myGloss;
+        Ref<cyclops::Uniform> myAlpha;
+
+        String myDiffuseTexture;
+        String myNormalTexture;
+
+        String myProgramName;
+        ShaderManager* myShaderManager;
+        //Ref<ProgramAsset> myProgram;
+
+        // The camera that will draw this material. If no camera is specified,
+        // all cameras will draw this material.
+        Ref<Camera> myCamera;
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline void Material::setCamera(Camera* cam)
+    { myCamera = cam; }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline Camera* Material::getCamera()
+    { return myCamera; }
 };
 
 #endif

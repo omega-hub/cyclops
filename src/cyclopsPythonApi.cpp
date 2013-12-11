@@ -189,6 +189,7 @@ BOOST_PYTHON_MODULE(cyclops)
 
     // Material
     PYAPI_REF_CLASS(Material, Uniforms)
+        .def_readonly("CameraDrawExplicitMaterials", &Material::CameraDrawExplicitMaterials)
         PYAPI_STATIC_REF_GETTER(Material, create)
         PYAPI_METHOD(Material, setColor)
         PYAPI_METHOD(Material, setTransparent)
@@ -217,7 +218,10 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(Material, isLit)
         PYAPI_METHOD(Material, setLit)
         PYAPI_METHOD(Material, setAlpha)
-        PYAPI_METHOD(Material, getAlpha);
+        PYAPI_METHOD(Material, getAlpha)
+        PYAPI_METHOD(Material, setCamera)
+        PYAPI_REF_GETTER(Material, getCamera)
+        ;
 
     // RigidBodyType
     PYAPI_ENUM(RigidBody::RigidBodyType, RigidBodyType)
