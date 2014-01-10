@@ -108,14 +108,20 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(SceneManager, reloadAndRecompileShaders)
         ;
 
+    // SceneLayer
     PYAPI_REF_BASE_CLASS_WITH_CTOR(SceneLayer)
+        .def_readonly("CameraDrawExplicitLayer", &SceneLayer::CameraDrawExplicitLayers)
         PYAPI_METHOD(SceneLayer, addLayer)
         PYAPI_METHOD(SceneLayer, removeLayer)
+        PYAPI_METHOD(SceneLayer, setCamera)
+        PYAPI_REF_GETTER(SceneLayer, getCamera)
         ;
 
+    // LightingLayer
     PYAPI_REF_CLASS_WITH_CTOR(LightingLayer, SceneLayer)
         ;
 
+    // CompositingLayer
     PYAPI_REF_CLASS_WITH_CTOR(CompositingLayer, SceneLayer)
         PYAPI_METHOD(CompositingLayer, reset)
         PYAPI_METHOD(CompositingLayer, loadCompositor)

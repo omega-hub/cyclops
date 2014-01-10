@@ -41,61 +41,85 @@
 #include "cyclopsConfig.h"
 #include <omega.h>
 #include <osg/Group>
+#include <osg/NodeCallback>
 
 namespace cyclops {
-	using namespace omega;
-	
-	class Entity;
-	
+    using namespace omega;
+    
+    class Entity;
+    
     ///////////////////////////////////////////////////////////////////////////
     //!	A scene layer is an abstract class that groups entities together for a
-	//! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
-	//!	can form a hyerarchy similar to the scene node tree, but the scene 
-	//!	layer tree is used to represent properties of the scene different than 
-	//! spatial transformations.
-	class CY_API SceneLayer: public ReferenceType, public SceneNodeListener
-	{
-	friend class Entity;
-	public:
-		SceneLayer();
-		virtual ~SceneLayer();
+    //! variety of purposes: lighting, clipping, LOD and so on. SceneLayers 
+    //!	can form a hyerarchy similar to the scene node tree, but the scene 
+    //!	layer tree is used to represent properties of the scene different than 
+    //! spatial transformations.
+    class CY_API SceneLayer: public ReferenceType, public SceneNodeListener
+    {
+    friend class Entity;
+    public:
+        //! Use this flag on cameras that should only draw layers 
+        //! explicitly attached to them.
+        static const uint CameraDrawExplicitLayers = 1 << 17;
 
-		//! Add a sub-layer 
-		virtual void addLayer(SceneLayer* layer);
-		//! remove a sub-layer
-		virtual void removeLayer(SceneLayer* layer);
-		List< Ref<SceneLayer> >& getLayers();
-		SceneLayer* getParentLayer() { return myParent; }
+    public:
+        SceneLayer();
+        virtual ~SceneLayer();
 
-		//! @internal SceneNodeListener overrides
-		//! These methods are needed to handle entities when they get attached
-		//! or detached from the scene
-		virtual void onAttachedToScene(SceneNode* source);
-		virtual void onDetachedFromScene(SceneNode* source);
+        //! Add a sub-layer 
+        virtual void addLayer(SceneLayer* layer);
+        //! remove a sub-layer
+        virtual void removeLayer(SceneLayer* layer);
+        List< Ref<SceneLayer> >& getLayers();
+        SceneLayer* getParentLayer() { return myParent; }
 
-		virtual osg::Group* getOsgNode() { return myRoot; }
+        //! @internal SceneNodeListener overrides
+        //! These methods are needed to handle entities when they get attached
+        //! or detached from the scene
+        virtual void onAttachedToScene(SceneNode* source);
+        virtual void onDetachedFromScene(SceneNode* source);
 
-		//! Invokes the updateLayer function on this layer and all sub-layers
-		void update();
+        virtual osg::Group* getOsgNode() { return myRoot; }
 
-	protected:
-		virtual void updateLayer() {}
-		virtual void addEntity(Entity* e);
-		virtual void removeEntity(Entity* e);
+        //! Invokes the updateLayer function on this layer and all sub-layers
+        void update();
 
-	protected:
-		SceneLayer* myParent;
-		Ref<osg::Group> myRoot;
+        //! The camera that will draw this layer. If no camera is specified,
+        //! all cameras will draw this layer.
+        void setCamera(Camera* cam);
+        Camera* getCamera();
 
-		// We keep weak entity pointers around, so entities with no references
-		// can be deleted.
-		List< Entity* > myEntities;
-		List< Ref<SceneLayer> > myLayers;
-	};	
-	
-	///////////////////////////////////////////////////////////////////////////
-	inline List< Ref<SceneLayer> >& SceneLayer::getLayers()
-	{ return myLayers; }
+    protected:
+        virtual void updateLayer() {}
+        virtual void addEntity(Entity* e);
+        virtual void removeEntity(Entity* e);
+
+    protected:
+        SceneLayer* myParent;
+        Ref<osg::Group> myRoot;
+        Ref<osg::NodeCallback> myCullCallback;
+
+        // We keep weak entity pointers around, so entities with no references
+        // can be deleted.
+        List< Entity* > myEntities;
+        List< Ref<SceneLayer> > myLayers;
+
+        // The camera that will draw this layer. If no camera is specified,
+        // all cameras will draw this layer.
+        Ref<Camera> myCamera;
+    };	
+    
+    ///////////////////////////////////////////////////////////////////////////
+    inline List< Ref<SceneLayer> >& SceneLayer::getLayers()
+    { return myLayers; }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline void SceneLayer::setCamera(Camera* cam)
+    { myCamera = cam; }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline Camera* SceneLayer::getCamera()
+    { return myCamera; }
 };
 
 #endif

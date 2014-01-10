@@ -45,10 +45,62 @@ using namespace omega;
 using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
+class LayerCullCallback: public osg::NodeCallback
+{
+public:
+    LayerCullCallback(SceneLayer* sl): myLayer(sl)
+    {}
+
+    // Callback method called by the NodeVisitor when visiting a node.*/
+    virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
+    {
+        if(nv->getVisitorType() == osg::NodeVisitor::CULL_VISITOR)
+        {
+            // Do a traversal for each active material.
+            osgUtil::CullVisitor* cv = (osgUtil::CullVisitor*)nv;
+
+            // Retrieve the omegalib draw context from the osg cull visitor.
+            omegaOsg::OsgDrawInformation* odi = 
+                dynamic_cast<omegaOsg::OsgDrawInformation*>(cv->getRenderStage()->getCamera()->getUserData());
+
+            Camera* activeCamera = NULL;
+            if(odi != NULL)
+            {
+                activeCamera = odi->context->camera;
+            }
+
+            bool camExplicitLayers = activeCamera->isFlagSet(SceneLayer::CameraDrawExplicitLayers);
+            // We draw this layer if:
+            // 1 - the camera only draws layers associated to it, and this layer is
+            // 2 - the layer has no associated camera
+            // 3 - the layer is associated to this camera
+            if(myLayer->getCamera() == activeCamera ||
+                (!camExplicitLayers && myLayer->getCamera() == NULL))
+            {
+                traverse(node, nv);
+            }
+        }
+        else
+        {
+            // note, callback is responsible for scenegraph traversal so
+            // they must call traverse(node,nv) to ensure that the
+            // scene graph subtree (and associated callbacks) are traversed.
+            traverse(node, nv);
+        }
+    }
+
+private:
+    SceneLayer* myLayer;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 SceneLayer::SceneLayer():
     myParent(NULL)
 {
+    myCullCallback = new LayerCullCallback(this);
+
     myRoot = new osg::Group();
+    myRoot->addCullCallback(myCullCallback);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
