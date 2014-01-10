@@ -42,6 +42,8 @@
 
 using namespace cyclops;
 
+const uint Material::CameraDrawExplicitMaterials = 1 << 16;
+
 ///////////////////////////////////////////////////////////////////////////////
 Material* Material::create()
 {

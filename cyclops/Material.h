@@ -62,7 +62,7 @@ namespace cyclops {
     public:
         //! Use this flag on cameras that should only draw materials 
         //! explicitly attached to them.
-        static const uint CameraDrawExplicitMaterials = 1 << 16;
+        static const uint CameraDrawExplicitMaterials;
 
         static Material* create(); 
 
