@@ -60,7 +60,7 @@ namespace cyclops {
     public:
         //! Use this flag on cameras that should only draw layers 
         //! explicitly attached to them.
-        static const uint CameraDrawExplicitLayers = 1 << 17;
+        static const uint CameraDrawExplicitLayers;
 
     public:
         SceneLayer();

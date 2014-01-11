@@ -44,6 +44,8 @@
 using namespace omega;
 using namespace cyclops;
 
+const uint SceneLayer::CameraDrawExplicitLayers = 1 << 17;
+
 ///////////////////////////////////////////////////////////////////////////////
 class LayerCullCallback: public osg::NodeCallback
 {
