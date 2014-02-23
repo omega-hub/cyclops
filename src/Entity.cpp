@@ -327,7 +327,7 @@ SceneNode* Entity::getPiece(const String& path)
         if(piece != NULL)
         {
             SceneNode* sn = new SceneNode(getEngine());
-            OsgSceneObject* oso = new OsgSceneObject(target);
+            OsgSceneObject* oso = new OsgSceneObject(piece);
             // Use local transforms, since the osg node is already part of a 
             // transform hierarchy.
             oso->useLocalTransform(true);
@@ -337,7 +337,7 @@ SceneNode* Entity::getPiece(const String& path)
 
             // If the osg node is a transform node, copy its transformation to the scene node to
             // preserve it.
-            osg::MatrixTransform* mtf = dynamic_cast<osg::MatrixTransform*>(target);
+            osg::MatrixTransform* mtf = dynamic_cast<osg::MatrixTransform*>(piece);
             if(mtf != NULL)
             {
                 osg::Vec3d t = mtf->getMatrix().getTrans();
