@@ -48,7 +48,7 @@
 #include "omega/PythonInterpreterWrapper.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#define CYCLOPS_VERSION "1.1"
+#define CYCLOPS_VERSION "1.2"
 
 using namespace cyclops;
 
