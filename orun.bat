@@ -1,3 +1,4 @@
-REM the following call starts an empty orun session.
-REM the -D . option is used to ignore the OMEGA_HOME environment variable (if present)
-.\bin\orun.exe -D .
+REM the following call starts a basic omegalib/cyclops example
+REM the -D %~dp0% option is used to ignore the OMEGA_HOME environment variable 
+REM (if present), and set the default data dir to the path of this batch file
+.\bin\orun.exe -D %~dp0%
