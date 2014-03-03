@@ -39,8 +39,8 @@ spinner.getRigidBody().setUserControlled(True)
 spinner.setEffect('colored -d yellow')
 spinner.castShadow(True)
 # set the camera position
-getDefaultCamera().focusOn(ground)
 getDefaultCamera().setPosition(0, 1, 2)
+getDefaultCamera().lookAt(ground.getPosition(), Vector3(0, 1, 0))
 
 def spawn():
 	for i in range(0, 10):
