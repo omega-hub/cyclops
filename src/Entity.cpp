@@ -332,6 +332,12 @@ Entity* Entity::getPiece(const String& path)
             parent->removeChild(piece);
             
             e->initialize(piece);
+            // Attaching directly to layer creates errors (texture set?)
+            // so we detach from layer and force the entity parent to be
+            // the old node parent.
+            // a consequence of this is that setting a layer on an entity piece
+            // will not work.
+            e->setLayer(NULL);
             e->myOsgSceneObject->useLocalTransform(true);
             parent->addChild(e->getOsgNode());
 
