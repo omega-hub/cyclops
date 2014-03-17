@@ -304,7 +304,7 @@ vector<String> Entity::listPieces(const String& path)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-SceneNode* Entity::getPiece(const String& path)
+Entity* Entity::getPiece(const String& path)
 {
     String entityPath;
     String entityName;
@@ -315,7 +315,7 @@ SceneNode* Entity::getPiece(const String& path)
 
     if(target != NULL)
     {
-        osg::Node* piece = NULL;
+        Ref<osg::Node> piece = NULL;
         for(int i = 0; i < target->getNumChildren(); i++)
         {
             if(target->getChild(i)->getName() == entityName)
@@ -326,28 +326,37 @@ SceneNode* Entity::getPiece(const String& path)
         }
         if(piece != NULL)
         {
-            SceneNode* sn = new SceneNode(getEngine());
-            OsgSceneObject* oso = new OsgSceneObject(piece);
+            //SceneNode* sn = new SceneNode(getEngine());
+            Ref<Entity> e = new Entity(mySceneManager);
+            Ref<osg::Group> parent = piece->getParent(0);
+            parent->removeChild(piece);
+            
+            e->initialize(piece);
+            e->myOsgSceneObject->useLocalTransform(true);
+            parent->addChild(e->getOsgNode());
+
+            //OsgSceneObject* oso = new OsgSceneObject(piece);
             // Use local transforms, since the osg node is already part of a 
             // transform hierarchy.
-            oso->useLocalTransform(true);
-            sn->addComponent(oso);
+            //oso->useLocalTransform(true);
+            //sn->addComponent(oso);
 
-            addChild(sn);
+            //addChild(sn);
+            addChild(e);
 
             // If the osg node is a transform node, copy its transformation to the scene node to
             // preserve it.
-            osg::MatrixTransform* mtf = dynamic_cast<osg::MatrixTransform*>(piece);
+            osg::MatrixTransform* mtf = dynamic_cast<osg::MatrixTransform*>(piece.get());
             if(mtf != NULL)
             {
                 osg::Vec3d t = mtf->getMatrix().getTrans();
                 osg::Vec3d s = mtf->getMatrix().getScale();
                 osg::Quat o = mtf->getMatrix().getRotate();
-                sn->setPosition(t[0], t[1], t[2]);
-                sn->setOrientation(o.w(), o.x(), o.y(), o.z());
-                sn->setScale(s[0], s[1], s[2]);
+                e->setPosition(t[0], t[1], t[2]);
+                e->setOrientation(o.w(), o.x(), o.y(), o.z());
+                e->setScale(s[0], s[1], s[2]);
             }
-            return sn;
+            return e;
         }
     }
     return NULL;

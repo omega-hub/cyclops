@@ -106,7 +106,7 @@ namespace cyclops {
 		//! Piece management
 		//@{
 		vector<String> listPieces(const String& path);
-		SceneNode* getPiece(const String& path);
+		Entity* getPiece(const String& path);
 		//@}
 
 		//! Returns the rigid body object describing the physical properties

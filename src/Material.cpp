@@ -92,7 +92,7 @@ void Material::setColor(const Color& diffuse, const Color& emissive)
 		// definitions possibly specified in a 3D object and use this one 
 		// instead. 
 		myStateSet->setAttributeAndModes(myMaterial, 
-			osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
+			osg::StateAttribute::ON | osg::StateAttribute::PROTECTED | osg::StateAttribute::OVERRIDE);
 	}
 	myMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, COLOR_TO_OSG(diffuse));
 	myMaterial->setEmission(osg::Material::FRONT_AND_BACK, COLOR_TO_OSG(emissive));
@@ -330,7 +330,7 @@ bool Material::setProgram(const String& name)
 	if(pa != NULL)
 	{
 		myStateSet->setAttributeAndModes(pa->program, 
-			osg::StateAttribute::ON);
+			osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
 		return true;
 	}
 	return false;
