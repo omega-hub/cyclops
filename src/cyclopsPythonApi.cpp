@@ -251,6 +251,10 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(RigidBody, applyCentralImpulse)
         PYAPI_METHOD(RigidBody, setLinearVelocity)
         PYAPI_METHOD(RigidBody, setAngularVelocity)
+        PYAPI_METHOD(RigidBody, setFriction)
+        PYAPI_METHOD(RigidBody, getFriction)
+        PYAPI_METHOD(RigidBody, setRollingFriction)
+        PYAPI_METHOD(RigidBody, getRollingFriction)
         ;
 
     // Entity

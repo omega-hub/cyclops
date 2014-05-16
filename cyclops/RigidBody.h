@@ -44,78 +44,83 @@ class btVector3;
 struct btDefaultMotionState;
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
+    using namespace omega;
+    using namespace omegaOsg;
 
-	class SceneManager;
-	class Entity;
+    class SceneManager;
+    class Entity;
 
-	///////////////////////////////////////////////////////////////////////////
-	class CY_API RigidBody: public ReferenceType
-	{
-	public:
-		enum RigidBodyType { Box, Sphere, Cylinder, Plane };
+    ///////////////////////////////////////////////////////////////////////////
+    class CY_API RigidBody: public ReferenceType
+    {
+    public:
+        enum RigidBodyType { Box, Sphere, Cylinder, Plane };
 
-	public:
-		RigidBody(Entity* e);
-		virtual ~RigidBody();
+    public:
+        RigidBody(Entity* e);
+        virtual ~RigidBody();
 
-		void initialize(RigidBodyType type, float mass);
+        void initialize(RigidBodyType type, float mass);
 
-		//! updates the attached entity transform with the transform coming
-		//! from the physics simlation. Called by Entity::updateTraversal
-		void updateEntity();
+        //! updates the attached entity transform with the transform coming
+        //! from the physics simlation. Called by Entity::updateTraversal
+        void updateEntity();
 
-		//! updates the rigid body transform from the entity
-		void sync();
+        //! updates the rigid body transform from the entity
+        void sync();
 
-		bool isEnabled();
-		void setEnabled(bool value);
+        bool isEnabled();
+        void setEnabled(bool value);
 
-		void setUserControlled(bool value);
-		bool isUserControlled();
+        void setUserControlled(bool value);
+        bool isUserControlled();
 
     // Forces
-	void applyCentralForce(const Vector3f& force);
+    void applyCentralForce(const Vector3f& force);
     void applyForce(const Vector3f& force, const Vector3f& relPos);
     void applyCentralImpulse(const Vector3f& impulse);
     void applyImpulse(const Vector3f& impulse, const Vector3f& relPos);
     void setLinearVelocity(const Vector3f& linearVelocity);
     void setAngularVelocity(const Vector3f& angularVelocity);
 
-	private:
-		Entity* myEntity;
+    void setFriction(float friction);
+    float getFriction();
+    void setRollingFriction(float friction);
+    float getRollingFriction();
 
-		bool myEnabled;
-		bool myUserControlled;
-		RigidBodyType myType;
-		float myMass;
+    private:
+        Entity* myEntity;
 
-		// List of possible rigid body shapes (not sure this is the best
-		// implementation).
-		btCollisionShape* myCollisionShape;
-		//btBoxShape* myBoxShape;
-		//btSphereShape* mySphereShape;
+        bool myEnabled;
+        bool myUserControlled;
+        RigidBodyType myType;
+        float myMass;
 
-		btRigidBody* myRigidBody;
-		btDefaultMotionState* myMotionState;
-	};
+        // List of possible rigid body shapes (not sure this is the best
+        // implementation).
+        btCollisionShape* myCollisionShape;
+        //btBoxShape* myBoxShape;
+        //btSphereShape* mySphereShape;
 
-	///////////////////////////////////////////////////////////////////////////
-	inline bool RigidBody::isEnabled()
-	{ return myEnabled; }
+        btRigidBody* myRigidBody;
+        btDefaultMotionState* myMotionState;
+    };
 
-	///////////////////////////////////////////////////////////////////////////
-	inline void RigidBody::setUserControlled(bool value)
-	{
-		myUserControlled = value;
-	}
+    ///////////////////////////////////////////////////////////////////////////
+    inline bool RigidBody::isEnabled()
+    { return myEnabled; }
 
-	///////////////////////////////////////////////////////////////////////////
-	inline bool RigidBody::isUserControlled()
-	{
-		return myUserControlled;
-	}
+    ///////////////////////////////////////////////////////////////////////////
+    inline void RigidBody::setUserControlled(bool value)
+    {
+        myUserControlled = value;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline bool RigidBody::isUserControlled()
+    {
+        return myUserControlled;
+    }
 
 };
 

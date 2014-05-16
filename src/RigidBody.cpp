@@ -167,33 +167,62 @@ void RigidBody::sync()
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void RigidBody::applyCentralForce(const Vector3f& force)
 {
     myRigidBody->applyCentralForce(btVector3(force.x(), force.y(), force.z()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void RigidBody::applyForce(const Vector3f& force, const Vector3f& relPos)
 {
   myRigidBody->applyForce(btVector3(force.x(), force.y(), force.z()), btVector3(relPos.x(), relPos.y(), relPos.z()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void RigidBody::applyCentralImpulse(const Vector3f& impulse)
 {
   myRigidBody->applyCentralImpulse(btVector3(impulse.x(), impulse.y(), impulse.z()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void RigidBody::applyImpulse(const Vector3f& impulse, const Vector3f& relPos)
 {
   myRigidBody->applyImpulse(btVector3(impulse.x(), impulse.y(), impulse.z()), btVector3(relPos.x(), relPos.y(), relPos.z()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void RigidBody::setLinearVelocity(const Vector3f& linearVelocity)
 {
     myRigidBody->setLinearVelocity(btVector3(linearVelocity.x(), linearVelocity.y(), linearVelocity.z()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void RigidBody::setAngularVelocity(const Vector3f& angularVelocity)
 {
   myRigidBody->setAngularVelocity(btVector3(angularVelocity.x(), angularVelocity.y(), angularVelocity.z()));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void RigidBody::setFriction(float linear)
+{
+    myRigidBody->setFriction(linear);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+float RigidBody::getFriction()
+{
+    return myRigidBody->getFriction();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void RigidBody::setRollingFriction(float rolling)
+{
+    myRigidBody->setRollingFriction(rolling);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+float RigidBody::getRollingFriction()
+{
+    return myRigidBody->getRollingFriction();
+}
