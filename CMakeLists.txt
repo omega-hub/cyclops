@@ -25,3 +25,4 @@ install(FILES orun.bat DESTINATION omegalib)
 install(FILES physics.bat DESTINATION omegalib)
 install(FILES spincube.bat DESTINATION omegalib)
 
+set_target_properties(cyclops PROPERTIES FOLDER modules)
