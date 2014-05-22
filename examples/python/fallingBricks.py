@@ -84,6 +84,7 @@ boxesz = 1
 boxRoot = SceneNode.create('boxRoot')
 bulletRoot = SceneNode.create('bulletRoot')
 
+#-------------------------------------------------------------------------------
 def spawn():
     for x in range(0, boxesx):
         for y in range(0, boxesy):
@@ -105,6 +106,7 @@ def spawn():
 spawn()
 
 
+#-------------------------------------------------------------------------------
 def reset():
     global boxRoot
     global bulletRoot
@@ -115,10 +117,9 @@ def reset():
     spawn()
     
 
+#-------------------------------------------------------------------------------
 bulletSize = 0.1
 bulletWeight = 1
-bulletSpeed = 20
-
 def throw(pos, dir, speed):
                 b = SphereShape.create(bulletSize, 2)
                 b.setPosition(pos)
@@ -132,6 +133,7 @@ def throw(pos, dir, speed):
                 bulletRoot.addChild(b)
 
 
+#-------------------------------------------------------------------------------
 def onUpdate(frame, time, dt):
     if(frame < 60):
         getSceneManager().setGravity(Vector3(0, -4.5 * frame / 60, 0))
@@ -140,11 +142,48 @@ def onUpdate(frame, time, dt):
 
 setUpdateFunction(onUpdate)
 
+#-------------------------------------------------------------------------------
+flingMarkers = (-1,-1)
+flingStartMarkerPos = Vector3(0,0,0)
+flingEndMarkerPos = Vector3(0,0,0)
+flingStart = Vector3(0,0,0)
+flingDir = Vector3(0,0,-1)
+flingSpeed = 20
+def updateFlingFromMarkers():
+    global flingSpeed
+    global flingStart
+    global flingDir
+    flingStart = flingStartMarkerPos
+    flingDir = flingEndMarkerPos - flingStartMarkerPos
+    flingSpeed = flingDir.length()
+    flingDir.normalize()
+
+#-------------------------------------------------------------------------------
 def onEvent():
+    global flingMarkers
+    global flingStart
+    global flingDir
+    global flingSpeed
+    global flingStartMarkerPos
+    global flingEndMarkerPos
     e = getEvent()
-    if(e.isButtonDown(EventFlags.Right)):
+
+    # Set fling start/dir based on mouse position (no speed control)
+    if(e.getServiceType() == ServiceType.Pointer):
         r = getRayFromEvent(e)
-        if(r[0] == True):
-            throw(r[1], r[2], bulletSpeed)
+        flingStart = r[1]
+        flingDir = r[2]
+    # If we are using 3D fling markers, use them to compute fling start, dir, speed
+    if(e.getSourceId() == flingMarkers[0]):
+        flingStartMarkerPos = e.getPosition()
+        updateFlingFromMarkers()
+    elif(e.getSourceId() == flingMarkers[1]):
+        flingEndMarkerPos = e.getPosition()
+        updateFlingFromMarkers()
     
+    # Buttons (reset / throw)
+    if(e.isButtonDown(EventFlags.Right)):
+        throw(flingStart, flingDir, flingSpeed)
+    if(e.isButtonDown(EventFlags.ButtonLeft)):
+        reset()
 setEventFunction(onEvent)
