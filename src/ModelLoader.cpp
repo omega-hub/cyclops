@@ -269,7 +269,7 @@ bool DefaultModelLoader::load(ModelAsset* asset, ModelAsset* mapAsset)
 		}
 		else
 		{
-			//ofwarn("could not find file: %1%", %filePath);
+			ofwarn("could not find file: %1%", %filePath);
 			return false;
 		}
 	}
