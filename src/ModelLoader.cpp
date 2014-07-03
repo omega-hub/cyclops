@@ -159,7 +159,16 @@ osg::Node* ModelLoader::processDefaultOptions(osg::Node* node, ModelAsset* asset
 				osgUtil::Optimizer::MERGE_GEOMETRY | 
 				osgUtil::Optimizer::SPATIALIZE_GROUPS |
 				osgUtil::Optimizer::MERGE_GEODES |
-				osgUtil::Optimizer::TRISTRIP_GEOMETRY |
+                // NOTE: TRISTRIP_GEOMETRY makes performance worse on some 
+                // models (tested with FBX files). so it is commented out here.
+                // If it turns out it is useful for other ill-formed models,
+                // it should be added as an additional option to the model
+                // loader.
+                // Also check this post
+                // https://groups.google.com/forum/#!msg/omegalib/4kDO3DfP96U/_fH9DmQ7zWAJ
+                // TL;DR - TRISTRIP_GEOMETRY is useless and VERTEX_POSTTRANSFORM
+                // is better and should be used instead.
+				//osgUtil::Optimizer::TRISTRIP_GEOMETRY |
 				osgUtil::Optimizer::VERTEX_POSTTRANSFORM);
 		}
 
