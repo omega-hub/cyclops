@@ -77,6 +77,9 @@ namespace cyclops {
 		void setSoftShadowParameters(float softnessWidth, float jitteringScale)
 		{ return myShadowMap->setSoftShadowParameters(softnessWidth, jitteringScale); }
 
+		void setDirty() 
+		{ myShadowMap->setDirty(); }
+        
 	private:
 		//! used by Light to notify tell this shadow map who is its owner.
 		void setLight(Light* l); 
@@ -88,9 +91,6 @@ namespace cyclops {
 		void setManualRefreshEnabled(bool value) 
 		{ myShadowMap->setManualRefreshEnabled(value); }
 		
-		void setDirty() 
-		{ myShadowMap->setDirty(); }
-
 	protected:
 		virtual void initialize();
 		void checkInitialized();

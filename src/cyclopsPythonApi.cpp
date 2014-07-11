@@ -372,6 +372,7 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(ShadowMap, setSoft)
         PYAPI_METHOD(ShadowMap, isSoft)
         PYAPI_METHOD(ShadowMap, setSoftShadowParameters)
+        PYAPI_METHOD(ShadowMap, setDirty)
         ;
 
     // ShadowMap

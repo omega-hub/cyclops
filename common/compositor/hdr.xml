@@ -60,7 +60,7 @@
         uniform float blurFactor;
         uniform float radialAmount;
         uniform float exposure;
-        const float gamma = 0.5;
+        const float gamma = 1.1;
         
         void main()
         {
@@ -82,7 +82,7 @@
     </uniform>
     
     <uniform name="blurFactor" type="float">
-        <value>0.2</value>
+        <value>1.0</value>
     </uniform>
     
     <uniform name="radialAmount" type="float">
@@ -90,7 +90,7 @@
     </uniform>
     
     <uniform name="exposure" type="float">
-        <value>0.5</value>
+        <value>0.8</value>
     </uniform>
     
     <buffer_template name="sceneBufferTemplate" type="2d">
@@ -134,7 +134,7 @@
         </deferred_pass>
         
         <deferred_pass name="HDR_Blur1">
-            <uniform name="blurOffset" type="vec2"><value>0.004 0</value></uniform>
+            <uniform name="blurOffset" type="vec2"><value>0.01 0</value></uniform>
             <input_buffer unit="0" varname="sceneTex">downsamplingScene2</input_buffer>
             <output_buffer target="color">blurredScene1</output_buffer>
             <shader>standard_vs</shader>
@@ -142,7 +142,7 @@
         </deferred_pass>
         
         <deferred_pass name="HDR_Blur2">
-            <uniform name="blurOffset" type="vec2"><value>0 0.004</value></uniform>
+            <uniform name="blurOffset" type="vec2"><value>0 0.01</value></uniform>
             <input_buffer unit="0" varname="sceneTex">blurredScene1</input_buffer>
             <output_buffer target="color">blurredScene2</output_buffer>
             <shader>standard_vs</shader>
