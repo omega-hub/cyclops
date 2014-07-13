@@ -13,10 +13,14 @@ if(MODULES_omegaOsgEarth)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(examples/cyhello2)
-add_subdirectory(examples/earth)
+if(OMEGA_BUILD_EXAMPLES)
+    add_subdirectory(examples/cyhello2)
+    if(MODULES_omegaOsgEarth)
+        add_subdirectory(examples/helloEarth)
+    endif()
+endif()
 
-###############################################################################
+#-------------------------------------------------------------------------------
 # Install commands
 install(DIRECTORY common DESTINATION omegalib/cyclops)
 install(DIRECTORY test DESTINATION omegalib/cyclops)
