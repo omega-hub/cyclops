@@ -14,6 +14,7 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(examples/cyhello2)
+add_subdirectory(examples/earth)
 
 ###############################################################################
 # Install commands
