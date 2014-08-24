@@ -228,26 +228,6 @@ bool Entity::doesCastShadow()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-omegaToolkit::ui::Menu* Entity::getContextMenu()
-{
-    return myContextMenu;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-omegaToolkit::ui::Menu* Entity::createContextMenu()
-{
-    myContextMenu = mySceneManager->createContextMenu(this);
-    return myContextMenu;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void Entity::deleteContextMenu()
-{
-    mySceneManager->deleteContextMenu(this);
-    myContextMenu = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 osg::Group* Entity::findSubGroup(const String& path)
 {
     osg::Group* target = myOsgNode->asGroup();

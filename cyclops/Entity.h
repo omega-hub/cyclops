@@ -1,12 +1,12 @@
 /******************************************************************************
  * THE OMEGA LIB PROJECT
  *-----------------------------------------------------------------------------
- * Copyright 2010-2013		Electronic Visualization Laboratory, 
+ * Copyright 2010-2014		Electronic Visualization Laboratory, 
  *							University of Illinois at Chicago
  * Authors:										
  *  Alessandro Febretti		febret@gmail.com
  *-----------------------------------------------------------------------------
- * Copyright (c) 2010-2013, Electronic Visualization Laboratory,  
+ * Copyright (c) 2010-2014, Electronic Visualization Laboratory,  
  * University of Illinois at Chicago
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -33,8 +33,8 @@
  * Contains code for the Entity class. All drawable 3D objects in the cyclops 
  * framework derive from Entity.
  ******************************************************************************/
-#ifndef __CY_DRAWABLE_OBJECT__
-#define __CY_DRAWABLE_OBJECT__
+#ifndef __CY__ENTITY__
+#define __CY__ENTITY__
 
 #include "cyclopsConfig.h"
 #include "EffectNode.h"
@@ -96,13 +96,6 @@ namespace cyclops {
 		void setCullingActive(bool value);
 		bool isCullingActive();
 
-		//! Context Menu
-		//@{
-		omegaToolkit::ui::Menu* getContextMenu();
-		omegaToolkit::ui::Menu* createContextMenu();
-		void deleteContextMenu();
-		//@}
-
 		//! Piece management
 		//@{
 		vector<String> listPieces(const String& path);
@@ -131,8 +124,6 @@ namespace cyclops {
 		Ref<OsgSceneObject> myOsgSceneObject;
 
 		Ref<EffectNode> myEffect;
-
-		Ref<omegaToolkit::ui::Menu> myContextMenu;
 
 		bool myCastShadow;
 		bool myCullingActive;

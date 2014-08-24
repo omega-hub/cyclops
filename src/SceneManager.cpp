@@ -349,46 +349,6 @@ Uniforms* SceneManager::getGlobalUniforms()
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::handleEvent(const Event& evt) 
 {
-    if(evt.isButtonDown(myEngine->getPrimaryButton()))
-    {
-        DisplaySystem* ds = SystemManager::instance()->getDisplaySystem();
-        Ray r;
-        bool res = ds->getViewRayFromEvent(evt, r);
-        if(res)
-        {
-            Entity* menuEntity = NULL;
-            float distance = 100000;
-            foreach(Entity* e, myEntitiesWithMenu)
-            {
-                e->getContextMenu()->hide();
-                Vector3f hitPoint;
-                if(e->hit(r, &hitPoint, SceneNode::HitBest))
-                {
-                    float d = (hitPoint - r.getOrigin()).norm();
-                    if(d < distance)
-                    {
-                        menuEntity = e;
-                        distance = d;
-                    }
-                }
-            }
-
-            if(menuEntity != NULL)
-            {
-                Menu* m = menuEntity->getContextMenu();
-                m->placeOnWand(evt);
-                m->show();
-                evt.setProcessed();
-            }
-            else
-            {
-                foreach(Entity* e, myEntitiesWithMenu)
-                {
-                    e->getContextMenu()->hide();
-                }
-            }
-        }
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
