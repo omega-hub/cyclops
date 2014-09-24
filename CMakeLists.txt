@@ -26,8 +26,10 @@ install(DIRECTORY common DESTINATION omegalib/cyclops)
 install(DIRECTORY test DESTINATION omegalib/cyclops)
 install(DIRECTORY examples/python/ DESTINATION omegalib/examples)
 
-install(FILES orun.bat DESTINATION omegalib)
-install(FILES physics.bat DESTINATION omegalib)
-install(FILES spincube.bat DESTINATION omegalib)
+if(WIN32)
+    install(FILES orun.bat DESTINATION omegalib)
+    install(FILES physics.bat DESTINATION omegalib)
+    install(FILES spincube.bat DESTINATION omegalib)
+endif()
 
 set_target_properties(cyclops PROPERTIES FOLDER modules)
