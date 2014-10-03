@@ -44,7 +44,6 @@
 #include "cyclops/CompositingLayer.h"
 
 #ifdef OMEGA_USE_PYTHON
-
 #include "omega/PythonInterpreterWrapper.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
