@@ -274,6 +274,8 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(Entity, setCullingActive)
         PYAPI_METHOD(Entity, isCullingActive)
         PYAPI_REF_GETTER(Entity, getRigidBody)
+        PYAPI_METHOD(Entity, setPointIntersectionEnabled)
+        PYAPI_METHOD(Entity, isPointIntersectionEnabled)
         ;
 
     // SphereShape
