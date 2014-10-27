@@ -96,6 +96,13 @@ namespace cyclops {
 		void setCullingActive(bool value);
 		bool isCullingActive();
 
+        //! Enables or disables point-mode ray hit computation for this entity.
+        //! When enabled, ray intersections with this entity will be computed
+        //! based on its vertices, instead of its faces.
+        void setPointIntersectionEnabled(bool value);
+        bool isPointIntersectionEnabled();
+
+
 		//! Piece management
 		//@{
 		vector<String> listPieces(const String& path);
@@ -138,6 +145,19 @@ namespace cyclops {
 	///////////////////////////////////////////////////////////////////////////
 	inline SceneLayer* Entity::getLayer()
 	{ return myLayer; }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline void Entity::setPointIntersectionEnabled(bool value)
+    {
+        if(value) setFlag(OsgSceneObject::SceneNodeHitPointsFlag);
+        else unsetFlag(OsgSceneObject::SceneNodeHitPointsFlag);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    inline bool Entity::isPointIntersectionEnabled()
+    {
+        return isFlagSet(OsgSceneObject::SceneNodeHitPointsFlag);
+    }
 };
 
 #endif
