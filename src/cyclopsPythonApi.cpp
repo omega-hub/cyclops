@@ -51,6 +51,8 @@
 
 using namespace cyclops;
 
+bool sApiInitialized = false;
+
 ///////////////////////////////////////////////////////////////////////////////
 SceneManager* getSceneManager() { return SceneManager::instance(); }
 
@@ -426,22 +428,16 @@ BOOST_PYTHON_MODULE(cyclops)
     // Free Functions
     def("getSceneManager", getSceneManager, PYAPI_RETURN_REF);
     ofmsg(">>>>> Cyclops version %1% ready", %CYCLOPS_VERSION);
+    sApiInitialized = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 CY_API void cyclopsPythonApiInit()
 {
-    static bool sApiInitialized = false;
-
     if(!sApiInitialized)
     {
-        sApiInitialized = true;
         omsg("cyclopsPythonApiInit()");
         initcyclops();
-
-        // import the module by default
-        omega::PythonInterpreter* interp = SystemManager::instance()->getScriptInterpreter();
-        interp->eval("from cyclops import *");
     }
 }
 
