@@ -1,12 +1,12 @@
 /******************************************************************************
  * THE OMEGA LIB PROJECT
  *-----------------------------------------------------------------------------
- * Copyright 2010-2013		Electronic Visualization Laboratory, 
+ * Copyright 2010-2014		Electronic Visualization Laboratory, 
  *							University of Illinois at Chicago
  * Authors:										
  *  Alessandro Febretti		febret@gmail.com
  *-----------------------------------------------------------------------------
- * Copyright (c) 2010-2013, Electronic Visualization Laboratory,  
+ * Copyright (c) 2010-2014, Electronic Visualization Laboratory,  
  * University of Illinois at Chicago
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without 
@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *-----------------------------------------------------------------------------
  * What's in this file
- *	Classes to handle GLSL uniforms
+ *	Classes to handle GLSL uniforms (Wrapping osg::Uniform)
  *****************************************************************************/
 #ifndef __CY_UNIFORM__
 #define __CY_UNIFORM__
@@ -46,78 +46,88 @@
 #include <omegaToolkit.h>
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
+    using namespace omega;
+    using namespace omegaOsg;
 
-	///////////////////////////////////////////////////////////////////////////
-	class CY_API Uniform: public ReferenceType
-	{
-	public:
-		enum Type { Int, Float, Vector2f, Vector3f, Color };
-		static Uniform* create(const String& name, Type type, uint elements);
+    ///////////////////////////////////////////////////////////////////////////
+    class CY_API Uniform: public ReferenceType
+    {
+    public:
+        enum Type { Int, Float, Vector2f, Vector3f, Color };
+        static Uniform* create(const String& name, Type type, uint elements);
 
-	public:
-		//! Create a cyclops uniform encapsulating an osg uniform. The uniform
-		//! type and number of elements will be derived from the osg uniform.
-		Uniform(osg::Uniform* uniform);
+    public:
+        //! Create a cyclops uniform encapsulating an osg uniform. The uniform
+        //! type and number of elements will be derived from the osg uniform.
+        Uniform(osg::Uniform* uniform);
 
-		Uniform(osg::Uniform* uniform, Type type, uint elements = 1);
-		virtual ~Uniform();
+        Uniform(osg::Uniform* uniform, Type type, uint elements = 1);
+        virtual ~Uniform();
 
-		bool isArray() { return myNumElements != 1; }
-		Type getType() { return myType; }
-		uint getNumElements() { return myNumElements; }
+        bool isArray() { return myNumElements != 1; }
+        Type getType() { return myType; }
+        uint getNumElements() { return myNumElements; }
 
-		//! Setters / getters
-		//@{
-		void setFloat(float value);
-		float getFloat();
-		void setInt(int value);
-		int getInt();
-		void setVector2f(const omega::Vector2f& value);
-		omega::Vector2f getVector2f();
-		void setVector3f(const omega::Vector3f& value);
-		omega::Vector3f getVector3f();
-		//void setVector4f(const omega::Vector4f& value);
-		//omega::Vector4f getVector4f();
-		void setColor(const omega::Color& value);
-		omega::Color getColor();
-		//@}
+        //! Setters / getters
+        //@{
+        void setFloat(float value);
+        float getFloat();
+        void setFloatElement(float value, uint index);
+        float getFloatElement(uint index);
+        void setInt(int value);
+        int getInt();
+        void setIntElement(int value, uint index);
+        int getIntElement(uint index);
+        void setVector2f(const omega::Vector2f& value);
+        omega::Vector2f getVector2f();
+        void setVector2fElement(const omega::Vector2f& value, uint index);
+        omega::Vector2f getVector2fElement(uint index);
+        void setVector3f(const omega::Vector3f& value);
+        omega::Vector3f getVector3f();
+        void setVector3fElement(const omega::Vector3f& value, uint index);
+        omega::Vector3f getVector3fElement(uint element);
+        //void setVector4f(const omega::Vector4f& value);
+        //omega::Vector4f getVector4f();
+        void setColor(const omega::Color& value);
+        omega::Color getColor();
+        void setColorElement(const omega::Color& value, uint index);
+        omega::Color getColorElement(uint index);
+        //@}
 
-		//! @internal
-		osg::Uniform* getOsgUniform() { return myOsgUniform; }
+        //! @internal
+        osg::Uniform* getOsgUniform() { return myOsgUniform; }
 
-	private:
-		Ref<osg::Uniform> myOsgUniform;
-		Type myType;
-		uint myNumElements;
-	};
+    private:
+        Ref<osg::Uniform> myOsgUniform;
+        Type myType;
+        uint myNumElements;
+    };
 
-	///////////////////////////////////////////////////////////////////////////
-	class CY_API Uniforms: public ReferenceType
-	{
-	public:
-		static osg::Uniform::Type toOsgUniformType(Uniform::Type Type);
+    ///////////////////////////////////////////////////////////////////////////
+    class CY_API Uniforms: public ReferenceType
+    {
+    public:
+        static osg::Uniform::Type toOsgUniformType(Uniform::Type Type);
 
-	public:
-		Uniforms(osg::StateSet* stateset);
-		virtual ~Uniforms();
+    public:
+        Uniforms(osg::StateSet* stateset);
+        virtual ~Uniforms();
 
-		//! Attaches an existing uniform to this object
-		void attachUniform(Uniform*);
-		//! Adds a new uniform to this object
-		Uniform* addUniform(const String& name, Uniform::Type type);
-		//! Adds a new uniform array to this object
-		Uniform* addUniformArray(const String& name, Uniform::Type type, uint elements);
-		Uniform* getUniform(const String& name);
-		void removeAllUniforms();
+        //! Attaches an existing uniform to this object
+        void attachUniform(Uniform*);
+        //! Adds a new uniform to this object
+        Uniform* addUniform(const String& name, Uniform::Type type);
+        //! Adds a new uniform array to this object
+        Uniform* addUniformArray(const String& name, Uniform::Type type, uint elements);
+        Uniform* getUniform(const String& name);
+        void removeAllUniforms();
 
-	private:
-		Ref<osg::StateSet> myStateSet;
+    private:
+        Ref<osg::StateSet> myStateSet;
 
-		typedef Dictionary<String, Ref< Uniform > > UniformDictionary;
-		UniformDictionary myUniformDictionary;
-	};
+        typedef Dictionary<String, Ref< Uniform > > UniformDictionary;
+        UniformDictionary myUniformDictionary;
+    };
 };
 
 #endif
