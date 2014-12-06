@@ -98,5 +98,5 @@ target_link_libraries(cyclops_loader cyclops)
 # not find a way to do it.
 set_target_properties(cyclops_loader PROPERTIES OUTPUT_NAME "cyclops" IMPORT_PREFIX "module_" PREFIX "")
 if(WIN32)
-    set_target_properties(cyclops_loader PROPERTIES FOLDER modules SUFFIX ".pyd")
+    set_target_properties(cyclops_loader PROPERTIES FOLDER modules SUFFIX ".pyd" PDB_NAME "cyclops_loader")
 endif()
