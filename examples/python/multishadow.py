@@ -58,10 +58,6 @@ interactor1.setSceneNode(lightSphere1)
 lightSphere1.addChild(light1)
 lightSphere1.castShadow(False)
 
-menu = lightSphere1.createContextMenu()
-menu.addButton("Toggle", "toggleLight1()")
-
-
 # Create second light, light sphere and interactor
 light2 = Light.create()
 light2.setColor(light2Color)
@@ -76,9 +72,6 @@ interactor2.setSceneNode(lightSphere2)
 lightSphere2.addChild(light2)
 lightSphere2.castShadow(False)
 
-menu = lightSphere2.createContextMenu()
-menu.addButton("Toggle", "toggleLight2()")
-
 # Create third light, light sphere and interactor
 light3 = Light.create()
 light3.setColor(light3Color)
@@ -92,9 +85,6 @@ interactor3 = ToolkitUtils.setupInteractor("config/interactor")
 interactor3.setSceneNode(lightSphere3)
 lightSphere3.addChild(light3)
 lightSphere3.castShadow(False)
-
-menu = lightSphere3.createContextMenu()
-menu.addButton("Toggle", "toggleLight3()")
 
 light1.setLightType(LightType.Spot)
 light2.setLightType(LightType.Spot)

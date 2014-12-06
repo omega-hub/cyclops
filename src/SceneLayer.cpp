@@ -70,6 +70,7 @@ public:
             {
                 activeCamera = odi->context->camera;
             }
+			oassert(activeCamera != NULL);
 
             bool camExplicitLayers = activeCamera->isFlagSet(SceneLayer::CameraDrawExplicitLayers);
             // We draw this layer if:
