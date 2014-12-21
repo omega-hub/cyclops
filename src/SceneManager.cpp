@@ -459,7 +459,9 @@ osg::Texture2D* SceneManager::createTexture(const String& name, PixelData* pixel
 ///////////////////////////////////////////////////////////////////////////////
 void SceneManager::setBackgroundColor(const Color& color)
 {
-    myEngine->getDisplaySystem()->setBackgroundColor(color);
+    owarn("DEPRECATION WARNING: SceneManager::setBackgroundColorwill be removed in v6.1. Use Camera.setBackgroundColor instead.");
+    Camera* c = Engine::instance()->getDefaultCamera();
+    c->setBackgroundColor(color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
