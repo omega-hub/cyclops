@@ -9,7 +9,11 @@ l.setColor(Color('white'))
 l.setAmbient(Color(0.1,0.1,0.1, 1))
 
 layer1 = SceneLayer()
+layer1.setId(SceneLayer.Layer1)
+
 layer2 = SceneLayer()
+layer2.setId(SceneLayer.Layer2)
+
 getSceneManager().getLightingLayer().addLayer(layer2)
 getSceneManager().getLightingLayer().addLayer(layer1)
 
@@ -20,7 +24,7 @@ box.setEffect("colored -d green")
 
 # The default camera will display layer 1 (that is, the box)
 box.setLayer(layer1)
-layer1.setCamera(getDefaultCamera())
+getDefaultCamera().setFlag(SceneLayer.Layer1)
 
 n = 4
 for i in range(0, n):
@@ -39,13 +43,14 @@ for i in range(0, n):
 
 # Spin the box!
 def onUpdate(frame, t, dt):
-	box.pitch(dt)
-	box.yaw(dt / 3)
+    box.pitch(dt)
+    box.yaw(dt / 3)
 setUpdateFunction(onUpdate)
 
 def createSecondaryCameraWindow(id, windowName, width, height, x, y):
     # create second camera
     cam = getOrCreateCamera(id)
+    cam.setFlag(SceneLayer.Layer2)
     cam.setHeadOffset(Vector3(0, 2, 0))
 
     coutput = PixelData.create(width,height,PixelFormat.FormatRgba)
@@ -64,8 +69,10 @@ def createSecondaryCameraWindow(id, windowName, width, height, x, y):
     titleBar.setDraggable(True)
     titleBar.setVisible(True)
     titleBar.setAutosize(False)
+    titleBar.setEnabled(True)
     titleBar.setStyleValue('fill', '#000000ff')
     titleBar.setHeight(24)
+    #titleBar.setWidth(width)
 
     img = Image.create(container)
     img.setData(coutput)
@@ -73,7 +80,15 @@ def createSecondaryCameraWindow(id, windowName, width, height, x, y):
     return cam
     
 # The secondary camera will display layer 2 (that is, the spheres)
+
+c2 = createSecondaryCameraWindow('c2', 'Camera 2', 250, 250, 5, 125)
+
 c1 = createSecondaryCameraWindow('c1', 'Camera 1', 250, 250, 5, 25)
-layer2.setCamera(c1)
+
+c1.setBackgroundColor(Color('blue'))
+c2.setBackgroundColor(Color('lime'))
+
+
 # attach the secondary camera to the default camera, so they move together.
 getDefaultCamera().addChild(c1)
+getDefaultCamera().addChild(c2)
