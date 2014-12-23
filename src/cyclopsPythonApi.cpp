@@ -111,7 +111,7 @@ BOOST_PYTHON_MODULE(cyclops)
 
     // SceneLayer
     PYAPI_REF_BASE_CLASS_WITH_CTOR(SceneLayer)
-        .def_readonly("CameraDrawExplicitLayer", &SceneLayer::CameraDrawExplicitLayers)
+        .def_readonly("CameraDrawExplicitLayers", &SceneLayer::CameraDrawExplicitLayers)
         PYAPI_METHOD(SceneLayer, addLayer)
         PYAPI_METHOD(SceneLayer, removeLayer)
         PYAPI_METHOD(SceneLayer, setCamera)
