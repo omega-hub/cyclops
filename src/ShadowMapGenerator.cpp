@@ -229,8 +229,11 @@ void ShadowMapGenerator::init()
 
         // negative polygonoffset - move the backface nearer to the eye point so that backfaces
         // shadow themselves
-        float factor = -_polyOffset[0];
-        float units =  -_polyOffset[1];
+        // CHANGE 1/9/2015 - changed offsets to positive since shadows seem
+        // to look much better this way. Keep an eye on this if you find cases
+        // of bad looking shadows.
+        float factor = 1;// -_polyOffset[0];
+        float units = 0;// -_polyOffset[1];
 
         osg::ref_ptr<osg::PolygonOffset> polygon_offset = new osg::PolygonOffset;
         polygon_offset->setFactor(factor);
