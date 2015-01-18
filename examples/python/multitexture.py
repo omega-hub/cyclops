@@ -1,4 +1,3 @@
-# basic omegalib script: just display a textured spinning cube.
 from omega import *
 from euclid import *
 from cyclops import *
