@@ -87,7 +87,7 @@ namespace cyclops {
 
 	private:
 		LightInstanceMap myLights;
-		Ref<ShaderManager> myShaderManager;
+		ShaderManager* myShaderManager;
 		
 		// This is the node over which shadowed scenes are applied.
 		Ref<osg::Group> myPreShadowNode;

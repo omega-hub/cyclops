@@ -164,8 +164,11 @@ namespace cyclops {
 
     private:
         static SceneManager* mysInstance;
-        Ref<Engine> myEngine;
         Ref<OsgModule> myOsg;
+        
+        // Engine owns modules like SceneManager so just use a pointer here
+        Engine* myEngine;
+
 
         // The scene global uniforms.
         Ref<Uniforms> myGlobalUniforms;
