@@ -458,8 +458,11 @@ CY_API void cyclopsPythonApiInit()
 {
     if(!sApiInitialized)
     {
+        PythonInterpreter* i = SystemManager::instance()->getScriptInterpreter();
+        i->lockInterpreter();
         omsg("cyclopsPythonApiInit()");
         initcyclops();
+        i->unlockInterpreter();
     }
 }
 
