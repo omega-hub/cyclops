@@ -55,8 +55,6 @@ using namespace cyclops;
 using namespace omegaToolkit;
 using namespace omegaToolkit::ui;
 
-void cyclopsPythonApiInit();
-
 SceneManager* SceneManager::mysInstance = NULL;
 
 Lock sModelQueueLock;
@@ -167,10 +165,6 @@ SceneManager::SceneManager():
     myColDetectionEnabled(false),
     myEngine(Engine::instance())
 {
-#ifdef OMEGA_USE_PYTHON
-    cyclopsPythonApiInit();
-#endif
-
     myOsg = OsgModule::instance();
 
     myModelLoaderThread = NULL;

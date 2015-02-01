@@ -1,4 +1,4 @@
-add_definitions( -D_CRT_SECURE_NO_WARNINGS -DCY_EXPORTING)
+add_definitions( -D_CRT_SECURE_NO_WARNINGS)
 if(WIN32)
     # Add the DOSGBULLET_STATIC to following projects, so we tell the header files 
     # we are not importing dll symbols.
@@ -36,8 +36,7 @@ set(SRCS
         ShadowMapGenerator.cpp
         StaticObject.cpp
         Text3D.cpp
-        Uniforms.cpp
-        cyclopsPythonApi.cpp)
+        Uniforms.cpp)
     
 set(HEADERS 
         ../cyclops/cyclopsConfig.h
@@ -88,8 +87,9 @@ add_dependencies(cyclops omegaOsg)
 ###############################################################################
 # Create the cyclops loader python module, to manually load cyclops
 # See 'reduce orun memory usage omegalib issue: https://github.com/uic-evl/omegalib/issues/109
-add_library(cyclops_loader SHARED cyclops_loader.cpp)
+add_library(cyclops_loader SHARED cyclopsPythonApi.cpp)
 target_link_libraries(cyclops_loader cyclops)
+
 # import module and lib will be called cyclops.dll/cyclops.pyd and 
 # libcyclops.so/cyclops.so on windows and linux/OSX respectively
 # we add the module_ prefix to the import library to avoid conflicts with the main

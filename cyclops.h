@@ -13,6 +13,7 @@
 #include <cyclops/cyclops/ShaderManager.h>
 #include <cyclops/cyclops/Shapes.h>
 #include <cyclops/cyclops/Skybox.h>
+#include <cyclops/cyclops/Text3D.h>
 
 void CY_API cyclopsPythonApiInit();
 

@@ -32,26 +32,13 @@
  * What's in this file:
  *	The cyclops python API declarations and wrappers
  ******************************************************************************/
-#include "omega/PythonInterpreter.h"
-#include "cyclops/SceneManager.h"
-#include "cyclops/AnimatedObject.h"
-#include "cyclops/SceneLoader.h"
-#include "cyclops/LineSet.h"
-#include "cyclops/Text3D.h"
-#include "cyclops/ModelGeometry.h"
-#include "cyclops/SceneLayer.h"
-#include "cyclops/LightingLayer.h"
-#include "cyclops/CompositingLayer.h"
+#include <cyclops/cyclops.h>
 
-#ifdef OMEGA_USE_PYTHON
+#include "omega/PythonInterpreter.h"
 #include "omega/PythonInterpreterWrapper.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#define CYCLOPS_VERSION "1.2"
-
 using namespace cyclops;
-
-bool sApiInitialized = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 SceneManager* getSceneManager() { return SceneManager::instance(); }
@@ -449,21 +436,5 @@ BOOST_PYTHON_MODULE(cyclops)
 
     // Free Functions
     def("getSceneManager", getSceneManager, PYAPI_RETURN_REF);
-    ofmsg(">>>>> Cyclops version %1% ready", %CYCLOPS_VERSION);
-    sApiInitialized = true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-CY_API void cyclopsPythonApiInit()
-{
-    if(!sApiInitialized)
-    {
-        PythonInterpreter* i = SystemManager::instance()->getScriptInterpreter();
-        i->lockInterpreter();
-        omsg("cyclopsPythonApiInit()");
-        initcyclops();
-        i->unlockInterpreter();
-    }
-}
-
-#endif

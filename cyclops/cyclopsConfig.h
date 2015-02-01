@@ -37,7 +37,7 @@
 
 #ifdef WIN32
 	#ifndef CY_STATIC
-		#ifdef CY_EXPORTING
+		#ifdef cyclops_EXPORTS
 		   #define CY_API    __declspec(dllexport)
 		#else
 		   #define CY_API    __declspec(dllimport)

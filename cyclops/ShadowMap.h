@@ -47,72 +47,72 @@
 #include <omegaOsg/omegaOsg.h>
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
+    using namespace omega;
+    using namespace omegaOsg;
 
-	class LightingLayer;
-	class Light;
+    class LightingLayer;
+    class Light;
 
-	///////////////////////////////////////////////////////////////////////////
-	class ShadowMap: public ReferenceType
-	{
-	friend class Light;
-	friend class LightingLayer;
-	public:
-		static const int ReceivesShadowTraversalMask = 0x1;
-		static const int CastsShadowTraversalMask = 0x2;
+    ///////////////////////////////////////////////////////////////////////////
+    class CY_API ShadowMap: public ReferenceType
+    {
+    friend class Light;
+    friend class LightingLayer;
+    public:
+        static const int ReceivesShadowTraversalMask = 0x1;
+        static const int CastsShadowTraversalMask = 0x2;
 
-	public:
-		ShadowMap();
-		osgShadow::ShadowedScene* getOsgNode()
-		{ return myShadowedScene; }
+    public:
+        ShadowMap();
+        osgShadow::ShadowedScene* getOsgNode()
+        { return myShadowedScene; }
 
-		void setTextureUnit(int unit);
-		int getTextureUnit();
-		void setTextureSize(int width, int height);
+        void setTextureUnit(int unit);
+        int getTextureUnit();
+        void setTextureSize(int width, int height);
 
-		void setSoft(bool value);
-		bool isSoft()
-		{ return myShadowMap->isSoft(); }
-		void setSoftShadowParameters(float softnessWidth, float jitteringScale)
-		{ return myShadowMap->setSoftShadowParameters(softnessWidth, jitteringScale); }
+        void setSoft(bool value);
+        bool isSoft()
+        { return myShadowMap->isSoft(); }
+        void setSoftShadowParameters(float softnessWidth, float jitteringScale)
+        { return myShadowMap->setSoftShadowParameters(softnessWidth, jitteringScale); }
 
-		void setDirty() 
-		{ myShadowMap->setDirty(); }
+        void setDirty() 
+        { myShadowMap->setDirty(); }
         
-	private:
-		//! used by Light to notify tell this shadow map who is its owner.
-		void setLight(Light* l); 
+    private:
+        //! used by Light to notify tell this shadow map who is its owner.
+        void setLight(Light* l); 
 
-		// Attaches this shadow map to the specified layer
-		void setLayer(LightingLayer* layer);
-		void addToLayer(LightingLayer* layer);
-		void removeFromLayer(LightingLayer* layer);
-		void setManualRefreshEnabled(bool value) 
-		{ myShadowMap->setManualRefreshEnabled(value); }
-		
-	protected:
-		virtual void initialize();
-		void checkInitialized();
+        // Attaches this shadow map to the specified layer
+        void setLayer(LightingLayer* layer);
+        void addToLayer(LightingLayer* layer);
+        void removeFromLayer(LightingLayer* layer);
+        void setManualRefreshEnabled(bool value) 
+        { myShadowMap->setManualRefreshEnabled(value); }
+        
+    protected:
+        virtual void initialize();
+        void checkInitialized();
 
-	protected:
-		bool myInitialized;
-		Light* myLight;
-		int myShadowTextureUnit;
-		LightingLayer* myLayer;
+    protected:
+        bool myInitialized;
+        Light* myLight;
+        int myShadowTextureUnit;
+        LightingLayer* myLayer;
         Ref<ShadowMapGenerator> myShadowMap;
-		Ref<osgShadow::ShadowedScene> myShadowedScene;
-	};
+        Ref<osgShadow::ShadowedScene> myShadowedScene;
+    };
 
-	///////////////////////////////////////////////////////////////////////////
-	/*class SoftShadowMap: public ShadowMap
-	{
-	protected:
-		virtual void initialize();
+    ///////////////////////////////////////////////////////////////////////////
+    /*class SoftShadowMap: public ShadowMap
+    {
+    protected:
+        virtual void initialize();
 
-	private:
+    private:
         Ref<osgShadow::SoftShadowMap> mySoftShadowMap;
-	};*/
+    };*/
 };
 
 #endif
