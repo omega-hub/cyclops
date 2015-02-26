@@ -35,7 +35,7 @@
 #ifndef __CY_TEXT_3D__
 #define __CY_TEXT_3D__
 
-#include "cyclops/Entity.h"
+#include "Entity.h"
 
 // Forward decl
 namespace osgText
