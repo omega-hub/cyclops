@@ -70,7 +70,7 @@ public:
 
     virtual void threadProc()
     {
-        omsg("ModelLoaderThread: start");
+        olog(Verbose, "ModelLoaderThread: start");
 
         while(!sShutdownLoaderThread)
         {
@@ -93,7 +93,7 @@ public:
             osleep(100);
         }
 
-        omsg("ModelLoaderThread: shutdown");
+        olog(Verbose, "ModelLoaderThread: shutdown");
     }
 
 private:
@@ -282,18 +282,18 @@ void SceneManager::unload()
 {
     sShutdownLoaderThread = true;
     myModelLoaderThread->stop();
-    ofmsg("SceneManager::unload: emptying load queue (%1% queued items)", %sModelQueue.size());
+    oflog(Verbose, "SceneManager::unload: emptying load queue (%1% queued items)", %sModelQueue.size());
     while(!sModelQueue.empty()) sModelQueue.pop();
     sShutdownLoaderThread = false;
 
-    ofmsg("SceneManager::unload: releasing %1% models", %myModelList.size());
+    oflog(Verbose, "SceneManager::unload: releasing %1% models", %myModelList.size());
     myModelList.clear();
     myModelDictionary.clear();
 
-    ofmsg("SceneManager::unload: releasing %1% programs", %myPrograms.size());
+    oflog(Verbose, "SceneManager::unload: releasing %1% programs", %myPrograms.size());
     myPrograms.clear();
 
-    ofmsg("SceneManager::unload: releasing %1% programs", %myTextures.size());
+    oflog(Verbose, "SceneManager::unload: releasing %1% textures", %myTextures.size());
     myTextures.clear();
 }
 
@@ -522,7 +522,7 @@ bool SceneManager::loadModel(ModelInfo* info)
     static Lock smodloaderlock;
     smodloaderlock.lock();
 
-    omsg(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SceneManager::loadModel");
+    olog(Verbose, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SceneManager::loadModel");
     bool result = false;
 
     ModelAsset* asset = new ModelAsset();
@@ -579,7 +579,7 @@ bool SceneManager::loadModel(ModelInfo* info)
 #endif
         }
     }
-    omsg("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SceneManager::loadModel\n");
+    olog(Verbose, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SceneManager::loadModel\n");
     smodloaderlock.unlock();
     return result;
 }
@@ -610,7 +610,7 @@ void SceneManager::setSkyBox(Skybox* skyBox)
     {
         setShaderMacroToFile("vsinclude envMap", "cyclops/common/envMap/cubeEnvMap.vert");
         setShaderMacroToFile("fsinclude envMap", "cyclops/common/envMap/cubeEnvMap.frag");
-        omsg("Environment cube map shaders enabled");
+        olog(Verbose, "Environment cube map shaders enabled");
         mySkyBox->initialize(myLightingLayer->getOsgNode()->getOrCreateStateSet());
         myLightingLayer->getOsgNode()->addChild(mySkyBox->getNode());
     }
@@ -618,7 +618,7 @@ void SceneManager::setSkyBox(Skybox* skyBox)
     {
         setShaderMacroToFile("vsinclude envMap", "cyclops/common/envMap/noEnvMap.vert");
         setShaderMacroToFile("fsinclude envMap", "cyclops/common/envMap/noEnvMap.frag");
-        omsg("Environment cube map shaders disabled");
+        olog(Verbose, "Environment cube map shaders disabled");
     }
 
     recompileShaders();

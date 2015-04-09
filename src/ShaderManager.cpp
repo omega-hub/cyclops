@@ -180,7 +180,7 @@ void ShaderManager::loadShader(osg::Shader* shader, const String& name)
 		String path;
 		if(DataManager::findFile(name, path))
 		{
-			ofmsg("Loading shader: %1%", %name);
+			oflog(Verbose, "Loading shader: %1%", %name);
 
 			std::ifstream t(path.c_str());
 			std::stringstream buffer;
@@ -436,7 +436,7 @@ void ShaderManager::recompileShaders(ProgramAsset* program, const String& svaria
 	// If the shader does not exist in the shader registry, we need to create it now.
 	if(vertexShader == NULL)
 	{
-		ofmsg("Creating vertex shader %1%", %fullVertexShaderName);
+		oflog(Verbose, "Creating vertex shader %1%", %fullVertexShaderName);
 
 		vertexShader = new osg::Shader( osg::Shader::VERTEX );
 		// increase reference count to avoid being deallocated by osg program when deattached.
@@ -461,7 +461,7 @@ void ShaderManager::recompileShaders(ProgramAsset* program, const String& svaria
 	// If the shader does not exist in the shader registry, we need to create it now.
 	if(fragmentShader == NULL)
 	{
-		ofmsg("Creating fragment shader %1%", %fullFragmentShaderName);
+		oflog(Verbose, "Creating fragment shader %1%", %fullFragmentShaderName);
 
 		fragmentShader = new osg::Shader( osg::Shader::FRAGMENT );
 		// increase reference count to avoid being deallocated by osg program when deattached.
@@ -488,7 +488,7 @@ void ShaderManager::recompileShaders(ProgramAsset* program, const String& svaria
 		// If the shader does not exist in the shader registry, we need to create it now.
 		if(geometryShader == NULL)
 		{
-			ofmsg("Creating geometry shader %1%", %fullGeometryShaderName);
+			oflog(Verbose, "Creating geometry shader %1%", %fullGeometryShaderName);
 
 			geometryShader = new osg::Shader( osg::Shader::GEOMETRY );
 			// increase reference count to avoid being deallocated by osg program when deattached.

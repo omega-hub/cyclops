@@ -152,7 +152,7 @@ osg::Node* ModelLoader::processDefaultOptions(osg::Node* node, ModelAsset* asset
 	{
 		if(asset->info->optimize)
 		{
-			omsg("Optimizing model");
+			ofmsg("Optimizing model...%1%", %asset->info->path);
 			osgUtil::Optimizer optOSGFile;
 			optOSGFile.optimize(node, 
 				osgUtil::Optimizer::SHARE_DUPLICATE_STATE | 
@@ -237,7 +237,7 @@ bool DefaultModelLoader::load(ModelAsset* asset, ModelAsset* mapAsset)
 		String assetPath;
 		if(DataManager::findFile(filePath, assetPath))
 		{ 
-			ofmsg("Loading model %1%", %filePath);
+			ofmsg("Loading model......%1%", %filePath);
 			osgDB::Options* options = new osgDB::Options; 
 			options->setOptionString("noTesselateLargePolygons noTriStripPolygons noRotation");
 
