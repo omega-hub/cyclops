@@ -78,10 +78,6 @@ target_link_libraries(cyclops
     ${OSG_LIBS}
     ${OSGBULLET_LIBS})
 
-if(MODULES_omegaOsgEarth)
-    target_link_libraries(cyclops ${OSGEARTH_LIBS})
-endif()
-
 add_dependencies(cyclops omegaOsg)
 
 ###############################################################################

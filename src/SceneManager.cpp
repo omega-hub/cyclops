@@ -555,28 +555,23 @@ bool SceneManager::loadModel(ModelInfo* info)
         {
             if(ml.second != myDefaultLoader && ml->supportsExtension(extension))
             {
-                if(ml->load(asset)) 
+                if(info->mapName != "") 
                 {
-                    result = true;
-                    break;
+                    ModelAsset* mapAsset = getModel(info->mapName);
+                    result = ml->loadInMap(asset, mapAsset);
                 }
+                else 
+                {
+                    result = ml->load(asset);
+                }
+
+                if(result) break;
             }
         }
         // All loaders failed or none was able to handle the model file extension. Use the default loader.
         if(!result)
         {
-#ifdef omegaOsgEarth_ENABLED
-            if( info->mapName != "" ) {
-                ModelAsset *mapAsset = getModel(info->mapName);
-                DefaultModelLoader* mdl = dynamic_cast<DefaultModelLoader*>(myDefaultLoader);
-                if(mdl) result = mdl->load(asset, mapAsset);
-                else result = myDefaultLoader->load(asset);
-            } else {
-                result = myDefaultLoader->load(asset);
-            }
-#else
             result = myDefaultLoader->load(asset);
-#endif
         }
     }
     olog(Verbose, "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SceneManager::loadModel\n");

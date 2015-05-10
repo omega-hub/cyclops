@@ -6,10 +6,6 @@ include_directories(.)
 include_directories(${OSG_INCLUDES})
 include_directories(${OSGBULLET_INCLUDES})
 
-if(MODULES_omegaOsgEarth)
-    include_directories(${OSGEARTH_INCLUDES})
-endif()
-
 add_subdirectory(src)
 if(OMEGA_BUILD_EXAMPLES)
     add_subdirectory(examples/cyhello2)
