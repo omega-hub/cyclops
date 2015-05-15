@@ -12,6 +12,13 @@ if(WIN32)
             ${SOURCE_DIR}/modules/cyclops/physics.bat
             ${SOURCE_DIR}/modules/cyclops/spincube.bat
         )
+elseif(APPLE)
+    file(INSTALL DESTINATION ${PACKAGE_DIR}/bin
+        TYPE FILE
+        FILES
+            ${BIN_DIR}/libcyclops.dylib
+            ${BIN_DIR}/cyclops.so
+        )
 endif()
 
 file(INSTALL DESTINATION ${PACKAGE_DIR}/modules/cyclops
