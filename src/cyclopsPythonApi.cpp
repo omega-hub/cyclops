@@ -234,6 +234,10 @@ BOOST_PYTHON_MODULE(cyclops)
         PYAPI_METHOD(Material, setAlpha)
         PYAPI_METHOD(Material, getAlpha)
         PYAPI_METHOD(Material, setCamera)
+        PYAPI_METHOD(Material, setPointSprite)
+        PYAPI_METHOD(Material, isPointSprite)
+        PYAPI_METHOD(Material, setPointSize)
+        PYAPI_METHOD(Material, getPointSize)
         PYAPI_REF_GETTER(Material, getCamera)
         ;
 

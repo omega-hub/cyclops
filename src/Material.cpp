@@ -133,7 +133,7 @@ void Material::setDiffuseTexture(const String& name)
 	if(tex != NULL)
 	{
 		tex->setResizeNonPowerOfTwoHint(false);
-		myStateSet->setTextureAttribute(0, tex);
+		myStateSet->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
 	}
 }
 
@@ -396,4 +396,51 @@ void Material::setShaderManager(ShaderManager* sm)
 	myShaderManager = sm;
 	// Force a shading program reload.
 	setProgram(myProgramName);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool Material::isPointSprite()
+{
+    return myPointSprite != NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Material::setPointSprite(bool value)
+{
+    if (value != isPointSprite())
+    {
+        if (value)
+        {
+            myPointSprite = new osg::PointSprite();
+            myStateSet->setTextureAttributeAndModes(0, myPointSprite, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
+            if (myPointInfo == NULL) myPointInfo = new osg::Point();
+            myStateSet->setAttribute(myPointInfo);
+
+            // Enable setting point size from the shader
+            myStateSet->setMode(GL_VERTEX_PROGRAM_POINT_SIZE, osg::StateAttribute::ON);
+        }
+        else
+        {
+            myStateSet->removeAssociatedTextureModes(0, myPointSprite);
+            myStateSet->removeAttribute(myPointInfo);
+            myPointSprite = NULL;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Material::setPointSize(float size)
+{
+    if (myPointInfo == NULL)
+    {
+        myPointInfo = new osg::Point();
+    }
+    myPointInfo->setSize(size);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+float Material::getPointSize()
+{
+    if (myPointInfo == NULL) return 0.0f;
+    return myPointInfo->getSize();
 }
