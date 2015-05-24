@@ -44,6 +44,7 @@ using namespace cyclops;
 SceneManager* getSceneManager() { return SceneManager::instance(); }
 
 ///////////////////////////////////////////////////////////////////////////////
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Material_setTransparent, setTransparent, 1, 2)
 BOOST_PYTHON_MODULE(cyclops)
 {
     // SceneLoader
@@ -206,7 +207,7 @@ BOOST_PYTHON_MODULE(cyclops)
         .def_readonly("CameraDrawExplicitMaterials", &Material::CameraDrawExplicitMaterials)
         PYAPI_STATIC_REF_GETTER(Material, create)
         PYAPI_METHOD(Material, setColor)
-        PYAPI_METHOD(Material, setTransparent)
+        .def("setTransparent", &Material::setTransparent, Material_setTransparent())
         PYAPI_METHOD(Material, isTransparent)
         PYAPI_METHOD(Material, reset)
         PYAPI_METHOD(Material, setProgram)

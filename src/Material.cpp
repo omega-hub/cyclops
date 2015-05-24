@@ -57,7 +57,8 @@ Material::Material(osg::StateSet* ss, SceneManager* sm): Uniforms(ss),
 	// meterial. If the material owner entity gets attached to a different
 	// scene layer providing its own shader manager, this will be substituted
 	// through the setShaderManager method.
-	mySceneManager(sm), myShaderManager(sm)
+	mySceneManager(sm), myShaderManager(sm),
+    myForceTransparentBin(false)
 {
 	reset();
 	myAlpha = addUniform("unif_Alpha", Uniform::Float);
@@ -171,12 +172,13 @@ void Material::setTexture(const String& name, int stage, const String& uniformNa
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void Material::setTransparent(bool value)
+void Material::setTransparent(bool value, bool forceTransparentBin)
 {
 	myTransparent = value;
+    myForceTransparentBin = forceTransparentBin;
 	if(myTransparent)
 	{
-        if(myAdditive)
+        if(myAdditive && !myForceTransparentBin)
         {
             myStateSet->setRenderingHint(osg::StateSet::OPAQUE_BIN);
         }
@@ -204,14 +206,21 @@ void Material::setAdditive(bool value)
 		osg::BlendFunc* bf = new osg::BlendFunc();
 		bf->setFunction(GL_SRC_ALPHA, GL_ONE);
 		myStateSet->setAttribute(bf, osg::StateAttribute::PROTECTED);
-        myStateSet->setRenderingHint(osg::StateSet::OPAQUE_BIN);
+        if(!myForceTransparentBin)
+            myStateSet->setRenderingHint(osg::StateSet::OPAQUE_BIN);
+        else
+            myStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+        
 	}
 	else
 	{
 		osg::BlendFunc* bf = new osg::BlendFunc();
 		bf->setFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		myStateSet->setAttribute(bf, osg::StateAttribute::PROTECTED);
-        myStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+        if(myTransparent)
+            myStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+        else
+            myStateSet->setRenderingHint(osg::StateSet::OPAQUE_BIN);
 	}
 }
 

@@ -95,7 +95,7 @@ namespace cyclops {
 
         //! Flags
         //@{
-        void setTransparent(bool value);
+        void setTransparent(bool value, bool forceTransparentBin = false);
         bool isTransparent() { return myTransparent; }
         void setAdditive(bool value);
         bool isAdditive() { return myAdditive; }
@@ -169,6 +169,7 @@ namespace cyclops {
         bool myDoubleFace;
         bool myWireframe;
         bool myLit;
+        bool myForceTransparentBin;
 
         Ref<osg::StateSet> myStateSet;
         Ref<osg::Material> myMaterial;
