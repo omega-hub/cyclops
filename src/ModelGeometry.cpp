@@ -41,104 +41,104 @@ using namespace cyclops;
 
 ///////////////////////////////////////////////////////////////////////////////
 ModelGeometry::ModelGeometry(const String& name):
-	myName(name)
+    myName(name)
 {
-	// create geometry and geodes to hold the data
-	myNode = new osg::Geode();
-	myGeometry = new osg::Geometry();
-	osg::VertexBufferObject* vboP = myGeometry->getOrCreateVertexBufferObject();
-	vboP->setUsage (GL_STREAM_DRAW);
+    // create geometry and geodes to hold the data
+    myNode = new osg::Geode();
+    myGeometry = new osg::Geometry();
+    osg::VertexBufferObject* vboP = myGeometry->getOrCreateVertexBufferObject();
+    vboP->setUsage (GL_STREAM_DRAW);
 
-	myVertices = new osg::Vec3Array();
+    myVertices = new osg::Vec3Array();
 
-	myGeometry->setUseDisplayList (false);
-	myGeometry->setUseVertexBufferObjects(true);
-	myGeometry->setVertexArray(myVertices);
-  	myNode->addDrawable(myGeometry);
+    myGeometry->setUseDisplayList (false);
+    myGeometry->setUseVertexBufferObjects(true);
+    myGeometry->setVertexArray(myVertices);
+    myNode->addDrawable(myGeometry);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 int ModelGeometry::addVertex(const Vector3f& v)
 {
-	myVertices->push_back(osg::Vec3d(v[0], v[1], v[2]));
-	myGeometry->dirtyBound();
-	return myVertices->size() - 1;
+    myVertices->push_back(osg::Vec3d(v[0], v[1], v[2]));
+    myGeometry->dirtyBound();
+    return myVertices->size() - 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void ModelGeometry::setVertex(int index, const Vector3f& v)
 {
-	oassert(myVertices->size() > index);
-	osg::Vec3f& c = myVertices->at(index);
-	c[0] = v[0];
-	c[1] = v[1];
-	c[2] = v[2];
-	myVertices->dirty();
+    oassert(myVertices->size() > index);
+    osg::Vec3f& c = myVertices->at(index);
+    c[0] = v[0];
+    c[1] = v[1];
+    c[2] = v[2];
+    myVertices->dirty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Vector3f ModelGeometry::getVertex(int index)
 {
-	oassert(myVertices->size() > index);
-	const osg::Vec4d& c = myColors->at(index);
-	return Vector3f(c[0], c[1], c[2]);
+    oassert(myVertices->size() > index);
+    const osg::Vec4d& c = myColors->at(index);
+    return Vector3f(c[0], c[1], c[2]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 int ModelGeometry::addColor(const Color& c)
 {
-	if(myColors == NULL)
-	{
-		myColors = new osg::Vec4Array();
-		myGeometry->setColorArray(myColors);
-		myGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-	}
-	myColors->push_back(osg::Vec4d(c[0], c[1], c[2], c[3]));
-	return myColors->size() - 1;
+    if(myColors == NULL)
+    {
+        myColors = new osg::Vec4Array();
+        myGeometry->setColorArray(myColors);
+        myGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+    }
+    myColors->push_back(osg::Vec4d(c[0], c[1], c[2], c[3]));
+    return myColors->size() - 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void ModelGeometry::setColor(int index, const Color& col)
 {
-	oassert(myColors != NULL && myColors->size() > index);
-	osg::Vec4f& c = myColors->at(index);
-	c[0] = col[0];
-	c[1] = col[1];
-	c[2] = col[2];
-	c[3] = col[3];
-	myColors->dirty();
+    oassert(myColors != NULL && myColors->size() > index);
+    osg::Vec4f& c = myColors->at(index);
+    c[0] = col[0];
+    c[1] = col[1];
+    c[2] = col[2];
+    c[3] = col[3];
+    myColors->dirty();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Color ModelGeometry::getColor(int index)
 {
-	oassert(myColors != NULL && myColors->size() > index);
-	const osg::Vec4d& c = myColors->at(index);
-	return Color(c[0], c[1], c[2], c[3]);
+    oassert(myColors != NULL && myColors->size() > index);
+    const osg::Vec4d& c = myColors->at(index);
+    return Color(c[0], c[1], c[2], c[3]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void ModelGeometry::addPrimitive(ProgramAsset::PrimitiveType type, int startIndex, int endIndex)
 {
-	osg::PrimitiveSet::Mode osgPrimType;
-	switch(type)
-	{
-	case ProgramAsset::Triangles:
-		osgPrimType = osg::PrimitiveSet::TRIANGLES; break;
-	case ProgramAsset::Points:
-		osgPrimType = osg::PrimitiveSet::POINTS; break;
-	case ProgramAsset::TriangleStrip:
-		osgPrimType = osg::PrimitiveSet::TRIANGLE_STRIP; break;
-	}
-	myGeometry->addPrimitiveSet(new osg::DrawArrays(osgPrimType, startIndex, endIndex));
+    osg::PrimitiveSet::Mode osgPrimType;
+    switch(type)
+    {
+    case ProgramAsset::Triangles:
+        osgPrimType = osg::PrimitiveSet::TRIANGLES; break;
+    case ProgramAsset::Points:
+        osgPrimType = osg::PrimitiveSet::POINTS; break;
+    case ProgramAsset::TriangleStrip:
+        osgPrimType = osg::PrimitiveSet::TRIANGLE_STRIP; break;
+    }
+    myGeometry->addPrimitiveSet(new osg::DrawArrays(osgPrimType, startIndex, endIndex));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void ModelGeometry::clear()
 {
-	myColors->clear();
-	myVertices->clear();
-	myGeometry->removePrimitiveSet(0, myGeometry->getNumPrimitiveSets());
-	myGeometry->dirtyBound();
+    myColors->clear();
+    myVertices->clear();
+    myGeometry->removePrimitiveSet(0, myGeometry->getNumPrimitiveSets());
+    myGeometry->dirtyBound();
 }
