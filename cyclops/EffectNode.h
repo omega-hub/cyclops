@@ -72,11 +72,9 @@ namespace cyclops {
         String getDefinition();
         void setDefinition(const String& definition);
 
-        //TODO: Is this needed?
-        //SceneManager* getSceneManager() { return mySceneManager; }
-
         Material* getMaterial(unsigned int index);
         void addMaterial(Material* mat);
+        void removeMaterial(Material* mat);
         int getMaterialCount();
         void clearMaterials();
 
@@ -88,7 +86,7 @@ namespace cyclops {
         virtual void traverse(osg::NodeVisitor& nv);
 
     private:
-        Vector< Ref<Material> > myMaterials;
+        List< Ref<Material> > myMaterials;
 
         String myDefinition;
         SceneManager* mySceneManager;
