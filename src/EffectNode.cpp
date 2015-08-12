@@ -57,7 +57,7 @@ EffectNode::~EffectNode()
 ///////////////////////////////////////////////////////////////////////////////
 Material* EffectNode::getMaterial(unsigned int index)
 {
-    auto it = myMaterials.begin();
+    List< Ref<Material> >::iterator it = myMaterials.begin();
     std::advance(it, index);
     return *it;
 }
