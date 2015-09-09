@@ -191,6 +191,15 @@ void Entity::addMaterial(Material* mat)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void Entity::removeMaterial(Material* mat)
+{
+    // NOTE: We have to reset the effect definition, otherwise all materials 
+    // will be recreated. This will also force an effect refresh.
+    myEffect->addMaterial(mat);
+    myEffect->setDefinition("");
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Entity::clearMaterials()
 {
     myEffect->clearMaterials();

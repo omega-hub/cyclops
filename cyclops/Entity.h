@@ -49,52 +49,54 @@
 #include <omegaToolkit.h>
 
 namespace cyclops {
-	using namespace omega;
-	using namespace omegaOsg;
+    using namespace omega;
+    using namespace omegaOsg;
 
-	class SceneManager;
-	class SceneLayer;
-	class ShaderManager;
+    class SceneManager;
+    class SceneLayer;
+    class ShaderManager;
 
-	///////////////////////////////////////////////////////////////////////////
-	//! Encapsulates an osg node (or nodes) and offers a few additional 
-	//! functionality for them, like shadow casting management, effects and 
-	//! shaders and context menus.
-	class CY_API Entity: public SceneNode
-	{
-	public:
-		Entity(SceneManager* scene);
-		virtual ~Entity();
+    ///////////////////////////////////////////////////////////////////////////
+    //! Encapsulates an osg node (or nodes) and offers a few additional 
+    //! functionality for them, like shadow casting management, effects and 
+    //! shaders and context menus.
+    class CY_API Entity: public SceneNode
+    {
+    public:
+        Entity(SceneManager* scene);
+        virtual ~Entity();
 
-		SceneManager* getSceneManager() { return mySceneManager; }
+        SceneManager* getSceneManager() { return mySceneManager; }
 
-		osg::Node* getOsgNode() { return myEffect; }
-		//SceneNode* getSceneNode() { return mySceneNode; }
+        osg::Node* getOsgNode() { return myEffect; }
+        //SceneNode* getSceneNode() { return mySceneNode; }
 
-		SceneLayer* getLayer();
-		void setLayer(SceneLayer* layer);
+        SceneLayer* getLayer();
+        void setLayer(SceneLayer* layer);
 
-		//! Visuals
-		//@{
-		bool hasEffect();
-		void setEffect(const String& effectDefinition);
-		Material* getMaterial();
-		Material* getMaterialByIndex(unsigned int index);
-		int getMaterialCount();
-		void addMaterial(Material* mat);
-		void clearMaterials();
-		//! Sets the shader manager used by this entity to find shaders used
-		//! my the entity materials. Default shader manager is the scene manager
-		void setShaderManager(ShaderManager* sm);
-		//@}
+        //! Visuals
+        //@{
+        bool hasEffect();
+        void setEffect(const String& effectDefinition);
+        Material* getMaterial();
+        Material* getMaterialByIndex(unsigned int index);
+        int getMaterialCount();
+        void addMaterial(Material* mat);
+        //! Removes a material from this entity.
+        void removeMaterial(Material* mat);
+        void clearMaterials();
+        //! Sets the shader manager used by this entity to find shaders used
+        //! my the entity materials. Default shader manager is the scene manager
+        void setShaderManager(ShaderManager* sm);
+        //@}
 
-		void castShadow(bool value);
-		bool doesCastShadow();
-		//! Enables or disables frustum culling for this entity. If culling is
-		//! enabled (the default state), this entity will be culled when its
-		//! bounding box does not intersect the camera frustum.
-		void setCullingActive(bool value);
-		bool isCullingActive();
+        void castShadow(bool value);
+        bool doesCastShadow();
+        //! Enables or disables frustum culling for this entity. If culling is
+        //! enabled (the default state), this entity will be culled when its
+        //! bounding box does not intersect the camera frustum.
+        void setCullingActive(bool value);
+        bool isCullingActive();
 
         //! Enables or disables point-mode ray hit computation for this entity.
         //! When enabled, ray intersections with this entity will be computed
@@ -103,48 +105,48 @@ namespace cyclops {
         bool isPointIntersectionEnabled();
 
 
-		//! Piece management
-		//@{
-		vector<String> listPieces(const String& path);
-		Entity* getPiece(const String& path);
-		//@}
+        //! Piece management
+        //@{
+        vector<String> listPieces(const String& path);
+        Entity* getPiece(const String& path);
+        //@}
 
-		//! Returns the rigid body object describing the physical properties
-		// of this entity.
-		RigidBody* getRigidBody();
+        //! Returns the rigid body object describing the physical properties
+        // of this entity.
+        RigidBody* getRigidBody();
 
-		virtual void updateTraversal(const UpdateContext& context);
+        virtual void updateTraversal(const UpdateContext& context);
 
-	protected:
-		void initialize(osg::Node* node);
-		//! Used by the piece functions to find a named group inside the object.
-		osg::Group* findSubGroup(const String& path);
+    protected:
+        void initialize(osg::Node* node);
+        //! Used by the piece functions to find a named group inside the object.
+        osg::Group* findSubGroup(const String& path);
 
-	private:
-		Ref<SceneManager> mySceneManager;
+    private:
+        Ref<SceneManager> mySceneManager;
 
-		// Normal pointer to avoid circular refs.
-		SceneLayer*	myLayer;
+        // Normal pointer to avoid circular refs.
+        SceneLayer*	myLayer;
 
-		Ref<osg::Node> myOsgNode;
-		//SceneNode* mySceneNode;
-		Ref<OsgSceneObject> myOsgSceneObject;
+        Ref<osg::Node> myOsgNode;
+        //SceneNode* mySceneNode;
+        Ref<OsgSceneObject> myOsgSceneObject;
 
-		Ref<EffectNode> myEffect;
+        Ref<EffectNode> myEffect;
 
-		bool myCastShadow;
-		bool myCullingActive;
+        bool myCastShadow;
+        bool myCullingActive;
 
-		Ref<RigidBody> myRigidBody;
-	};
+        Ref<RigidBody> myRigidBody;
+    };
 
-	///////////////////////////////////////////////////////////////////////////
-	inline RigidBody* Entity::getRigidBody()
-	{ return myRigidBody; }
+    ///////////////////////////////////////////////////////////////////////////
+    inline RigidBody* Entity::getRigidBody()
+    { return myRigidBody; }
 
-	///////////////////////////////////////////////////////////////////////////
-	inline SceneLayer* Entity::getLayer()
-	{ return myLayer; }
+    ///////////////////////////////////////////////////////////////////////////
+    inline SceneLayer* Entity::getLayer()
+    { return myLayer; }
 
     ///////////////////////////////////////////////////////////////////////////
     inline void Entity::setPointIntersectionEnabled(bool value)
