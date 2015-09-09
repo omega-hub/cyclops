@@ -7,7 +7,8 @@ bboxes = []
 
 root = SceneNode.create('bboxRoot')
 
-# create a custom actor class
+# create a bounding box actor that will draw an axis-aligned bounding box 
+# around a target scene node
 class BBox(Actor):
     box = None
     target = None
