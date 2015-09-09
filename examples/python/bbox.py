@@ -16,6 +16,7 @@ class BBox(Actor):
         bboxes.append(self)
         super(BBox, self).__init__("BBox")
         self.box = BoxShape.create(1, 1, 1)
+        # Customize the look of the bounding box here.
         self.box.setEffect('colored -e #ff8080 -w')
         self.target = target
         root.addChild(self.box)
