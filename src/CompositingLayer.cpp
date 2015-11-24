@@ -107,14 +107,14 @@ bool CompositingLayer::isPassActive(const String& passName)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-Uniform* CompositingLayer::getUniform(const String& name)
+cyclops::Uniform* CompositingLayer::getUniform(const String& name)
 {
 	if(myCompositor != NULL)
 	{
 		osg::Uniform* u = myCompositor->getUniform(name);
 		if(u != NULL)
 		{
-			return new Uniform(u);
+			return new cyclops::Uniform(u);
 		}
 	}
 	return NULL;
