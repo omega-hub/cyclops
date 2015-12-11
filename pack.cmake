@@ -5,13 +5,7 @@ if(WIN32)
             ${BIN_DIR}/cyclops.dll
             ${BIN_DIR}/cyclops.pyd
         )
-    
-    file(INSTALL DESTINATION ${PACKAGE_DIR}
-        TYPE FILE
-        FILES
-            ${SOURCE_DIR}/modules/cyclops/physics.bat
-            ${SOURCE_DIR}/modules/cyclops/spincube.bat
-        )
+
 elseif(APPLE)
     file(INSTALL DESTINATION ${PACKAGE_DIR}/bin
         TYPE FILE
@@ -34,3 +28,6 @@ file(INSTALL DESTINATION ${PACKAGE_DIR}/examples/cyclops
         ${SOURCE_DIR}/modules/cyclops/examples/python/
     )
     
+    
+create_launcher(SpinCube examples/cyclops/spincube)
+create_launcher(Physics examples/cyclops/physics)
