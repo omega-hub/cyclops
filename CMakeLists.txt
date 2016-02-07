@@ -1,5 +1,5 @@
 request_dependency(omegaOsg)
-module_version(1.7)
+module_version(1.8)
 
 add_definitions(-DOSGWORKS_STATIC)
 include_directories(.)
