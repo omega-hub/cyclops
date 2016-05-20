@@ -58,7 +58,8 @@ namespace cyclops {
 		{
 			Points = GL_POINTS,
 			Triangles = GL_TRIANGLES,
-			TriangleStrip = GL_TRIANGLE_STRIP
+			TriangleStrip = GL_TRIANGLE_STRIP,
+			LineStrip = GL_LINE_STRIP
 		};
 
 	public:
